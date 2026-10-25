@@ -1,0 +1,15 @@
+# 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+# level 8、零错误；只分析程序本体。
+
+parameters:
+    level: 8
+    # 口径锁定产品最低支持的 PHP 8.2（composer.json 的 platform 与之同源）
+    phpVersion: 80200
+    bootstrapFiles:
+        - phpstan-bootstrap.php
+    dynamicConstantNames:
+        - APP_DEBUG
+    paths:
+        - core
+        - plugins/mail-smtp
+    treatPhpDocTypesAsCertain: false

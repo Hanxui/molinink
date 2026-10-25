@@ -1,0 +1,150 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  内核更新(《93》)。三态:可更新 / 当前最新 / 体检未过。
+  结构树见《93》§4;文案逐字照 §6;数值照 §5 / §12。
+  数据全由 UpdateController 备好(清单有无、八项结果、九步状态都算完),
+  模板只摆,不拼地址、不做业务。桌面与移动各摆一份结构,由 .d / .m 切换。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('系统') }}</div>
+            <h1>{{ __('更新') }}</h1>
+            <p class="lede">{{ __('升级是一条走完的路：先体检，中途任一步失败就退回原地，不停在半路。备份可勾选，默认跳过这次备份。') }}</p>
+        </div>
+    </div>
+
+    {# 只摆当前版本这一张卡。哪条通道在「设置 → 更新」里选,选好再用那颗「检查更新」进来
+       (2026-10-11 作者定:这一页不再放第二处切换器 —— 两处能改同一个设置,只会让人怀疑"改了没存上") #}
+    <div class="vbox">
+        <section class="vcard">
+            <div class="vc-h"><span>{{ __('当前版本') }}</span></div>
+            <div class="vc-n">{{ current.version }}{% if current.released is not empty %}<small>{{ __('发布于') }} {{ current.released }}</small>{% endif %}</div>
+            <div class="facts">
+                <div><span>{{ __('兼容版本') }}</span><b>{{ current.contract }}</b></div>
+                <div><span>{{ __('PHP 版本') }}</span><b>{{ current.php }}</b></div>
+                <div><span>{{ __('可用新版本') }}</span><b>{{ current.available }}</b></div>
+            </div>
+        </section>
+    </div>
+
+    <section class="blk">
+        <div class="bh">
+            <h2>{{ __('前置体检') }}</h2>
+            <span class="sub">{{ __('硬性项全过才允许开始 · 「最近一次备份」只作提示，不拦升级') }}</span>
+        </div>
+        <div class="alert">
+            <span class="al">{{ alert.prefix }}</span>
+            <p>{{ alert.before }}<b>{{ alert.strong }}</b>{{ alert.after }}</p>
+        </div>
+
+        {# 桌面:标记 / 项名 / 值 同排 #}
+        <div class="chk d">
+            {% for c in checks %}
+                <div class="row {{ c.ok ? 'ok' : 'no' }}"><span class="mk">{{ c.ok ? '✓' : '✗' }}</span><span class="tx">{{ c.name }}</span><span class="val">{{ c.value }}</span>{% if c.fix is not empty %}<div class="fix">{{ c.fix }}</div>{% endif %}</div>
+            {% endfor %}
+        </div>
+
+        {# 移动:标记 + 文本块,值另起一行 #}
+        <div class="chk m">
+            {% for c in checks %}
+                <div class="row {{ c.ok ? 'ok' : 'no' }}"><span class="mk">{{ c.ok ? '✓' : '✗' }}</span><div><span class="tx">{{ c.name }}</span><div class="val">{{ c.value }}</div>{% if c.fix is not empty %}<div class="fix">{{ c.fix }}</div>{% endif %}</div></div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# 断在半路:这块独立于「有没有新版本」—— 真卡住时源也可能连不上,但收尾照样要做。
+       2026-10-17 接上 Installer::recover():此前它只被测试调用,站长只能手工删锁文件 #}
+    {% if progress.recover %}
+        <section class="blk">
+            <div class="bh">
+                <h2>{{ __('升级没收尾') }}</h2>
+                <span class="sub">{{ progress.sub }}</span>
+            </div>
+            <p class="gdesc">{{ __('上一次升级断在半路。先收尾：把文件与数据库收回升级前的样子，再决定要不要重来。') }}</p>
+            <form method="post" action="{{ recover_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <button class="btn btn-primary" type="submit">{{ __('恢复到升级前') }}</button>
+            </form>
+        </section>
+    {% endif %}
+
+    {# 无可用新版本则整块不出现(《93》§8) #}
+    {% if available is not null %}
+        {# data-upd-* 是 admin.js 认的:提交不跳页,边上按 700ms 轮进度(data-upd-url)。
+           取消按钮自带 name=do value=cancel(与隐藏的同名字段,后出现的胜出),走普通提交不轮询。
+           ack 是"跳过备份"的二次确认回执:admin.js 在提交前问一句,点了确定才置 1;服务端同样校验。
+           备份默认不做(2026-10-13 作者定),所以要备份得自己勾 #}
+        <form id="update-run" method="post" action="{{ run_url }}" data-upd-job="update" data-upd-url="{{ progress_url }}">
+            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+            <input type="hidden" name="do" value="run">
+            <input type="hidden" name="ack" value="" data-upd-ack>
+        </form>
+
+        <section class="blk blk-prog">
+            <div class="bh d">
+                <h2>{{ __('升级进度') }}</h2>
+                <div class="brow">
+                    <span class="sub">{{ progress.sub }}</span>
+                    <label class="upd-bk d"><input type="checkbox" name="do_backup" value="1" form="update-run"><span>{{ __('升级前先做一次备份') }}</span></label>
+                    {% if progress.cancel %}
+                        <button type="submit" form="update-run" name="do" value="cancel" class="btn btn-ghost btn-sm danger">{{ __('取消') }}</button>
+                    {% elseif progress.recover %}
+                        {# 收尾没做完,开始升级没有意义:上面那块「恢复到升级前」才是这一步该按的 #}
+                    {% else %}
+                        <button type="submit" form="update-run" class="btn btn-primary btn-sm{{ progress.disabled ? ' dis' : '' }}"{% if progress.disabled %} disabled{% endif %}>{{ progress.button }}</button>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="bh m"><h2>{{ __('升级进度') }}</h2><span class="sub">{{ progress.sub }}</span></div>
+            <div class="bar{{ progress.pct == 0 ? ' none' : '' }}"><i style="width:{{ progress.pct }}%"></i></div>
+            <div class="steps">
+                {% for s in steps %}
+                    <div class="stp {{ s.state }}"><span class="no">{{ s.no }}</span><span class="nm">{{ s.name }}<i>{{ s.desc }}</i></span><span class="st">{{ s.status }}</span></div>
+                {% endfor %}
+            </div>
+            <label class="upd-bk m"><input type="checkbox" name="do_backup" value="1" form="update-run"><span>{{ __('升级前先做一次备份') }}</span></label>
+            {% if progress.cancel %}
+                <button type="submit" form="update-run" name="do" value="cancel" class="btn btn-ghost danger cancel m">{{ __('取消') }}</button>
+            {% elseif progress.recover %}
+                {# 同上:先收尾 #}
+            {% else %}
+                <button type="submit" form="update-run" class="btn btn-primary cancel m{{ progress.disabled ? ' dis' : '' }}"{% if progress.disabled %} disabled{% endif %}>{{ progress.button }}</button>
+            {% endif %}
+        </section>
+
+        {% if log.show %}
+            <section class="blk">
+                <div class="bh"><h2>{{ __('更新日志') }}</h2><span class="sub">{{ log.range }}</span></div>
+                <div class="fold">
+                    <button class="fold-h" type="button"><span class="chev"></span><span class="ft">{{ log.title }}</span>{% if log.date is not empty %}<span class="fc">{{ __('发布于') }} {{ log.date }}</span>{% endif %}</button>
+                    <div class="fold-b">
+                        <ul>
+                            {% for item in log.items %}
+                                <li>{% if item.type is not empty %}<b>{{ item.type }}</b> {% endif %}{{ item.text }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    {% endif %}
+
+    {# 手动回滚(《93》§5.8 / §6.4):清单里带 `previous` 才报得出上一版(源站保留最近 5 个版本包)。
+       一键回滚未接线(《29》§7.2):九步链第 7 步只往前跑迁移,没有"把库退回旧结构"的能力 ——
+       旧代码配新库会出事。所以这里如实摆出上一版,按钮禁用,不给人一个点下去会动的入口。 #}
+    <section class="blk">
+        <div class="bh"><h2>{{ __('手动回滚') }}</h2><span class="sub">{{ rollback.sub }}</span></div>
+        <div class="rb">
+            {% if rollback.has_target %}
+                <p>{{ __('上一个版本是') }}<b>{{ rollback.target }}</b>{{ __('，但它与当前数据库结构不兼容，不能直接回滚：旧代码跑在新版本已迁移过的库上会出错。要降级请改用升级前的那份整站备份还原。') }}</p>
+            {% else %}
+                <p>{{ __('暂无可回滚的更早版本包：更新源清单里没有上一个版本的信息。') }}</p>
+            {% endif %}
+            <button class="btn btn-ghost danger dis" type="button" disabled>{{ __('回滚到上一版本') }}</button>
+        </div>
+    </section>
+{% endblock %}

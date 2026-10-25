@@ -1,0 +1,19 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  外观组二级导航(《41》§4:主题 / 主题设置 / 菜单 / 挂件)—— 四屏共用这一条，当前项高亮。
+  「菜单」与「挂件」在侧栏里是借「外观」的位、自己没有一级入口(《107》§1 / 《108》§1)，
+  所以这一条就是它们唯一的门；四个屏都渲染它，来回走不必回退、也不必手敲地址。
+  当前项按 page_kind 判：appearance / appearance theme-settings / menus / widgets。
+#}
+{% set ap_root = path('admin', {path: 'appearance'}) %}
+{% set ap_kind = page_kind|default('appearance') %}
+{# 主题设置是「某个主题」的设置:本屏直接用 settings_url(它带 ?theme=),
+   别的屏没有它,就指向当前启用主题(active_theme_slug 由 View 统一注入)。 #}
+{% set ap_settings = settings_url|default(ap_root ~ '/settings?theme=' ~ (theme_slug|default(active_theme_slug))|url_encode) %}
+<nav class="sec-tabs" aria-label="{{ __('外观') }}">
+    <a href="{{ ap_root }}"{{ ap_kind == 'appearance' ? ' class="active"' : '' }}>{{ __('主题') }}</a>
+    <a href="{{ ap_settings }}"{{ ap_kind == 'appearance theme-settings' ? ' class="active"' : '' }}>{{ __('主题设置') }}</a>
+    <a href="{{ path('admin', {path: 'menus'}) }}"{{ ap_kind == 'menus' ? ' class="active"' : '' }}>{{ __('菜单') }}</a>
+    <a href="{{ path('admin', {path: 'widgets'}) }}"{{ ap_kind == 'widgets' ? ' class="active"' : '' }}>{{ __('挂件') }}</a>
+</nav>

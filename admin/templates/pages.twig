@@ -1,0 +1,180 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  页面列表(《86》,《78》的姊妹页)。外壳、页签、筛选、批量条、分页全部与文章列表同一套 CSS:
+  .inner 上同时挂 page-posts 与 page-pages,后者只负责「层级」这一列的差异。
+  与文章的三处不同:页签无「待审」、筛选用「父页面」不用「分类」、行内没有「评论」列。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('内容') }}</div>
+            <h1>{{ __('页面') }}</h1>
+            <p class="lede">{{ __('独立于文章流的固定内容：关于、联系、站点说明。页面之间可以套层级。') }}</p>
+        </div>
+        {% if new_url %}
+            <a class="btn btn-primary" href="{{ new_url }}"><span class="plus">＋</span>{{ __('新建页面') }}</a>
+        {% endif %}
+    </div>
+
+    <nav class="tabs" aria-label="{{ __('按状态筛选') }}">
+        {% for tab in tabs %}
+            <a href="{{ tab.url }}"{% if tab.active %} class="active"{% endif %}>{{ tab.label }}<span class="n">{{ tab.count }}</span></a>
+        {% endfor %}
+    </nav>
+
+    <form class="filters" method="get" action="{{ filters_action }}">
+        <div class="search">
+            <span class="ico" aria-hidden="true"></span>
+            <input type="text" name="q" placeholder="{{ __('搜索标题或内容') }}" value="{{ filters.q }}">
+        </div>
+        <select name="parent" aria-label="{{ __('按父页面筛选') }}">
+            <option value="">{{ __('全部父页面') }}</option>
+            <option value="0"{% if filters.parent == '0' %} selected{% endif %}>{{ __('无（顶层）') }}</option>
+            {% for item in parent_choices %}
+                <option value="{{ item.id }}"{% if filters.parent == item.id %} selected{% endif %}>{{ item.title }}</option>
+            {% endfor %}
+        </select>
+        <select name="author" aria-label="{{ __('按作者筛选') }}">
+            <option value="">{{ __('全部作者') }}</option>
+            {% for author in author_choices %}
+                <option value="{{ author.id }}"{% if filters.author == author.id %} selected{% endif %}>{{ author.name }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="status" value="{{ filters.status }}">
+        <div class="spacer"></div>
+        <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+    </form>
+
+    <form class="bulk" id="bulk-form" method="post" action="{{ bulk_url }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        <select name="bulk" aria-label="{{ __('批量操作') }}">
+            <option value="">{{ __('批量操作') }}</option>
+            <option value="trash">{{ __('移入回收站') }}</option>
+            <option value="draft">{{ __('改为草稿') }}</option>
+        </select>
+        <button class="btn btn-ghost" type="submit">{{ __('应用') }}</button>
+        <div class="spacer"></div>
+        <div class="picked" hidden>{{ __('已选') }} <b>0</b> {{ __('个') }}</div>
+        <div class="count">{{ __('共') }} <b>{{ pagination.total }}</b> {{ __('个') }}</div>
+    </form>
+
+    <div class="table">
+        <div class="thead">
+            <span><input type="checkbox" class="cb" id="cb-all" form="bulk-form" aria-label="{{ __('全选本页') }}"></span>
+            <span>{{ __('标题') }}</span>
+            <span>{{ __('作者') }}</span>
+            <span>{{ __('层级') }}</span>
+            <span>{{ __('状态') }}</span>
+            <span>{{ __('日期') }}</span>
+        </div>
+
+        {% for row in rows %}
+            <div class="tr{% if quick_id == row.id %} qe{% endif %}" data-rows>
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择《%s》', 'molin', row.label) }}"></span>
+                <div class="ttl">
+                    <div class="t">
+                        {% if row.edit_url %}<a href="{{ row.edit_url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}
+                    </div>
+                    <div class="sub"><span>{{ row.sub }}</span></div>
+                    {# 移动端换这两行:状态前置(《86》§5),别名另起一行 #}
+                    <div class="mmeta">
+                        <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
+                        <span class="sep">·</span><span>{{ row.hierarchy }}</span>
+                        <span class="sep">·</span><span>{{ row.date }}</span>
+                    </div>
+                    <div class="lvl">{{ __('别名') }} {{ row.slug }}</div>
+                    <div class="acts">
+                        {% if row.edit_url %}
+                            <a class="act" href="{{ row.edit_url }}">{{ __('编辑') }}</a>
+                            <a class="act{% if quick_id == row.id %} on{% endif %}" href="{{ filters_action }}?page={{ pagination.page }}{{ filter_tail }}&qe={{ row.id }}">{{ __('快速编辑') }}</a>
+                        {% endif %}
+                        <a class="act" href="{{ row.view_url }}">{{ __('查看') }}</a>
+                        {% if row.trash_url %}
+                            <form method="post" action="{{ row.trash_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <button class="del" type="submit">{{ __('回收站') }}</button>
+                            </form>
+                        {% endif %}
+                        {% if row.restore_url %}
+                            <form method="post" action="{{ row.restore_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <button type="submit">{{ __('还原') }}</button>
+                            </form>
+                        {% endif %}
+                        {% if row.destroy_url %}
+                            <form method="post" action="{{ row.destroy_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <label class="confirm"><input type="checkbox" name="confirm" value="destroy">{{ __('确认彻底删除') }}</label>
+                                <button class="del" type="submit">{{ __('删除') }}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="cell ink">{{ row.author }}</span>
+                <span class="cell">{{ row.hierarchy }}</span>
+                <span><span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span></span>
+                <span class="cell num">{{ row.date }}</span>
+            </div>
+
+            {% if quick_id == row.id and row.can_edit %}
+                <form class="qedit" method="post" action="{{ row.quick_url }}">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <div class="qe-grid">
+                        <div class="qe-f">
+                            <label for="qe-t-{{ row.id }}">{{ __('标题') }}</label>
+                            <input class="qe-in" id="qe-t-{{ row.id }}" name="title" type="text" value="{{ row.title }}">
+                        </div>
+                        <div class="qe-f">
+                            <label for="qe-s-{{ row.id }}">{{ __('别名') }}</label>
+                            <input class="qe-in" id="qe-s-{{ row.id }}" name="slug" type="text" value="{{ row.slug }}">
+                        </div>
+                        <div class="qe-f">
+                            <label for="qe-st-{{ row.id }}">{{ __('状态') }}</label>
+                            <select class="qe-in" id="qe-st-{{ row.id }}" name="status">
+                                {% for value, label in quick_statuses %}
+                                    <option value="{{ value }}"{% if row.status == value %} selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="qe-acts">
+                        <button class="btn btn-primary btn-sm" type="submit">{{ __('更新') }}</button>
+                        <a class="btn btn-ghost btn-sm" href="{{ filters_action }}?page={{ pagination.page }}{{ filter_tail }}">{{ __('取消') }}</a>
+                    </div>
+                </form>
+            {% endif %}
+        {% else %}
+            {% set filtering = filters.q or filters.author or filters.status or filters.parent %}
+            <div class="empty">
+                <div class="et">{{ filtering ? __('没有符合条件的页面') : __('还没有页面') }}</div>
+                {% if filtering %}
+                    <a class="btn btn-ghost btn-clear" href="{{ filters_action }}">{{ __('清除筛选') }}</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.total > 0 %}
+        <div class="pager">
+            <div class="info">{{ __('第 %s–%s 个，共 %s 个', 'molin', pagination.from, pagination.to, pagination.total) }}</div>
+            {# 不足一页只留说明、不出页码(《86》§4) #}
+            {% if pagination.total_pages > 1 %}
+                <div class="pages">
+                    {% for link in pagination.links %}
+                        {% if link.url %}
+                            <a href="{{ link.url }}"{% if link.active %} class="cur"{% endif %}>{{ link.page }}</a>
+                        {% else %}
+                            <a aria-disabled="true">{{ link.page }}</a>
+                        {% endif %}
+                        {% if loop.last and pagination.gap %}
+                            <span class="gap">…</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

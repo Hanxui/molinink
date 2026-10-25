@@ -1,0 +1,45 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 404(《75》/《13》第 3.3 节):状态码之外再给一条「{{ __('或许你想看', 'theme') }}」。suggest 由内核随机挑一篇已发文章喂进来,
+   没有文章时整块不渲染;页脚钉底靠 notfound.css 的整页 flex 列布局。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ __('页面不存在', 'theme') }} · {{ site.name }}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('notfound.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <main>
+        <div class="wrap">
+            <div class="code">4<span class="zero">0</span>4</div>
+            <h1>{{ __('这一页，写丢了。', 'theme') }}</h1>
+            <p class="msg">{{ __('你要找的内容可能已经移动、改名，或者从未存在过。慢一点也没关系，从这里重新出发。', 'theme') }}</p>
+            <div class="underline"></div>
+
+            <a class="back" href="{{ path('home') }}">← {{ __('回到首页', 'theme') }}</a>
+
+            {% if suggest %}
+                <div class="suggest">
+                    <div class="lab">{{ __('或许你想看', 'theme') }}</div>
+                    <ul>
+                        <li><a href="{{ suggest.url }}">{{ suggest.title }}</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+        </div>
+    </main>
+
+    {% include 'partials/footer.twig' %}
+</div>
+<script src="{{ asset('shell.js') }}" defer></script>
+{{ footer_output }}
+</body>
+</html>

@@ -1,0 +1,187 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  分类与标签(《87》,基准 后台分类与标签-定稿桌面分类态 / 标签态 / 移动端三张)。
+  一页两态:页签切「分类 / 标签」,左右两栏结构不变,变的是字段集、列集与底注。
+  桌面与移动各挂一份(两边的行底发丝线与缩进各认各的);移动端只有分类态出过基准,
+  标签态按同一结构套桌面标签态的数据与文案 —— 已挂待办清单待追认。
+  写动作三条 POST;删除的二次确认复用全站唯一模态件(《品牌视觉规格》§4.7)。
+#}
+{% extends "layout.twig" %}
+
+{% set is_tag = tax == 'tag' %}
+
+{% block body %}
+    <div class="eyebrow">{{ __('内容') }}</div>
+    <h1>{{ __('分类与标签') }}</h1>
+    <p class="lede">{{ __('分类可以套层级，一篇文章归一处；标签是平铺的，一篇想贴几张贴几张。') }}</p>
+
+    <nav class="tabs">
+        {% for t in tabs %}
+            <a href="{{ t.url }}"{% if t.active %} class="active"{% endif %}>{{ t.label }}<span class="n">{{ t.n }}</span></a>
+        {% endfor %}
+    </nav>
+
+    {# ── 桌面:左表单 + 右列表 ── #}
+    <div class="split d">
+        <section class="panel">
+            <h2>{% if mode == 'edit' %}{{ is_tag ? __('编辑标签') : __('编辑分类') }}{% else %}{{ is_tag ? __('添加标签') : __('添加分类') }}{% endif %}</h2>
+            <p class="pdesc">{{ is_tag ? __('标签平铺，不分层级。同义词请自己收好，系统不做合并。') : __('新分类立即可用，文章编辑页的选单会同步出现。') }}</p>
+            <form method="post" action="{{ mode == 'edit' ? update_url : create_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="hidden" name="tax" value="{{ tax }}">
+                {% if mode == 'edit' %}
+                    <input type="hidden" name="edit" value="{{ editing_id }}">
+                    <input type="hidden" name="term" value="{{ editing_id }}">
+                {% endif %}
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('名称') }}<span class="req">*</span></label>
+                        <div class="ctrl"><input type="text" name="name" value="{{ values.name }}" placeholder="{{ is_tag ? __('例如：写作方法') : __('例如：译介') }}"></div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('别名') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="slug" value="{{ values.slug }}" placeholder="{{ __('留空则按名称生成') }}">
+                            <div class="hint">{{ __('用于地址') }} <code>{{ is_tag ? '/tag/别名/' : '/category/别名/' }}</code>{{ __('，全站不可重复。') }}</div>
+                        </div>
+                    </div>
+                    {% if is_tag %}
+                        <div class="field">
+                            <label>{{ __('近义标签') }}</label>
+                            <div class="ctrl"><input type="text" name="synonym" value="" placeholder="{{ __('选一个已有标签作为近义提示') }}"></div>
+                        </div>
+                    {% else %}
+                        <div class="field">
+                            <label>{{ __('父分类') }}</label>
+                            <div class="ctrl">
+                                <select name="parent">
+                                    <option value="0">{{ __('无（顶层）') }}</option>
+                                    {% for p in parents %}
+                                        <option value="{{ p.term_taxonomy_id }}"{{ p.sel ? ' selected' : '' }}>{{ p.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <div class="hint">{{ __('选了父级，就挂在它下面；层级最多三层。') }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <div class="field">
+                        <label>{{ __('描述') }}</label>
+                        <div class="ctrl"><textarea name="description" placeholder="{{ __('一句话说明这类文章在写什么') }}">{{ values.description }}</textarea></div>
+                    </div>
+                </div>
+                <button class="btn btn-primary add" type="submit">{{ mode == 'edit' ? __('保存修改') : (is_tag ? __('添加标签') : __('添加分类')) }}</button>
+                {% if mode == 'edit' %}<a class="btn btn-ghost add-cancel" href="{{ cancel_url }}">{{ __('取消') }}</a>{% endif %}
+            </form>
+        </section>
+
+        <section class="list">
+            <div class="list-hd">
+                <h2>{{ is_tag ? __('现有标签') : __('现有分类') }}</h2>
+                <div class="tools"><span>{{ is_tag ? __('按使用次数排序') : __('按名称排序') }}</span></div>
+            </div>
+            <div class="thead">
+                <span>{{ __('名称') }}</span><span>{{ __('别名') }}</span><span>{{ __('文章') }}</span><span>{{ __('操作') }}</span>
+            </div>
+            {% for row in rows %}
+                <div class="row{{ row.child ? ' child' : '' }}">
+                    <div class="nm"><a href="{{ row.view_url }}">{{ row.name }}</a></div>
+                    <span class="slug">{{ row.slug }}</span><span class="cnt">{{ row.count }}</span>
+                    <div class="acts">
+                        <a href="{{ row.edit_url }}">{{ __('编辑') }}</a>
+                        <a href="{{ row.view_url }}">{{ __('查看') }}</a>
+                        {% if row.can_delete %}<a class="danger" href="{{ row.delete_url }}">{{ __('删除') }}</a>{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+            <p class="note">{{ is_tag ? __('标签不分层级，也不设兜底项；删掉一个标签只是解除归属，文章本身不动。合并同类项请在编辑页里改贴。') : __('「未分类」是站点的兜底分类，不能删除；删掉一个分类时，它的文章不会被删，只是失去这个归属，子分类会提升到上一层。') }}</p>
+        </section>
+    </div>
+
+    {# ── 移动:单列堆叠 ── #}
+    <section class="panel m">
+        <h2>{% if mode == 'edit' %}{{ is_tag ? __('编辑标签') : __('编辑分类') }}{% else %}{{ is_tag ? __('添加标签') : __('添加分类') }}{% endif %}</h2>
+        <p class="pdesc">{{ is_tag ? __('标签平铺，不分层级。同义词请自己收好，系统不做合并。') : __('新分类立即可用，文章编辑页的选单会同步出现。') }}</p>
+        <form method="post" action="{{ mode == 'edit' ? update_url : create_url }}">
+            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+            <input type="hidden" name="tax" value="{{ tax }}">
+            {% if mode == 'edit' %}
+                <input type="hidden" name="edit" value="{{ editing_id }}">
+                <input type="hidden" name="term" value="{{ editing_id }}">
+            {% endif %}
+            <div class="mfields">
+                <div class="mfield">
+                    <label>{{ __('名称') }}<span class="req">*</span></label>
+                    <div class="ctrl"><input type="text" name="name" value="{{ values.name }}" placeholder="{{ is_tag ? __('例如：写作方法') : __('例如：译介') }}"></div>
+                </div>
+                <div class="mfield">
+                    <label>{{ __('别名') }}</label>
+                    <div class="ctrl"><input type="text" name="slug" value="{{ values.slug }}" placeholder="{{ __('留空则按名称生成') }}"></div>
+                </div>
+                {% if is_tag %}
+                    <div class="mfield">
+                        <label>{{ __('近义标签') }}</label>
+                        <div class="ctrl"><input type="text" name="synonym" value="" placeholder="{{ __('选一个已有标签作为近义提示') }}"></div>
+                    </div>
+                {% else %}
+                    <div class="mfield">
+                        <label>{{ __('父分类') }}</label>
+                        <div class="ctrl">
+                            <select name="parent">
+                                <option value="0">{{ __('无（顶层）') }}</option>
+                                {% for p in parents %}
+                                    <option value="{{ p.term_taxonomy_id }}"{{ p.sel ? ' selected' : '' }}>{{ p.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                {% endif %}
+                <div class="mfield">
+                    <label>{{ __('描述') }}</label>
+                    <div class="ctrl"><input type="text" name="description" value="{{ values.description }}" placeholder="{{ __('一句话说明这类文章在写什么') }}"></div>
+                </div>
+            </div>
+            <button class="btn btn-primary add" type="submit">{{ mode == 'edit' ? __('保存修改') : (is_tag ? __('添加标签') : __('添加分类')) }}</button>
+            {% if mode == 'edit' %}<a class="btn btn-ghost add-cancel" href="{{ cancel_url }}">{{ __('取消') }}</a>{% endif %}
+        </form>
+    </section>
+
+    <section class="panel m">
+        <h2>{{ is_tag ? __('现有标签') : __('现有分类') }}</h2>
+        <div class="mlist">
+            {% for row in rows %}
+                <div class="mrow{{ row.child ? ' child' : '' }}">
+                    <div><div class="nm">{{ row.name }}</div><div class="slug">{{ row.slug }} · {{ row.count }} {{ __('篇') }}</div></div>
+                    <div class="acts">
+                        <a href="{{ row.edit_url }}">{{ __('编辑') }}</a>
+                        {% if row.can_delete %}<a class="del" href="{{ row.delete_url }}">{{ __('删除') }}</a>{% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        <p class="pdesc">{{ is_tag ? __('标签不分层级，也不设兜底项；删掉标签只解除归属，文章本身不动。') : __('「未分类」是兜底分类，不能删除；删掉分类只解除归属，文章本身不动。') }}</p>
+    </section>
+{% endblock %}
+
+{% block dialog %}
+    {% if delete %}
+        <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+            <div class="tag">{{ __('危险操作') }}</div>
+            <h2 id="dlg-title">{{ __('删除「%s」？', 'molin', delete.name) }}</h2>
+            {% if is_tag %}
+                <p class="tx2">{{ __('删掉一个标签只是解除归属，文章本身不动。') }}</p>
+            {% else %}
+                <p class="tx2">{{ __('删掉这个分类时，它的文章不会被删，只是失去这个归属，子分类会提升到上一层。') }}</p>
+            {% endif %}
+            <div class="foot">
+                <a class="btn btn-ghost" href="{{ delete.cancel_url }}" data-cancel data-focus>{{ __('取消') }}</a>
+                <form method="post" action="{{ delete.action_url }}">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <input type="hidden" name="tax" value="{{ tax }}">
+                    <input type="hidden" name="term" value="{{ delete.term_id }}">
+                    <button class="btn btn-danger" type="submit">{{ __('删除') }}</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,72 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
+
+/* 评论区(《125》配套的《31》基准,源件:文章详情-评论区-2026-09-30)
+   (《31》§2/§3/§5/§7) ── */
+  .comments{margin:96px auto 0;max-width:720px;width:100%;}
+  .comments > h2{font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
+  .clist{margin-top:34px;}
+  .c{padding:28px 0;border-top:1px solid var(--rule);}
+  .c:first-child{border-top:0;padding-top:0;}
+  .c .hd{display:flex;align-items:center;gap:12px;}
+  .c .av{width:36px;height:36px;border-radius:50%;background:#DEDCD6;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-serif);font-size:15px;color:var(--ink);}
+  .c .av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+  .c .who{font-family:var(--font-sans);font-size:14px;letter-spacing:.03em;color:var(--ink);}
+  .c .at{font-family:var(--font-sans);font-size:12px;letter-spacing:.08em;color:var(--muted);}
+  .c .pend{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.06em;color:var(--accent);}
+  .c .tx{margin-top:14px;font-size:var(--font-size);line-height:1.85;letter-spacing:.01em;}
+  .c .ops{margin-top:14px;display:flex;align-items:center;gap:18px;
+    font-family:var(--font-sans);font-size:12px;letter-spacing:.06em;}
+  .c .ops a{color:var(--muted);text-decoration:none;}
+  .c .ops a:hover{color:var(--accent);}
+  .c .children{margin-top:24px;padding-left:48px;border-left:1px solid var(--rule);}
+  .c .children .c{padding:22px 0;}
+  .c .children .c:first-child{border-top:0;}
+  .c .children .av{width:30px;height:30px;font-size:13px;}
+
+  /* 表单 */
+  .form{margin-top:56px;padding-top:34px;border-top:1px solid var(--rule);}
+  .form h3{font-size:22px;font-weight:400;letter-spacing:.01em;}
+  .form .note{margin-top:10px;font-family:var(--font-sans);font-size:12px;
+    letter-spacing:.06em;color:var(--muted);line-height:1.7;}
+  /* 提交回跳的提示/错误行在 .form 之外,同一套小字 */
+  .comments > .note{margin-top:18px;font-family:var(--font-sans);font-size:12px;
+    letter-spacing:.06em;color:var(--muted);line-height:1.7;}
+  .fields{margin-top:26px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;}
+  .f{display:flex;flex-direction:column;min-width:0;}
+  .f.full{grid-column:1 / -1;}
+  /* 登录用户身份行:头像 + 昵称,不再填昵称/邮箱/网址 */
+  .f.me{flex-direction:row;align-items:center;gap:12px;}
+  .f.me .av{width:36px;height:36px;border-radius:50%;flex:0 0 auto;background:#DEDCD6;}
+  .f.me .who{font-family:var(--font-sans);font-size:14px;letter-spacing:.03em;color:var(--ink);}
+  label{font-family:var(--font-sans);font-size:12px;letter-spacing:.1em;color:var(--muted);}
+  label .req{color:var(--accent);margin-left:3px;}
+  input,textarea{margin-top:9px;font-family:var(--font-sans);font-size:14px;color:var(--ink);
+    background:#fff;border:1px solid var(--rule);border-radius:6px;padding:11px 13px;
+    letter-spacing:.02em;-webkit-appearance:none;appearance:none;
+    transition:border-color .18s ease,box-shadow .18s ease;}
+  textarea{font-family:var(--font-serif);min-height:104px;line-height:1.8;resize:vertical;}
+  input:focus,textarea:focus{outline:0;border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(185,106,46,.13);}
+  .hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+  .submit{margin-top:26px;display:flex;align-items:center;gap:20px;}
+  .btn{font-family:var(--font-sans);font-size:13px;letter-spacing:.06em;cursor:pointer;
+    border-radius:6px;padding:11px 24px;border:1px solid transparent;background:var(--ink);
+    color:var(--paper);}
+  .btn:hover{background:var(--ink-soft,#2A2B2E);}
+
+  /* 上/下篇与页脚由 article.css 统一提供,本件不重复声明 */
+
+  /* 移动端:三栏改单栏,按钮排头不被限制文案挤换行(与 article.css 同断点) */
+  @media (max-width:768px){
+    .comments{margin-top:56px;}
+    .comments > h2{font-size:24px;}
+    .clist{margin-top:24px;}
+    .c{padding:22px 0;}
+    .c .children{padding-left:22px;}
+    .form{margin-top:38px;padding-top:24px;}
+    .fields{margin-top:20px;grid-template-columns:minmax(0,1fr);gap:14px;}
+    .submit{margin-top:20px;flex-wrap:nowrap;align-items:flex-start;}
+    .submit .btn{flex:0 0 auto;white-space:nowrap;}
+  }

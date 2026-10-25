@@ -1,0 +1,79 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  外观页(《90》,基准 后台主题-定稿-2026-09-30):主题卡片墙 + 三档页签 + 上传。
+  卡上四颗钮:启用/预览/设置/删除;启用中的卡只有 预览/设置(不可自删)。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('外观') }}</div>
+            <h1>{{ __('主题') }}</h1>
+            <p class="lede">{{ __('主题只管长相，不碰内容。换主题只是换一层纸，字还是那些字。') }}</p>
+        </div>
+        <form class="upf" method="post" action="{{ upload_url }}" enctype="multipart/form-data" data-progress>
+            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+            <input type="file" name="file" id="theme-file" accept=".zip" data-auto hidden>
+            <label class="btn btn-primary" for="theme-file"><span class="plus">＋</span>{{ __('上传主题') }}</label>
+            {# 进度契约:外层脚本认 data-progress + .upbar(真进度)、.uperr(失败位) #}
+            <div class="upbar" hidden><i></i><span class="pc">0%</span></div>
+            <div class="uperr" hidden></div>
+        </form>
+    </div>
+
+    {% include 'partials/appearance-nav.twig' %}
+
+    <nav class="tabs" aria-label="{{ __('按状态筛选') }}">
+        {% for item in tabs %}
+            <a href="{{ item.url }}"{% if item.active %} class="active"{% endif %}>{{ item.label }}<span class="n">{{ item.count }}</span></a>
+        {% endfor %}
+    </nav>
+
+    <div class="grid">
+        {% for theme in themes %}
+            <article class="tcard{{ theme.active ? ' on' : '' }}">
+                <div class="shot">
+                    {% if theme.screenshot %}
+                        {# 铺满 16:10 的 .shot;绝对定位不赌百分比高度的解析,裂图由 screenshotUrl 提前挡掉 #}
+                        <img src="{{ theme.screenshot }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover">
+                    {% endif %}
+                    {% if theme.active %}<span class="tag">{{ __('已启用') }}</span>{% endif %}
+                </div>
+                <div class="meta">
+                    <h2>{{ theme.title }}</h2>
+                    <div class="by"><b>{{ theme.author }}</b>　{{ __('版本') }} {{ theme.version }}</div>
+                    {% if theme.parent is not empty %}
+                        <div class="par">{{ __('父主题：') }}<b>{{ theme.parent_title }}</b>　{{ __('未覆盖的模板自动沿用父主题') }}</div>
+                    {% endif %}
+                </div>
+                {# 桌面悬浮在截图下沿、移动端落在卡片末尾:位置交给 CSS,DOM 顺序照移动端基准 #}
+                <div class="acts">
+                    {% if not theme.active %}
+                        <form method="post" action="{{ theme.switch_url }}">
+                            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                            <input type="hidden" name="theme" value="{{ theme.slug }}">
+                            <button type="submit">{{ __('启用') }}</button>
+                        </form>
+                    {% endif %}
+                    <a href="{{ theme.preview_url }}" target="_blank" rel="noopener">{{ __('预览') }}</a>
+                    {% if theme.has_settings %}<a href="{{ theme.settings_url }}">{{ __('设置') }}</a>{% endif %}
+                    {% if not theme.active %}
+                        {# 二次确认走内联展开,不用浏览器弹窗(《90》§10);真删不可恢复,措辞如实 #}
+                        <details class="delp">
+                            <summary class="danger">{{ __('删除') }}</summary>
+                            <form method="post" action="{{ theme.delete_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <input type="hidden" name="theme" value="{{ theme.slug }}">
+                                <button class="danger" type="submit">{{ __('确认删除，不可恢复') }}</button>
+                            </form>
+                        </details>
+                    {% endif %}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+
+    <p class="note">{{ __('删除主题不可恢复；已发布的文章内容不受影响。') }}</p>
+{% endblock %}

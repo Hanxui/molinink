@@ -1,0 +1,35 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 主题配色/布局/字体变量(《36》§5):取值经主题设置器回退,没配过也有合理默认;色值已过 #RRGGBB 校验。
+   布局宽度、正文字族、正文字号、自定义 CSS 也在此落到 CSS 变量与内联样式 —— 配了就有,不配回退默认。 #}
+<style>
+  :root {
+    --ink: {{ theme_setting('colors.ink') }};
+    --paper: {{ theme_setting('colors.paper') }};
+    --accent: {{ theme_setting('colors.accent') }};
+    {# 次要文字的灰:原 #85837E 在纸色上只有 3.62:1,13px 小字读着发虚;压到与后台 admin.css 同一档 #6E6C67(约 4.6:1) #}
+    --muted: #6E6C67;
+    --rule: #E5E3DE;
+    --ink-soft: #2A2B2E;
+    --font-serif: "Noto Serif SC","Source Han Serif SC","Songti SC",SimSun,Georgia,serif;
+    --font-sans: "Inter","Helvetica Neue",Arial,"Microsoft YaHei",sans-serif;
+    --font-mono: "JetBrains Mono","SFMono-Regular",Consolas,monospace;
+    {# 内容宽度:默认「中」即参考图 1480px,换窄/换宽都跟着走 #}
+    --content-width: {% if theme_setting('layout.width', 'medium') == 'narrow' %}1080px{% elseif theme_setting('layout.width', 'medium') == 'wide' %}1760px{% else %}1480px{% endif %};
+    --font-body: {% if theme_setting('fonts.body', 'serif') == 'sans' %}var(--font-sans){% else %}var(--font-serif){% endif %};
+    --font-size: {{ theme_setting('fonts.size', 17) }}px;
+  }
+  body { font-family: var(--font-body); font-size: var(--font-size); }
+  .page { max-width: var(--content-width); }
+  {# 页脚挂件区(《108》,2026-10-17 加):只有后台真排了挂件才会出这块(见 partials/footer.twig),
+     所以没配挂件的站外观一点不变。三列在桌面、窄屏一列。 #}
+  .footer-widgets { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 48px; margin: 0 0 40px; }
+  .footer-widgets .fw-t { margin: 0 0 10px; font-family: var(--font-sans); font-size: 12px; letter-spacing: .2em; color: var(--muted); font-weight: 400; }
+  .footer-widgets .fw-b { font-size: 14px; line-height: 1.9; color: var(--ink-soft); }
+  .footer-widgets .fw-b a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); }
+  .footer-widgets .fw-b a:hover { color: var(--accent); border-color: var(--accent); }
+  .footer-widgets .fw-b ul { margin: 0; padding: 0; list-style: none; }
+  .footer-widgets .fw-b li { margin: 0 0 6px; }
+  @media (max-width: 768px) { .footer-widgets { grid-template-columns: 1fr; gap: 24px; } }
+  {# 自定义 CSS 原样输出(代码字段仅管理员可配,《36》§9);断掉 `</`,防样式块被提前闭合 #}
+  {{ theme_setting('code.css')|replace({'</': '<\\/'})|raw }}
+</style>

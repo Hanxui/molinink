@@ -1,0 +1,40 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+   404 样式(源件:assets/ui/404-定稿-2026-09-29.html 与《75》实现规格)。
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。
+   页脚钉底:整页 flex 列布局,main 吃掉剩余高度并垂直居中。 */
+
+main{flex:1;display:flex;align-items:center;}
+.wrap{margin:0 auto;max-width:720px;width:100%;padding:80px 0;}
+
+.code{font-family:var(--font-serif);font-size:150px;line-height:1;letter-spacing:.02em;color:var(--ink);}
+.code .zero{position:relative;display:inline-block;color:var(--accent);}
+.code .zero::after{content:"";position:absolute;left:50%;top:-4px;bottom:-4px;width:1.5px;
+  background:var(--paper);transform:rotate(18deg);}
+h1{margin-top:30px;font-size:40px;font-weight:400;line-height:1.35;letter-spacing:.01em;}
+.msg{margin-top:20px;font-size:var(--font-size);line-height:1.9;color:var(--muted);}
+.underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
+
+.back{display:inline-block;margin-top:38px;font-family:var(--font-sans);font-size:13px;letter-spacing:.16em;
+  color:var(--ink);text-decoration:none;border-bottom:1px solid var(--rule);padding-bottom:6px;
+  transition:color .2s ease,border-color .2s ease;}
+.back:hover{color:var(--accent);border-color:var(--accent);}
+
+.suggest{margin-top:60px;padding-top:24px;border-top:1px solid var(--rule);}
+.suggest .lab{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.2em;color:var(--muted);}
+.suggest ul{margin-top:16px;list-style:none;}
+.suggest li{margin-top:10px;}
+.suggest a{font-size:19px;color:var(--ink);text-decoration:none;}
+.suggest a:hover{color:var(--accent);}
+
+@media (max-width:768px){
+  .wrap{padding:56px 0;}
+  .code{font-size:96px;}
+  h1{margin-top:22px;font-size:28px;}
+  .msg{margin-top:16px;font-size:15px;line-height:1.85;}
+  .underline{margin-top:24px;width:56px;}
+  .back{margin-top:30px;font-size:11.5px;}
+  .suggest{margin-top:44px;padding-top:20px;}
+  .suggest a{font-size:var(--font-size);}
+
+  footer .copy-program{text-align:right;}
+}

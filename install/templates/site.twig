@@ -1,0 +1,163 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <h1>站点信息与管理账号</h1>
+    <p class="lede">站点叫什么、由谁来管。账号只创建一个，密码从现在起由你自己守住。</p>
+
+    <form method="post" action="?step=3">
+        <input type="hidden" name="{{ field }}" value="{{ token }}">
+
+        <section class="grp">
+            <h2>站点信息</h2>
+            <p class="gdesc">这些内容会出现在浏览器标签、页脚与分享卡片上，装完还能在设置里改。</p>
+            <div class="flds">
+                <div class="field">
+                    <label for="site_name">站点名称<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="site_name" name="site_name" type="text" value="{{ site.name }}" required>
+                        <div class="hint">显示在浏览器标签与页脚版权处。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="site_description">站点描述</label>
+                    <div class="ctrl">
+                        <input id="site_description" name="site_description" type="text" value="{{ site.description }}">
+                        <div class="hint">可空。一句话介绍，用作副标题。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="site_url">站点地址<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="site_url" name="site_url" type="url" value="{{ site.url }}" required>
+                        <div class="hint">用来生成站内链接。域名换了记得回设置里同步。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>搜索引擎可见</label>
+                    <div class="ctrl">
+                        <label class="switch">
+                            <input type="checkbox" name="site_visible" value="1" checked>
+                            <span class="track"><span class="knob"></span></span>
+                            <span class="txt">开启</span>
+                        </label>
+                        <div class="hint">默认勾选。关闭后搜索引擎不会收录，适合还在试写的站点。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grp">
+            <h2>初始内容</h2>
+            <p class="gdesc">装完先放一篇欢迎文章和一条示例评论，免得新站空着；它们和普通文章、评论一样，随时可以删。</p>
+            <div class="flds">
+                <div class="field">
+                    <label>欢迎内容</label>
+                    <div class="ctrl">
+                        <label class="switch">
+                            <input type="checkbox" name="site_welcome" value="1" {% if welcome %}checked{% endif %}>
+                            <span class="track"><span class="knob"></span></span>
+                            <span class="txt">创建</span>
+                        </label>
+                        <div class="hint">默认勾选。会建一篇《欢迎来到你的新站点》和一条署名管理员的评论，删掉文章时评论一并消失。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grp">
+            <h2>管理员账号</h2>
+            <p class="gdesc">装完就用这个名字进后台。密码至少 8 位，会先做强度检查，保存前加密。</p>
+            <div class="flds">
+                <div class="field">
+                    <label for="admin_user">用户名<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="admin_user" name="admin_user" type="text" value="{{ admin.username }}" autocomplete="username" required>
+                        <div class="hint">登录后台用的名字，创建后不可更改。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="admin_email">邮箱<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="admin_email" name="admin_email" type="email" value="{{ admin.email }}" autocomplete="email" required>
+                        <div class="hint">用于接收通知与找回密码，前台永不显示。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="admin_pass">密码<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="admin_pass" name="admin_pass" type="password" autocomplete="new-password" {% if not saved_admin_pass %}required{% endif %}>
+                        <div class="strength" id="strength">
+                            <span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span>
+                            <span class="lab" id="strength-lab">强度：—</span>
+                        </div>
+                        {% if saved_admin_pass %}
+                            <div class="hint">已暂存，留空即沿用；要改就重新填一次。</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="admin_pass2">确认密码<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="admin_pass2" name="admin_pass2" type="password" autocomplete="new-password">
+                        <div class="inline-ok" id="pass-match" hidden>两次输入一致</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="strip">
+            管理员账号一创建就拥有全部能力，别把它交给不写文章的人。
+            <span class="sub">密码与数据库口令都不会留在页面上；数据库口令由程序安全保存。</span>
+        </div>
+
+        <div class="acts">
+            <div class="right">
+                <button class="btn btn-ghost" type="submit" name="action" value="back">上一步</button>
+                <button class="btn btn-primary" type="submit" name="action" value="next">下一步</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block script %}
+    <script>
+    (function () {
+        var pass = document.getElementById('admin_pass');
+        var pass2 = document.getElementById('admin_pass2');
+        var segs = document.querySelectorAll('#strength .seg');
+        var lab = document.getElementById('strength-lab');
+        var match = document.getElementById('pass-match');
+
+        // 判分口径与注册页一致:空=—;<8 位=弱;≥8 位且 ≥3 类字符=强;其余=中
+        function score(value) {
+            if (value === '') {
+                return [0, '—'];
+            }
+            var kinds = (/[a-z]/.test(value) ? 1 : 0) + (/[A-Z]/.test(value) ? 1 : 0)
+                + (/[0-9]/.test(value) ? 1 : 0) + (/[^A-Za-z0-9]/.test(value) ? 1 : 0);
+            if (value.length < 8) {
+                return [33, '弱'];
+            }
+            if (kinds >= 3) {
+                return [100, '强'];
+            }
+            return [66, '中'];
+        }
+
+        function render() {
+            var result = score(pass.value);
+            var filled = Math.min(4, Math.round(result[0] / 25));
+            segs.forEach(function (seg, i) {
+                seg.classList.toggle('on', i < filled);
+            });
+            lab.textContent = '强度：' + result[1];
+            match.hidden = !(pass.value !== '' && pass.value === pass2.value);
+        }
+
+        pass.addEventListener('input', render);
+        pass2.addEventListener('input', render);
+        render();
+    })();
+    </script>
+{% endblock %}

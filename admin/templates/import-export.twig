@@ -1,0 +1,174 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  导入与导出(《110》)。工具组下一屏,左右两栏:左「导出」右「导入」。
+  文案逐字取自 §7;类名与数值取自 后台导入与导出-定稿 / 移动端,样式在 admin.css 的 .page-import-export 段。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('工具') }}</div>
+            <h1>{{ __('导入与导出') }}</h1>
+            <p class="lede">{{ __('换程序、换站都走这里。导出是通用格式，不依赖墨林内部结构；导入只处理数据，绝不执行文件里的 PHP。') }}</p>
+        </div>
+    </div>
+
+    {% include 'partials/tools-nav.twig' with {tools_kind: 'import-export'} %}
+
+    <div class="split">
+        {# 左栏:导出 #}
+        <section class="col">
+            <h2>{{ __('导出') }}</h2>
+            <p class="gdesc">{{ __('导出内容含文章、页面、分类、标签与评论；媒体只登记引用，不打包文件。') }}</p>
+
+            <form method="post" action="{{ export_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+                <div class="fields">
+                    <div class="f">
+                        <label class="lab" for="ie-scope">{{ __('导出范围') }}</label>
+                        <select id="ie-scope" name="scope">
+                            {% for opt in scopes %}
+                                <option value="{{ opt.value }}"{{ opt.sel ? ' selected' : '' }}>{{ opt.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="f">
+                        <span class="lab">{{ __('包含媒体') }}</span>
+                        <div class="radios">
+                            {% for m in media_choices %}
+                                <label class="rd"><input type="radio" name="media" value="{{ m.value }}"{{ m.checked ? ' checked' : '' }}><i></i>{{ m.label }}</label>
+                            {% endfor %}
+                        </div>
+                        {# 2026-10-17 改口径:媒体只登记引用,不打包文件 —— 原来的「含媒体则打包 tar.gz」是句
+                           实现里没有的承诺(控制器自注:打包规格未定,《110》§11 未列此条)。要整站连媒体走,去「工具 → 备份」。 #}
+                        <p class="hint">{{ __('含媒体目前只写引用、不打包文件。要连媒体一起带走，请用「工具 → 备份」。') }}</p>
+                    </div>
+
+                    <div class="f">
+                        <span class="lab">{{ __('格式') }}</span>
+                        <div class="radios">
+                            {% for fmt in formats %}
+                                <label class="rd"><input type="radio" name="format" value="{{ fmt.value }}"{{ fmt.checked ? ' checked' : '' }}><i></i>{{ fmt.label }}{% if fmt.sub is not empty %}<span class="sub">{{ fmt.sub }}</span>{% endif %}</label>
+                            {% endfor %}
+                        </div>
+                        <p class="hint">{{ __('XML 参考 WXR 思路，便于旧程序读。') }}</p>
+                    </div>
+
+                    <div class="f">
+                        <span class="lab">{{ __('包含评论') }}</span>
+                        <label class="switch">
+                            <input type="hidden" name="comments" value="0">
+                            <input type="checkbox" name="comments" value="1"{{ include_comments ? ' checked' : '' }}>
+                            <span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span>
+                        </label>
+                        <p class="hint">{{ __('评论随所属文章一起导出，含待审与垃圾状态。') }}</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary go" type="submit">{{ __('生成导出包') }}</button>
+            </form>
+
+            <p class="foot">{{ __('导出操作记入审计日志；下载链接一次性、十分钟内有效。') }}</p>
+
+            {% if export_result is not null %}
+                <div class="done">
+                    <i></i><span class="dn">{{ export_result.filename }}</span><span class="ds">{{ export_result.size_text }}</span>
+                    <a class="btn btn-ghost dl" href="{{ export_result.download_url }}">{{ __('下载') }}</a>
+                </div>
+            {% endif %}
+
+            {# 最近导出的文件(2026-10-17 加):以前只有"刚生成那一份",刷新就没了、链接过期后也删不掉。
+               这里列最近 10 份,每份都能重新下载(现签一次令牌)或删掉;更老的会被自动清理。 #}
+            {% if exports is not empty %}
+                <div class="ex-wrap">
+                    <div class="ex-h"><span>{{ __('最近的导出文件') }}</span><span class="ex-n">{{ __('最多保留 10 份 / 24 小时') }}</span></div>
+                    {% for f in exports %}
+                        <div class="ex-row">
+                            <div class="fn">{{ f.name }}</div>
+                            <div class="meta">{{ f.size_text }} · {{ f.time_text }}</div>
+                            <div class="acts">
+                                <a class="ex-a" href="{{ f.download_url }}">{{ __('下载') }}</a>
+                                <form method="post" action="{{ f.delete_url }}" onsubmit="return confirm('{{ __('删除这份导出文件？不可恢复。') }}');">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <input type="hidden" name="name" value="{{ f.name }}">
+                                    <button class="ex-a danger" type="submit">{{ __('删除') }}</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        {# 右栏:导入 #}
+        <section class="col">
+            <h2>{{ __('导入') }}</h2>
+            <p class="gdesc">{{ __('先校验格式与版本，再按批写入；大文件按 100 条一批，避免超时。') }}</p>
+
+            <form method="post" action="{{ import_url }}" enctype="multipart/form-data">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+                <label class="drop" for="ie-file">
+                    <div class="d1">{{ __('拖入导出文件，或') }}<span class="pk">{{ __('点击选择') }}</span></div>
+                    <div class="d2">{{ __('支持 .json / .xml / .tar.gz · 只读数据，不执行任何代码') }}</div>
+                    <input id="ie-file" type="file" name="file" accept=".json,.xml,.tar.gz" hidden>
+                </label>
+
+                {% if picked is not null %}
+                    <div class="picked">
+                        <span class="fn">{{ picked.name }}</span><span class="sz">{{ picked.size_text }}</span><span class="st ok"><i></i>{{ __('格式与版本已校验') }}</span>
+                    </div>
+                {% endif %}
+
+                <div class="fields">
+                    <div class="f">
+                        <span class="lab">{{ __('冲突策略') }}</span>
+                        <div class="radios">
+                            {% for s in strategies %}
+                                <label class="rd"><input type="radio" name="strategy" value="{{ s.value }}"{{ s.checked ? ' checked' : '' }}><i></i>{{ s.label }}</label>
+                            {% endfor %}
+                        </div>
+                        <p class="hint">{{ __('同名按别名判定；新建会另起一个别名，覆盖写回原内容。') }}</p>
+                    </div>
+
+                    <div class="f">
+                        <label class="lab" for="ie-author">{{ __('作者映射') }}</label>
+                        <select id="ie-author" name="author">
+                            {% for a in authors %}
+                                <option value="{{ a.value }}"{{ a.sel ? ' selected' : '' }}>{{ a.label }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="hint">{{ __('无法匹配的作者一律归给当前管理员。') }}</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary go" type="submit">{{ __('开始导入') }}</button>
+            </form>
+
+            {% if import_result is not null %}
+                <div class="prog">
+                    <div class="pt"><span>{{ __('已处理 %s / %s 条', 'molin', import_result.processed, import_result.total) }}</span><b>{{ import_result.percent }}%</b></div>
+                    <div class="bar"><i style="width:{{ import_result.percent }}%"></i></div>
+                    <div class="steps">{{ __('分类与标签 → 内容 → 媒体 → 评论 → 重建索引、清缓存') }}</div>
+                </div>
+
+                {% if import_result.fails is not empty %}
+                    <div class="fails">
+                        <div class="fh"><div class="t">{{ __('失败行') }}</div><div class="c">{{ __('%s 条 · 不影响其余批次', 'molin', import_result.fail_count) }}</div></div>
+                        {% for row in import_result.fails %}
+                            <div class="fr">
+                                <div class="ln">{{ __('第 %s 行', 'molin', row.line) }}</div>
+                                <div class="msg">{{ row.msg }}</div>
+                                <div class="do">{{ row.do }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}

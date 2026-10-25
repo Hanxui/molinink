@@ -1,0 +1,59 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  单个控件的渲染(《34A-字段注册与编辑器控件规范》§4 控件映射 / §7 转义;《36-主题配置器》§2 十四种控件词表)。
+  只被 editor-field.twig 复用:顶层控件的值走 name="meta_value[]" 成对通道,
+  分组 / 中继器里的子控件只带 data-subkey,整组由 admin.js 序列化成 JSON 存单条 postmeta。
+  control_args 的 options / rows / min / max / step / accept / lang 都在这里落到标记上。
+  缺省的 control_args 一律经 |default 取值 —— 模板开了 strict_variables,不能裸取缺失键。
+#}
+
+{% macro widget(f, name, subkey, value) %}
+{%- set nm = name|default('') -%}
+{%- set sk = subkey|default('') -%}
+{%- set val = (value is defined and value is not null) ? value : (f.value|default('')) -%}
+{%- set control = f.control|default('text') -%}
+{%- set args = f.args|default({}) -%}
+{%- set ph = args.placeholder|default('') -%}
+{%- set na = '' -%}
+{%- if nm != '' -%}{%- set na = na ~ ' name="' ~ nm|e ~ '"' -%}{%- endif -%}
+{%- if sk != '' -%}{%- set na = na ~ ' data-subkey="' ~ sk|e ~ '"' -%}{%- endif -%}
+{%- if control == 'textarea' -%}
+<textarea class="mini-in"{{ na|raw }} rows="{{ args.rows|default(3) }}"{% if ph %} placeholder="{{ ph }}"{% endif %}>{{ val }}</textarea>
+{%- elseif control == 'code' -%}
+<textarea class="mini-in codebox"{{ na|raw }} rows="{{ args.rows|default(6) }}" spellcheck="false"{% if args.lang|default('') %} data-lang="{{ args.lang }}"{% endif %}>{{ val }}</textarea>
+{%- elseif control == 'number' -%}
+<input type="number" class="mini-in"{{ na|raw }} value="{{ val }}"{% if args.min is defined and args.min != '' %} min="{{ args.min }}"{% endif %}{% if args.max is defined and args.max != '' %} max="{{ args.max }}"{% endif %}>
+{%- elseif control == 'range' -%}
+<span class="rangew"><input type="range"{{ na|raw }} value="{{ val }}" min="{{ args.min ?? 0 }}" max="{{ args.max ?? 100 }}" step="{{ args.step ?? 1 }}" data-range><span class="rv">{{ val }}</span></span>
+{%- elseif control == 'color' -%}
+<span class="color"><input type="color" class="csw" value="{{ val }}" data-color-prev aria-hidden="true" tabindex="-1"><input type="text" class="mini-in"{{ na|raw }} value="{{ val }}" placeholder="#000000" spellcheck="false"></span>
+{%- elseif control == 'url' -%}
+<input type="url" class="mini-in"{{ na|raw }} value="{{ val }}" placeholder="https://" spellcheck="false">
+{%- elseif control == 'file' -%}
+<input type="text" class="mini-in"{{ na|raw }} value="{{ val }}"{% if args.accept|default('') %} data-accept="{{ args.accept }}" placeholder="{{ __('接受的文件类型：%s', 'molin', args.accept) }}"{% endif %}>
+{%- elseif control == 'image' and sk != '' -%}
+<input type="number" class="mini-in"{{ na|raw }} value="{{ val }}" min="0" step="1" placeholder="{{ __('附件 id') }}">
+{%- elseif control == 'bool' and sk != '' -%}
+<label class="switch"><input type="checkbox"{{ na|raw }} value="1"{% if val in ['1', 'true', 'on', 'yes'] %} checked{% endif %}><span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span></label>
+{%- elseif control == 'bool' -%}
+<span class="radios">
+<label><input type="radio"{{ na|raw }} value="1"{% if val in ['1', 'true', 'on', 'yes'] %} checked{% endif %}><span>{{ __('开启') }}</span></label>
+<label><input type="radio"{{ na|raw }} value="0"{% if val not in ['1', 'true', 'on', 'yes'] %} checked{% endif %}><span>{{ __('关闭') }}</span></label>
+</span>
+{%- elseif control == 'radio' and sk == '' -%}
+<span class="radios">
+{%- for o in f.options|default([]) %}
+<label><input type="radio"{{ na|raw }} value="{{ o.value }}"{% if o.value == val %} checked{% endif %}><span>{{ o.label }}</span></label>
+{%- endfor %}
+</span>
+{%- elseif control in ['select', 'radio'] -%}
+<select class="mini"{{ na|raw }}>
+{%- for o in f.options|default([]) %}
+<option value="{{ o.value }}"{% if o.value == val %} selected{% endif %}>{{ o.label }}</option>
+{%- endfor %}
+</select>
+{%- else -%}
+<input type="text" class="mini-in"{{ na|raw }} value="{{ val }}"{% if ph %} placeholder="{{ ph }}"{% endif %}{% if args.maxlength|default('') %} maxlength="{{ args.maxlength }}"{% endif %}>
+{%- endif -%}
+{% endmacro %}

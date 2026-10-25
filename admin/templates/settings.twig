@@ -1,0 +1,542 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  后台设置(《76》,基准 assets/ui/后台设置-*-定稿-2026-09-29.html 与各分组态图)。
+  外壳(head/topbar/content/savebar)由 layout.twig 提供,这里只写内容区:页头 + 分组页签 + 表单。
+  分组顺序固定:常规 / 写作 / 阅读 / 讨论 / 固定链接 / 媒体 / 缓存 / 更新。
+  当前分组由 settings_section 决定(默认 regular);页签整页跳转(?sec=),口径同文章列表的分页签。
+  可选前缀(分类页前缀 / 标签页前缀)本轮不做(《76》§11.5)。
+#}
+{% extends "layout.twig" %}
+
+{# 开关：轨道 + 滑块 + 状态字。勾选名值 1,前置隐藏 0 —— 与主题设置同一套写法。 #}
+{% macro sw(name, checked, on, off) %}
+    <label class="switch">
+        <input type="hidden" name="{{ name }}" value="0">
+        <input type="checkbox" name="{{ name }}" value="1" data-switch{{ checked ? ' checked' : '' }}>
+        <span class="track"><span class="knob"></span></span>
+        <span class="txt">{{ checked ? on : off }}</span>
+    </label>
+{% endmacro %}
+
+{% block body %}
+    {% set sec = settings_section|default('regular') %}
+    {% set settings_url = path('admin', {path: 'settings'}) %}
+
+    <div class="head">
+        <div class="eyebrow">{{ __('站点配置') }}</div>
+        <h1>{{ __('设置') }}</h1>
+        <p class="lede">{{ __('站点的基本信息、写作与阅读偏好都在这里。改动保存后立即生效。') }}</p>
+    </div>
+
+    <nav class="sec-tabs" aria-label="{{ __('设置分组') }}">
+        {% for t in [
+            {key: 'regular', label: __('常规')},
+            {key: 'writing', label: __('写作')},
+            {key: 'reading', label: __('阅读')},
+            {key: 'discussion', label: __('讨论')},
+            {key: 'permalink', label: __('固定链接')},
+            {key: 'media', label: __('媒体')},
+            {key: 'cache', label: __('缓存')},
+            {key: 'update', label: __('更新')}
+        ] %}
+            <a href="{{ settings_url }}{{ t.key == 'regular' ? '' : '?sec=' ~ t.key }}"{% if t.key == sec %} class="active"{% endif %}>{{ t.label }}</a>
+        {% endfor %}
+    </nav>
+
+    <form class="form" id="settings-form" method="post" action="{{ settings_url }}{{ sec == 'regular' ? '' : '?sec=' ~ sec }}" data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}" data-autosave-interval="{{ values.autosave_interval|default('30') }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+        {% if sec == 'regular' %}
+            <section class="group">
+                <h2>{{ __('站点信息') }}</h2>
+                <p class="gdesc">{{ __('这些内容会出现在站点标题、页脚与搜索结果中。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('站点名') }}<span class="req">*</span></label>
+                        <div class="ctrl">
+                            <input type="text" name="site_name" value="{{ values.site_name|default('') }}">
+                            <div class="hint">{{ __('显示在浏览器标签与页脚版权处。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('站点描述') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="site_description" value="{{ values.site_description|default('') }}">
+                            <div class="hint">{{ __('一句话介绍，用于副标题与分享卡片。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('站点地址') }}</label>
+                        <div class="ctrl"><input type="url" name="site_url" value="{{ values.site_url|default('') }}"></div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('管理员邮箱') }}</label>
+                        <div class="ctrl">
+                            <input type="email" name="admin_email" value="{{ values.admin_email|default('') }}">
+                            <div class="hint">{{ __('用于接收通知与找回密码。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('注册与语言') }}</h2>
+                <p class="gdesc">{{ __('访客能不能自己注册账号，以及站点默认用哪种语言。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('开放注册') }}</label>
+                        <div class="ctrl">
+                            {% set cur_register = values.users_can_register|default('0') %}
+                            <select name="users_can_register">
+                                <option value="0"{{ cur_register != '1' ? ' selected' : '' }}>{{ __('不开放（默认）') }}</option>
+                                <option value="1"{{ cur_register == '1' ? ' selected' : '' }}>{{ __('开放') }}</option>
+                            </select>
+                            <div class="hint">{{ __('关闭后只能由管理员新建用户。开放后仍受角色与审核设置约束。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('站点语言') }}</label>
+                        <div class="ctrl">
+                            <select name="locale">
+                                {% for code, name in languages %}
+                                    <option value="{{ code }}"{{ values.locale == code ? ' selected' : '' }}>{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="hint">{{ __('前台与后台的默认界面语言；缺少词条时回落简体中文。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'writing' %}
+            <section class="group">
+                <h2>{{ __('默认发文') }}</h2>
+                <p class="gdesc">{{ __('新建文章时先按这里的设定填好，落笔前仍可改。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('默认分类') }}</label>
+                        <div class="ctrl">
+                            <select name="default_category">
+                                {% for c in categories|default([]) %}
+                                    <option value="{{ c.id }}"{{ c.selected ? ' selected' : '' }}>{{ c.name }}</option>
+                                {% else %}
+                                    <option value="0">{{ __('未分类（默认）') }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="hint">{{ __('列出站点现有分类；新装的站点只有安装时建好的「未分类」。删除一个分类不会删掉它的文章，只是失去这个归属。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('自动保存间隔（秒）') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="autosave_interval" value="{{ values.autosave_interval|default('30') }}">
+                            <div class="hint">{{ __('编辑页每隔这么久存一份草稿，同时留修订版本。离开前若有未保存的改动会提醒。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'reading' %}
+            <section class="group">
+                <h2>{{ __('首页与列表') }}</h2>
+                <p class="gdesc">{{ __('首页打开先看到什么、列表每条给多少。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('首页显示') }}</label>
+                        <div class="ctrl">
+                            {% set cur_front = values.show_on_front|default('posts') %}
+                            <select name="show_on_front" data-front-page>
+                                <option value="posts"{{ cur_front == 'posts' ? ' selected' : '' }}>{{ __('最新文章（默认）') }}</option>
+                                <option value="page"{{ cur_front == 'page' ? ' selected' : '' }}>{{ __('静态页面') }}</option>
+                            </select>
+                            <div class="hint">{{ __('选「最新文章」就按主题的博客流显示；选「静态页面」时优先用主题的首页模板，主题没做就用博客流顶替。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field" data-front-page-picker{{ cur_front == 'page' ? '' : ' hidden' }}>
+                        <label>{{ __('首页页面') }}</label>
+                        <div class="ctrl">
+                            {% set cur_page = values.page_on_front|default('0') %}
+                            <select name="page_on_front">
+                                <option value="0">{{ __('请选择页面') }}</option>
+                                {% for p in pages|default([]) %}
+                                    <option value="{{ p.id }}"{{ p.selected ? ' selected' : '' }}>{{ p.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="hint">{{ __('首页显示选「静态页面」时，这里挑一篇已发布的页面当首页。没有可选页面时，先到「页面」里新建一篇。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('每页条数') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="posts_per_page" value="{{ values.posts_per_page|default('5') }}">
+                            <div class="hint">{{ __('首页与分类、标签、日期归档共用这一个值，分页计数「每页 N 篇」也用它。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('列表显示') }}</label>
+                        <div class="ctrl">
+                            {% set cur_list = values.list_display|default('excerpt') %}
+                            <select name="list_display">
+                                <option value="excerpt"{{ cur_list == 'excerpt' ? ' selected' : '' }}>{{ __('摘要（默认）') }}</option>
+                                <option value="full"{{ cur_list == 'full' ? ' selected' : '' }}>{{ __('全文') }}</option>
+                            </select>
+                            <div class="hint">{{ __('列表里每条截一段还是整篇铺开；单篇文章页始终显示全文。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'discussion' %}
+            <section class="group">
+                <h2>{{ __('评论') }}</h2>
+                <p class="gdesc">{{ __('谁能留言、留言要不要留名。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('允许访客评论') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('comment_open', values.comment_open|default('1') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('关闭后只有注册用户能留言，已有评论照常显示。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('要求填写昵称与邮箱') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('comment_require_name_email', values.comment_require_name_email|default('1') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('开启后，访客也要留下昵称和邮箱才能提交。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('登录用户免审') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('comment_registered_approved', values.comment_registered_approved|default('1') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('已注册用户发的评论直接通过。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('曾通过的邮箱免审') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('comment_whitelist', values.comment_whitelist|default('1') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('同一邮箱有一条通过后，后续评论不再拦。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('审核与展示') }}</h2>
+                <p class="gdesc">{{ __('新评论进哪个状态、在文章下方怎么排。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('新评论默认状态') }}</label>
+                        <div class="ctrl">
+                            {% set cur_status = values.comment_default_status|default('pending') %}
+                            <select name="comment_default_status">
+                                <option value="pending"{{ cur_status == 'pending' ? ' selected' : '' }}>{{ __('待审（默认）') }}</option>
+                                <option value="approved"{{ cur_status == 'approved' ? ' selected' : '' }}>{{ __('已通过') }}</option>
+                            </select>
+                            <div class="hint">{{ __('新评论进来时的默认状态。选「已通过」等于不做人工审核。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('嵌套层数') }}</label>
+                        <div class="ctrl">
+                            {% set cur_nest = values.comment_nest_depth|default('2') %}
+                            <select name="comment_nest_depth">
+                                <option value="1"{{ cur_nest == '1' ? ' selected' : '' }}>{{ __('不嵌套') }}</option>
+                                <option value="2"{{ cur_nest == '2' ? ' selected' : '' }}>{{ __('两级（默认）') }}</option>
+                                <option value="3"{{ cur_nest == '3' ? ' selected' : '' }}>{{ __('三级') }}</option>
+                            </select>
+                            <div class="hint">{{ __('更深的回复压平到二级下，避免手机端缩进失控。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('展示顺序') }}</label>
+                        <div class="ctrl">
+                            {% set cur_order = values.comment_order|default('asc') %}
+                            <select name="comment_order">
+                                <option value="asc"{{ cur_order == 'asc' ? ' selected' : '' }}>{{ __('最早在前（默认）') }}</option>
+                                <option value="desc"{{ cur_order == 'desc' ? ' selected' : '' }}>{{ __('最新在前') }}</option>
+                            </select>
+                            <div class="hint">{{ __('只影响文章下方评论的排列。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('自动关闭评论（天）') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="comment_auto_close_days" value="{{ values.comment_auto_close_days|default('14') }}">
+                            <div class="hint">{{ __('到期后文章下方不再接收新评论，已有评论保留。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('反垃圾') }}</h2>
+                <p class="gdesc">{{ __('程序自带的最低限度手段，更聪明的判定交给插件。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('同 IP 提交间隔（秒）') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="comment_flood_sec" value="{{ values.comment_flood_sec|default('30') }}">
+                            <div class="hint">{{ __('同一 IP 对同一篇文章两次提交之间的最小间隔，低于此间隔的提交直接拒绝。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('蜜罐字段') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('comment_honeypot', values.comment_honeypot|default('1') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('表单里藏一个不显示的输入框，机器人填了即判为垃圾。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('审核关键词') }}</label>
+                        <div class="ctrl">
+                            <textarea name="comment_moderation_keys">{{ values.comment_moderation_keys|default('') }}</textarea>
+                            <div class="hint">{{ __('命中即转待审，一行一个。更复杂的判定（如 AI）不在程序里做，交给插件扩展。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'permalink' %}
+            <section class="group">
+                <h2>{{ __('整体结构') }}</h2>
+                <p class="gdesc">{{ __('文章地址按这里的模板生成，改动会影响全站链接。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('常用预设') }}</label>
+                        <div class="ctrl">
+                            {% set cur_perm = values.permalink_structure|default('/%postname%/') %}
+                            {% set perm_presets = ['?p=%post_id%', '/%year%/%month%/%day%/%postname%/', '/%postname%/', '/%category%/%postname%/'] %}
+                            <select data-permalink-preset>
+                                <option value="?p=%post_id%"{{ cur_perm == '?p=%post_id%' ? ' selected' : '' }}>{{ __('简洁(?p=%post_id%)') }}</option>
+                                <option value="/%year%/%month%/%day%/%postname%/"{{ cur_perm == '/%year%/%month%/%day%/%postname%/' ? ' selected' : '' }}>{{ __('日期+名称(/%year%/%month%/%day%/%postname%/)') }}</option>
+                                <option value="/%postname%/"{{ cur_perm == '/%postname%/' ? ' selected' : '' }}>{{ __('名称(默认)') }}</option>
+                                <option value="/%category%/%postname%/"{{ cur_perm == '/%category%/%postname%/' ? ' selected' : '' }}>{{ __('分类+名称(/%category%/%postname%/)') }}</option>
+                                <option value="custom"{{ cur_perm not in perm_presets ? ' selected' : '' }}>{{ __('自定义结构') }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('当前结构') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="permalink_structure" value="{{ cur_perm }}" data-permalink-input>
+                            <div class="hint">{{ __('保存后新产生的链接即按新结构生成，旧地址不会自动跳转，建议低峰期改动，并自己确认服务器已按新结构做好重写规则。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('示例') }}</label>
+                        <div class="ctrl">
+                            <input type="text" value="{{ values.permalink_sample|default('') }}" data-permalink-sample data-permalink-base="{{ site_base|default('') }}" disabled>
+                            <div class="hint">{{ __('示例按当前结构生成，用于核对效果。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('占位符') }}</h2>
+                <p class="gdesc">{{ __('结构里可用的字段，发布时按这篇文章自己的信息替换。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('可用占位符') }}</label>
+                        <div class="ctrl">
+                            <div class="tbl">
+                                <div class="tr"><div class="ph">%postname%</div><div class="de">{{ __('文章别名') }}</div></div>
+                                <div class="tr"><div class="ph">%post_id%</div><div class="de">{{ __('文章 ID') }}</div></div>
+                                <div class="tr"><div class="ph">%category%</div><div class="de">{{ __('主分类别名') }}</div></div>
+                                <div class="tr"><div class="ph">%year% %month% %day%</div><div class="de">{{ __('发布年、月、日') }}</div></div>
+                                <div class="tr"><div class="ph">%type%</div><div class="de">{{ __('内容类型') }}</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'media' %}
+            <section class="group">
+                <h2>{{ __('尺寸档') }}</h2>
+                <p class="gdesc">{{ __('图片上传后除了原图再存这几档，等比缩放、不裁剪。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('生成档位') }}</label>
+                        <div class="ctrl">
+                            <div class="tbl">
+                                <div class="tr sz"><div class="ph">thumb</div><div class="num">300</div><div class="de">{{ __('列表缩略图 / 后台列表') }}</div></div>
+                                <div class="tr sz"><div class="ph">medium</div><div class="num">768</div><div class="de">{{ __('正文内嵌 / 手机大图') }}</div></div>
+                                <div class="tr sz"><div class="ph">large</div><div class="num">1200</div><div class="de">{{ __('大图展示 / 平板') }}</div></div>
+                                <div class="tr sz"><div class="ph">xlarge</div><div class="num">1600</div><div class="de">{{ __('桌面大图') }}</div></div>
+                                <div class="tr sz"><div class="ph">full</div><div class="num">{{ __('原图') }}</div><div class="de">{{ __('原尺寸（下载 / 打印）') }}</div></div>
+                            </div>
+                            <div class="hint">{{ __('这五档是全站唯一口径，此处只读展示。非图片类型只存原文件；改动档位只影响新上传，已上传的按需重新生成。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('质量与上限') }}</h2>
+                <p class="gdesc">{{ __('压到什么程度、单个文件最大多少。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('JPEG 质量') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="jpeg_quality" value="{{ values.jpeg_quality|default('82') }}">
+                            <div class="hint">{{ __('导出 JPEG 的质量，默认 82。数值越高越清晰，文件也越大。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('WebP 质量') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="webp_quality" value="{{ values.webp_quality|default('80') }}">
+                            <div class="hint">{{ __('转 WebP 时的质量，默认 80。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('单文件大小上限（MB）') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="max_upload_mb" value="{{ values.max_upload_mb|default('10') }}">
+                            <div class="hint">{{ __('默认 10MB。超过上限的上传直接拒绝。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('隐私与上传类型') }}</h2>
+                <p class="gdesc">{{ __('对外展示的图带不带拍摄信息、哪些文件能传进来。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('EXIF 策略') }}</label>
+                        <div class="ctrl">
+                            {% set cur_exif = values.exif_policy|default('strip') %}
+                            <select name="exif_policy">
+                                <option value="strip"{{ cur_exif == 'strip' ? ' selected' : '' }}>{{ __('输出副本剥离 EXIF（默认）') }}</option>
+                            </select>
+                            <div class="hint">{{ __('默认先按 EXIF Orientation 把图转正，再在对外副本上剥掉 GPS 与设备信息；原始文件不动，管理员仍可下载原图。对外副本经 GD 重编码会重画像素，EXIF「完全保留」客观做不到，故只设剥离这一档。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('允许上传的类型') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="upload_types" value="{{ values.upload_types|default('jpg jpeg png gif webp pdf zip mp4 webm mp3') }}">
+                            <div class="hint">{{ __('默认白名单，不在表内的一律拒绝。SVG 默认关闭 —— 它能夹带脚本，有安全风险；要开启须显式配置，上传后强制作为文件下载或先经净化。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'cache' %}
+            {% set cs = cache_status|default({}) %}
+            <section class="group">
+                <h2>{{ __('数据缓存') }}</h2>
+                <p class="gdesc">{{ __('查出来的数据放在哪、放多久。') }}</p>
+                <div class="fields">
+                    {% if cs.managed|default(false) %}
+                        <div class="field">
+                            <label>{{ __('缓存后端') }}</label>
+                            <div class="ctrl">
+                                <input type="text" value="{{ cs.backend_label|default('') }}" disabled>
+                                <div class="hint">{% if cs.degraded|default(false) %}{{ __('缓存后端不可用，已降级为文件后端') }} {% endif %}{{ __('对应 cache.backend，取值 file / yac / redis / null。文件零依赖，适合虚拟主机；YAC 走单机共享内存，最快；Redis 跨进程跨机器；选关闭时用空实现，业务代码不用改。') }}</div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>{{ __('有效期（秒）') }}</label>
+                            <div class="ctrl">
+                                <input type="text" value="{{ cs.ttl|default(0) }}" disabled>
+                                <div class="hint">{{ __('对应 cache.ttl，默认 3600 秒。改设置、启停插件、换主题这些动作会即时清掉相关缓存，不必等到期。') }}</div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>{{ __('缓存目录') }}</label>
+                            <div class="ctrl">
+                                <input type="text" value="{{ __('%d 个文件 · %s', 'molin', cs.files|default(0), cs.usage_text|default('0 B')) }}" disabled>
+                                <div class="hint">{{ __('数据缓存落在 storage/cache/data 下，按哈希分片存放；这里显示当前目录占用。') }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="field">
+                            <label>{{ __('缓存后端') }}</label>
+                            <div class="ctrl">
+                                <input type="text" value="{{ __('仅编译缓存') }}" disabled>
+                                <div class="hint">{{ __('数据缓存还没做，现在只有模板编译缓存（写在磁盘上），所以这一项暂时不可配。') }}</div>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label>{{ __('有效期（秒）') }}</label>
+                            <div class="ctrl">
+                                <input type="text" value="{{ __('未接') }}" disabled>
+                                <div class="hint">{{ __('数据缓存做出来之前，这一项不生效、不可配。') }}</div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('页面与清理') }}</h2>
+                <p class="gdesc">{{ __('整页 HTML 缓不缓、现在要不要手动清一次。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('页面静态缓存') }}</label>
+                        <div class="ctrl">
+                            {% if cs.managed|default(false) %}
+                                <input type="text" value="{{ cs.pages_files|default(0) > 0 ? __('已缓存 %d 页 · %s', 'molin', cs.pages_files, cs.pages_usage_text|default('0 B')) : __('尚未缓存任何页面') }}" disabled>
+                            {% else %}
+                                <input type="text" value="{{ __('必开 · 未落地') }}" disabled>
+                            {% endif %}
+                            <div class="hint">{{ __('只缓存未登录访客看到的正常页面；已登录、后台、接口和标了不缓存的页面一律照常现做。命中时不进内核，直接吐 HTML。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('立即清理') }}</label>
+                        <div class="ctrl">
+                            <div class="btns">
+                                <button class="btn btn-ghost" type="button" data-clear-cache data-url="{{ path('admin', {path: 'cache/clear'}) }}">{{ __('清理缓存') }}</button>
+                            </div>
+                            <div class="hint">{{ __('数据缓存与页面缓存一起清掉，清完给一句轻提示，不弹模态。日常改动保存后内核自己清相关的键，这里只是应急用。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% elseif sec == 'update' %}
+            <section class="group">
+                <h2>{{ __('程序更新') }}</h2>
+                <p class="gdesc">{{ __('从哪条通道取更新、要不要让它自己升。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('更新通道') }}</label>
+                        <div class="ctrl">
+                            {% set cur_channel = values.update_channel|default('dev') %}
+                            <select name="update_channel">
+                                <option value="dev"{{ cur_channel == 'dev' ? ' selected' : '' }}>{{ __('开发版') }}</option>
+                            </select>
+                            <div class="hint">{{ __('当前只发开发版通道，正式版通道还没上线；换通道只影响拉到哪个版本，不跳过前置体检。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('自动更新') }}</label>
+                        <div class="ctrl">
+                            {{ _self.sw('update_auto', values.update_auto|default('0') == '1', __('开启'), __('关闭')) }}
+                            <div class="hint">{{ __('默认关闭。只记配置：站点不会自己升级，升级要你亲自点。') }}</div>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>{{ __('立即检查') }}</label>
+                        <div class="ctrl">
+                            <div class="btns">
+                                <button class="btn btn-ghost" type="button" data-check-update data-url="{{ path('admin', {path: 'update'}) }}?check=1">{{ __('检查更新') }}</button>
+                            </div>
+                            <div class="hint">{{ __('拉一次更新清单与当前版本比对。结果与进度在后台「更新」页看，也可以在那里一键升级。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% endif %}
+    </form>
+{% endblock %}
+
+{% block savebar %}
+    <footer class="savebar savebar-settings">
+        <div class="status">{% if updated_text %}{{ __('上次保存：') }}<b>{{ updated_text }}</b>{% endif %}</div>
+        <div class="btns">
+            <button class="btn btn-ghost" type="button" data-reset>{{ __('重置') }}</button>
+            <button class="btn btn-primary" type="submit" form="settings-form"><span class="d">{{ __('保存更改') }}</span><span class="m">{{ __('保存') }}</span></button>
+        </div>
+    </footer>
+{% endblock %}

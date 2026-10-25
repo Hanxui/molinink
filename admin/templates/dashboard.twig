@@ -1,0 +1,140 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  仪表盘(《77》)。整页不滚动,.content 是唯一滚动区;与《76》同一套外壳,本页没有保存栏。
+  快捷动作三颗:＋写新文章 / 管理评论 / 清理缓存。(2026-10-17 作者定:清理缓存用得少,挪到最后;此前是"写新文章 / 清理缓存 / 管理评论")
+  「管理评论」原先不渲染(作者 2026-10-01 定 —— 当时评论模块未落地,不给进不去的门);
+  2026-10-12 补回:模块早已落地,按同一条原则改成看 can_moderate —— 开不了那扇门的人依旧看不到这颗,见《77》§11.2-1。
+  待审为零时导语换一句(《77》原本只给了有评论那一句)。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="eyebrow">{{ __('概览') }}</div>
+        <h1>{{ __('仪表盘') }}</h1>
+        <p class="lede">{{ lede }}</p>
+    </div>
+
+    <div class="quick">
+        <a class="btn btn-primary" href="{{ write_url }}"><span class="plus">＋</span>{{ __('写新文章') }}</a>
+        {% if can_moderate %}
+            <a class="btn btn-ghost" href="{{ comments_url }}">{{ __('管理评论') }}</a>
+        {% endif %}
+        {# 清理缓存挪到最后(2026-10-17 作者定):低频动作,不该占"顺手就能点"的第二位 #}
+        {% if cache_url %}
+            <form method="post" action="{{ cache_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <button class="btn btn-ghost" type="submit">{{ __('清理缓存') }}</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="stats">
+        {% for stat in stats %}
+            <div class="stat">
+                <div class="num">{{ stat.num }}</div>
+                <div class="lab">{{ stat.lab }}</div>
+                {% if stat.flag|default('') is not empty %}<div class="flag">{{ stat.flag }}</div>{% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="cols">
+        <section class="panel">
+            <div class="panel-hd">
+                <h2>{{ __('最近发布') }}</h2>
+                <a class="more" href="{{ posts_url }}">{{ __('全部文章 →') }}</a>
+            </div>
+
+            {% if posts is empty %}
+                <div class="empty">
+                    <div class="et">{{ __('还没有文章') }}</div>
+                    <a class="btn btn-ghost btn-clear" href="{{ write_url }}"><span class="plus">＋</span>{{ __('写新文章') }}</a>
+                </div>
+            {% else %}
+                <div class="rows">
+                    {% for post in posts %}
+                        <div class="row">
+                            <div class="t"><a href="{{ post.edit_url }}">{{ post.title }}</a></div>
+                            <div class="meta">
+                                <span>{{ post.date }}</span><span class="sep">·</span>
+                                <span{% if post.is_draft %} class="draft"{% endif %}>{{ post.status }}</span>
+                                {% if post.comments > 0 %}
+                                    <span class="sep">·</span><span>{{ __('%s 条评论', 'molin', post.comments) }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="panel">
+            <div class="panel-hd">
+                <h2>{{ __('最近评论') }}</h2>
+                <a class="more" href="{{ comments_url }}">{{ __('全部评论 →') }}</a>
+            </div>
+
+            {% if comments is empty %}
+                <div class="empty">
+                    <div class="et">{{ __('还没有评论') }}</div>
+                </div>
+            {% else %}
+                <div class="rows">
+                    {% for comment in comments %}
+                        <div class="row">
+                            <div class="cm">
+                                <span class="av">{% if comment.email %}<img src="{{ avatar(comment.email, 28) }}" alt="">{% else %}{{ comment.initial }}{% endif %}</span>
+                                <div class="bd">
+                                    <div class="who">{{ comment.who }}<span class="when">{{ comment.when }}</span></div>
+                                    <div class="body">「{{ comment.body }}」</div>
+                                    {% if can_moderate and comment.pending %}
+                                        <div class="acts">
+                                            <form method="post" action="{{ comment.approve_url }}">
+                                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                                <button class="ok" type="submit">{{ __('通过') }}</button>
+                                            </form>
+                                            <form method="post" action="{{ comment.spam_url }}">
+                                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                                <button class="spam" type="submit">{{ __('垃圾') }}</button>
+                                            </form>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if pending_text %}
+                <div class="pending">{{ pending_text }}</div>
+            {% endif %}
+        </section>
+    </div>
+
+    <section class="health">
+        <div class="panel-hd">
+            <h2>{{ __('站点健康') }}</h2>
+            <a class="more" href="{{ health_url|default(tools_url) }}">{{ __('查看详情 →') }}</a>
+        </div>
+        <div class="health-grid">
+            {% for cell in health %}
+                <div class="hcell">
+                    <div class="k">{{ cell.k }}</div>
+                    <div class="v">{{ cell.v }}</div>
+                    <div class="s{% if cell.warn %} warn{% endif %}">{{ cell.s }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# 插件卡片(《11》§7.9 admin/dashboard/collect):无卡片时零渲染;html 是插件自产的可信片段 #}
+    {% for card in cards %}
+        <section class="panel plugin-card">
+            <div class="panel-hd"><h2>{{ card.title }}</h2></div>
+            <div class="pbody">{{ card.html|raw }}</div>
+        </section>
+    {% endfor %}
+{% endblock %}

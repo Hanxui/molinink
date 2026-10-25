@@ -1,0 +1,120 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <h1>数据库配置</h1>
+    <p class="lede">填写连接信息，再测一次连接。连接通过后才能继续；这一步不会写入任何数据。</p>
+
+    <form method="post" action="?step=2">
+        <input type="hidden" name="{{ field }}" value="{{ token }}">
+
+        <section class="grp">
+            <h2>连接方式</h2>
+            <p class="gdesc">本机或远程都可以。同一台机器上的多个站点，请用不同数据库或不同表前缀。</p>
+            <div class="flds">
+                <div class="field">
+                    <label for="db_mode">连接方式<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <select id="db_mode">
+                            <option{% if not db.socket %} selected{% endif %}>TCP/IP（主机与端口）</option>
+                            <option{% if db.socket %} selected{% endif %}>Unix Socket（套接字路径）</option>
+                        </select>
+                        <div class="hint">选 Unix Socket 时，下一行改填套接字路径，不再使用主机与端口。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_host">主机</label>
+                    <div class="ctrl">
+                        <input id="db_host" name="db_host" type="text" value="{{ db.host }}" required>
+                        <div class="hint">TCP/IP 模式下这里填「主机」（默认 <span class="mono">127.0.0.1</span>）与「端口」（默认 <span class="mono">3306</span>）。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_port">端口</label>
+                    <div class="ctrl">
+                        <input id="db_port" name="db_port" type="text" inputmode="numeric" value="{{ db.port }}" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_socket">Socket 路径</label>
+                    <div class="ctrl">
+                        <input id="db_socket" name="db_socket" type="text" value="{{ db.socket }}">
+                        <div class="hint">TCP/IP 模式下留空；填了就走套接字连接，忽略主机与端口。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="grp">
+            <h2>数据库</h2>
+            <div class="flds">
+                <div class="field">
+                    <label for="db_name">数据库名<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="db_name" name="db_name" type="text" value="{{ db.name }}" required>
+                        <div class="hint">库不存在时向导会尝试创建（账号需要有建库权限）。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_user">用户名<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="db_user" name="db_user" type="text" value="{{ db.user }}" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_pass">密码<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input id="db_pass" name="db_pass" type="password" autocomplete="off" {% if not saved_db_pass %}required{% endif %}>
+                        <div class="hint">页面上不会回显，安装时由程序安全保存。</div>
+                        {% if saved_db_pass %}
+                            <div class="hint">已暂存，留空即沿用；要改就重新填一次。</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_prefix">表前缀</label>
+                    <div class="ctrl">
+                        <input id="db_prefix" name="db_prefix" type="text" value="{{ db.prefix }}">
+                        <div class="hint">只能用字母、数字与下划线，末尾建议留一个下划线。</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="db_charset">字符集</label>
+                    <div class="ctrl">
+                        <select id="db_charset">
+                            <option selected>utf8mb4（建议）</option>
+                            <option>utf8mb3</option>
+                        </select>
+                        <div class="hint">只有 utf8mb4 能存 emoji 与部分生僻字。</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {% if feedback %}
+            <div class="feed{% if not feedback.ok %} fail{% endif %}">
+                <div class="fh">{{ feedback.ok ? '连接成功' : '连接失败' }}<span class="when">刚刚 · {{ feedback.elapsed }} 秒</span></div>
+                <dl>
+                    {% if feedback.ok %}
+                        {% for row in feedback.rows %}
+                            <dt>{{ row.k }}</dt><dd>{{ row.v }}</dd>
+                        {% endfor %}
+                    {% else %}
+                        <dt>原因</dt><dd>{{ feedback.reason }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+            {% if not feedback.ok %}
+                <p class="note">常见原因：账号或口令不对、账号没有这个库的权限、主机与端口写错。改完再点一次「测试连接」。</p>
+            {% endif %}
+        {% endif %}
+
+        <div class="acts{% if not feedback %} acts-plain{% endif %}">
+            <button class="btn btn-ghost" type="submit" name="action" value="test">测试连接</button>
+            <div class="right">
+                <button class="btn btn-ghost" type="submit" name="action" value="back">上一步</button>
+                <button class="btn btn-primary" type="submit" name="action" value="next">下一步</button>
+            </div>
+        </div>
+    </form>
+{% endblock %}

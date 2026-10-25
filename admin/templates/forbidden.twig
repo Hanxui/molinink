@@ -1,0 +1,8 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{% extends "layout.twig" %}
+{% set page_title = __('没有权限') %}
+
+{% block body %}
+    <p>{{ __('你的账号没有访问这一页的权限。') }}</p>
+    <p>{{ __('需要的话请让管理员调整角色 —— 服务端每次都会再校验一次,不是藏起来就能绕过的。') }}</p>
+{% endblock %}

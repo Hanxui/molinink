@@ -1,0 +1,60 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  角色能力矩阵(《105》,基准 后台角色能力矩阵-定稿-2026-09-30 / 移动端)。
+  只读屏:五列角色 × 内置/插件两组能力;实心墨块 = 有,空心灰描边 = 无。
+  桌移共用同一张矩阵;页头与「来源:」后缀按 .d/.m 各挂一份,列模板走 --mcols。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head d">
+        <div class="tx">
+            <div class="eyebrow">{{ __('权限') }}</div>
+            <h1>{{ __('角色能力矩阵') }}</h1>
+            <p class="lede">{{ __('本页只读，要改能力请去') }}<a href="{{ plugins_url }}">{{ __('插件') }}</a>{{ __('与') }}<a href="{{ users_url }}">{{ __('用户') }}</a>{{ __('页。') }}</p>
+        </div>
+        <span class="ro-tag">{{ __('只读展示') }}</span>
+    </div>
+
+    {% include 'partials/users-nav.twig' with {users_kind: 'roles'} %}
+
+    <div class="head m">
+        <div class="hwrap">
+            <div>
+                <div class="eyebrow">{{ __('权限') }}</div>
+                <h1>{{ __('角色能力矩阵') }}</h1>
+            </div>
+            <span class="ro-tag">{{ __('只读') }}</span>
+        </div>
+        <p class="lede">{{ __('本页只读，要改能力请去') }}<a href="{{ plugins_url }}">{{ __('插件') }}</a>{{ __('与') }}<a href="{{ users_url }}">{{ __('用户') }}</a>{{ __('页。') }}</p>
+    </div>
+
+    <section class="matrix">
+        <div class="thead">
+            <div class="hcap">{{ __('能力') }}</div>
+            {% for r in roles %}
+                <div class="rc"><span class="zh">{{ r.label }}</span><span class="en">{{ r.slug }}</span><div class="se">{{ r.note }}</div></div>
+            {% endfor %}
+        </div>
+        <div class="colhint m">{{ __('列序固定：管理员 / 编辑 / 作者 / 贡献者 / 订阅者。实心方块为有该能力，空心为无。') }}</div>
+
+        <div class="mgroup"><span class="g">{{ __('内置能力') }}</span><span class="gs">{{ __('%d 项', 'molin', built_in|length) }}</span></div>
+
+        {% for row in built_in %}
+            <div class="mrow"><div class="cap">{{ row.name }}</div>
+                {% for on in row.cells %}<div class="cell"><i class="bx{{ on ? ' on' : '' }}"></i></div>{% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="mgroup"><span class="g">{{ __('插件注册的能力') }}</span><span class="gs">{{ __('%d 项', 'molin', plugin_rows|length) }}{% if plugin_source %}<span class="srcd"> · {{ __('来源：%s', 'molin', plugin_source|join('、')) }}</span><span class="srcm"> · {{ plugin_source|join('、') }}</span>{% endif %}</span></div>
+
+        {% for row in plugin_rows %}
+            <div class="mrow"><div class="cap">{{ row.name }}{% if row.label %}<span class="cn">{{ row.label }}</span>{% endif %}</div>
+                {% for on in row.cells %}<div class="cell"><i class="bx{{ on ? ' on' : '' }}"></i></div>{% endfor %}
+            </div>
+        {% endfor %}
+    </section>
+
+    <p class="foot">{{ __('插件能力由插件自行注册与授予，停用插件时不自动回收，只提示管理员；') }}{% if plugin_role %}{{ __('自定义角色') }} <b>{{ plugin_role.label }}</b> <code>{{ plugin_role.slug }}</code> {{ __('与单用户额外授权都不在本表五列之内。') }}{% else %}{{ __('单用户额外授权不在本表五列之内。') }}{% endif %}</p>
+{% endblock %}

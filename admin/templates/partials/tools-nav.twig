@@ -1,0 +1,16 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  工具组二级导航(《41》§4:导入导出 / 备份 / 站点健康 / 日志)。
+  四屏共用这一条,当前项高亮 —— 与「外观」组 2026-10-16 的做法同一套(partials/appearance-nav.twig)。
+  「备份」是组根(tools),另外三屏 menu 登记为 null、侧栏里没有自己的位,这条是它们唯一的门:
+  此前只能手敲 /admin/health、/admin/logs、/admin/import-export(《41》§4 表里写着,链路没接)。
+  当前项按 tools_kind 判:tools / import-export / health / logs。
+#}
+{% set tk = tools_kind|default('tools') %}
+<nav class="sec-tabs" aria-label="{{ __('工具') }}">
+    <a href="{{ path('admin', {path: 'tools'}) }}"{{ tk == 'tools' ? ' class="active"' : '' }}>{{ __('备份') }}</a>
+    <a href="{{ path('admin', {path: 'import-export'}) }}"{{ tk == 'import-export' ? ' class="active"' : '' }}>{{ __('导入导出') }}</a>
+    <a href="{{ path('admin', {path: 'health'}) }}"{{ tk == 'health' ? ' class="active"' : '' }}>{{ __('站点健康') }}</a>
+    <a href="{{ path('admin', {path: 'logs'}) }}"{{ tk == 'logs' ? ' class="active"' : '' }}>{{ __('日志') }}</a>
+</nav>

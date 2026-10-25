@@ -1,0 +1,69 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 归档壳(分类《88》/ 标签《89》/ 日期《116》/ 作者《115》共用):
+   页头、发丝线、编号列表、分页、页脚同源,差异只在 .head 与两处文案。
+   分页地址一律用处理器算好的 pager(内部走 path()),模板不拼 URL。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ term.name }} · {{ site.name }}{% endblock %}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('archive.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    {% block head %}
+        <section class="head">
+            <div class="eyebrow">{% block eyebrow %}{{ __('归档', 'theme') }}{% endblock %}</div>
+            <h1>{{ term.name }}</h1>
+            <div class="underline"></div>
+            {% if term.description %}
+                <p class="lede">{{ term.description }}</p>
+            {% endif %}
+        </section>
+    {% endblock %}
+
+    <section class="index">
+        {% for item in items %}
+            <article class="item">
+                <div class="num">{{ item.num }}</div>
+                <div>
+                    {# 无标题的类型(说说)落回摘要:列表行永远有个认得出的名字,不出空行 #}
+                    {% set label = item.title is not empty ? item.title : item.excerpt|striptags|trim|truncate(30) %}
+                    <h2><a href="{{ item.url }}">{{ label is not empty ? label : __('(无标题)', 'theme') }}</a></h2>
+                    <div class="meta">{% if item.category %}<a class="cat" href="{{ item.category.url }}">{{ item.category.name }}</a> / {% endif %}<span class="dt-long">{{ item.published_at|date(__('Y 年 n 月 j 日', 'theme')) }}</span><span class="dt-short">{{ item.published_at|date('Y.m.d') }}</span> · {{ __('%s 条评论', 'theme', item.comments) }}</div>
+                    {% if item.excerpt %}
+                        {# 列表显示=全文时,内核给的是渲染后 HTML,原样铺开;摘要模式仍是纯文本 #}
+                        {% if item.excerpt_html|default(false) %}
+                            <div class="excerpt excerpt-full">{{ item.excerpt|raw }}</div>
+                        {% else %}
+                            <p class="excerpt">{{ item.excerpt }}</p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </article>
+        {% else %}
+            <div class="note">{% block empty %}{{ __('这里还没有文章。', 'theme') }}{% endblock %}</div>
+        {% endfor %}
+    </section>
+
+    <nav class="pages">
+        {% if pager.prev %}<a href="{{ pager.prev }}">← {{ __('上一页', 'theme') }}</a>{% endif %}
+        {% for p in pager.pages %}<a{% if p.current %} class="cur"{% endif %} href="{{ p.url }}">{{ p.n }}</a>{% endfor %}
+        {% if pager.next %}<a href="{{ pager.next }}">{{ __('下一页', 'theme') }} →</a>{% endif %}
+        <div class="spacer"></div>
+        <div class="count"><span class="c-full">{{ pager.count }}</span><span class="c-comp">{{ pager.count_compact }}</span></div>
+    </nav>
+
+    {% include 'partials/footer.twig' %}
+</div>
+{{ footer_output }}
+<script src="{{ asset('shell.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# 依赖：vendor 由 composer install 重建
+/vendor/
+
+# 本地配置含数据库凭据（用 config.example.php 作模板）
+/config.php
+
+# 安装完成后的锁文件
+/install/lock
+
+# 运行期数据：缓存 / 日志 / 上传 / 备份 / 回收站，只保留目录骨架
+/storage/*/*
+!/storage/*/.gitkeep
+
+# 工具与系统杂项
+.php-cs-fixer.cache
+.phpunit.cache/
+.phpunit.result.cache
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.idea/
+.vscode/

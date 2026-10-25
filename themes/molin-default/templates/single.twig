@@ -1,0 +1,167 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 单篇(《73》):文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
+   post.content 是内核已处理的正文(可信富文本),按《14》第 3.5 节允许 |raw,该位置由契约测试登记复核。
+   category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ post.title }} · {{ site.name }}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('article.css') }}
+    {{ inline_style('comments.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <article class="article">
+        <div class="eyebrow">
+            {% if category is defined and category %}<a class="cat" href="{{ category.url }}">{{ category.name }}</a> / {% endif %}
+            {% if post.published_at %}<span class="dt-long">{{ post.published_at|date(__('Y 年 n 月 j 日', 'theme')) }}</span><span class="dt-short">{{ post.published_at|date('Y.m.d') }}</span>{% endif %}
+        </div>
+        <h1>{{ post.title }}</h1>
+        {% if byline is defined and byline %}<div class="byline">{{ byline }}{% if comment_action is defined and comment_action and comment_total > 0 %} · {{ __('%s 条评论', 'theme', comment_total) }}{% endif %}</div>{% endif %}
+        <div class="underline"></div>
+    </article>
+
+    {# 私密正文口令(密码保护,P0-2):未解锁只给口令表单,正文/评论/上下篇一律不渲染 #}
+    {% if locked is defined and locked %}
+        <section class="body unlock-box">
+            <h2>{{ __('这篇内容需要口令', 'theme') }}</h2>
+            {% if locked_hint is defined and locked_hint %}<div class="note">{{ locked_hint }}</div>{% endif %}
+            <form method="post" action="{{ unlock_action }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="hidden" name="post_id" value="{{ post.id }}">
+                <input type="password" name="password" placeholder="{{ __('输入访问口令', 'theme') }}" autocomplete="off">
+                <button class="btn" type="submit">{{ __('查看内容', 'theme') }}</button>
+            </form>
+        </section>
+    {% else %}
+        <section class="body">{{ post.content|raw }}</section>
+
+        {# 文末标签(《73》§12):分类在眉标里,这里只列标签 —— 读完正文就有"更细的入口"。
+           没打标签整块不渲染,版面与从前一样;标签由内核在 post 路由补齐,第三方主题不必提供 #}
+        {% if tags is defined and tags %}
+            <div class="tags">
+                <span class="lab">{{ __('标签', 'theme') }}</span>
+                {% for tag in tags %}<a href="{{ tag.url }}">{{ tag.name }}</a>{% endfor %}
+            </div>
+        {% endif %}
+
+        {# 评论区(《31》§2/§3/§7;版式照 文章详情-评论区-2026-09-30)。content 在提交时已过白名单,按《14》3.5 允许 |raw #}
+    {% if comment_action is defined and comment_action %}
+        <section class="comments" id="comments">
+            <h2>{{ __('评论 %s', 'theme', comment_total) }}</h2>
+
+            {% if comment_notice %}
+                <div class="note">{{ comment_notice }}</div>
+            {% elseif comment_error %}
+                <div class="note">{{ comment_error }}</div>
+            {% endif %}
+
+            <div class="clist">
+                {% for c in comments %}
+                    <div class="c">
+                        <div class="hd">
+                            <div class="av">{% if c.avatar_url %}<img src="{{ c.avatar_url }}" alt="">{% else %}{{ c.initial }}{% endif %}</div>
+                            <div class="who">{{ c.author_name }}</div>
+                            <div class="at">{{ c.created_at|date(__('Y 年 n 月 j 日 H:i', 'theme')) }}</div>
+                            {% if c.awaiting %}<span class="pend">{{ __('待审核 · 仅你可见', 'theme') }}</span>{% endif %}
+                        </div>
+                        <div class="tx">{{ c.content|raw }}</div>
+                        {% if not c.awaiting %}
+                            <div class="ops"><a href="{{ post.url }}{{ '?' in post.url ? '&' : '?' }}replyto={{ c.id }}#comment-form">{{ __('回复', 'theme') }}</a></div>
+                        {% endif %}
+
+                        {% if c.children %}
+                            <div class="children">
+                                {% for k in c.children %}
+                                    <div class="c">
+                                        <div class="hd">
+                                            <div class="av">{% if k.avatar_url %}<img src="{{ k.avatar_url }}" alt="">{% else %}{{ k.initial }}{% endif %}</div>
+                                            <div class="who">{{ k.author_name }}</div>
+                                            <div class="at">{{ k.created_at|date(__('Y 年 n 月 j 日 H:i', 'theme')) }}</div>
+                                            {% if k.awaiting %}<span class="pend">{{ __('待审核 · 仅你可见', 'theme') }}</span>{% endif %}
+                                        </div>
+                                        <div class="tx">{{ k.content|raw }}</div>
+                                        {% if not k.awaiting %}
+                                            <div class="ops"><a href="{{ post.url }}{{ '?' in post.url ? '&' : '?' }}replyto={{ k.id }}#comment-form">{{ __('回复', 'theme') }}</a></div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="c">
+                        <div class="tx">{{ __('还没有评论，坐第一排的机会来了。', 'theme') }}</div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="form" id="comment-form">
+                <h3>{{ __('留下你的想法', 'theme') }}</h3>
+                {% if not current_user %}<div class="note">{{ __('昵称与邮箱必填；邮箱不会公开显示，只用于回复通知。', 'theme') }}</div>{% endif %}
+                <form method="post" action="{{ comment_action }}">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <input type="hidden" name="post_id" value="{{ post.id }}">
+                    <input type="hidden" name="parent_id" value="{{ reply_to }}">
+                    <input type="hidden" name="form_ts" value="{{ form_ts }}">
+                    <div class="fields">
+                        {% if current_user %}
+                            <div class="f full me">
+                                <img class="av" src="{{ avatar(current_user.email, 36) }}" alt="">
+                                <span class="who">{{ current_user.display_name ?: current_user.username }}</span>
+                            </div>
+                        {% else %}
+                        <div class="f">
+                            <label>{{ __('昵称', 'theme') }}<span class="req">*</span></label>
+                            <input type="text" name="author_name">
+                        </div>
+                        <div class="f">
+                            <label>{{ __('邮箱', 'theme') }}<span class="req">*</span></label>
+                            <input type="email" name="author_email">
+                        </div>
+                        <div class="f">
+                            <label>{{ __('网址', 'theme') }}</label>
+                            <input type="url" name="author_url" placeholder="{{ __('选填', 'theme') }}">
+                        </div>
+                        {% endif %}
+                        <div class="f full">
+                            <label>{{ __('评论', 'theme') }}<span class="req">*</span></label>
+                            <textarea name="content"></textarea>
+                        </div>
+                    </div>
+                    <div class="hp" aria-hidden="true">
+                        <label>{{ __('网站（留空）', 'theme') }}</label>
+                        <input type="text" name="{{ 'website_hp' }}" tabindex="-1" autocomplete="off">
+                    </div>
+                    <div class="submit">
+                        <button class="btn" type="submit">{{ __('发表评论', 'theme') }}</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    {% endif %}
+
+    {% set pager_prev = pager is defined and pager ? pager.prev : null %}
+    {% set pager_next = pager is defined and pager ? pager.next : null %}
+    {% if pager_prev or pager_next %}
+        <nav class="pager">
+            {% if pager_prev %}<a class="prev" href="{{ pager_prev.url }}"><div class="dir">← {{ __('上一篇', 'theme') }}</div><div class="name">{{ pager_prev.title }}</div></a>{% endif %}
+            {% if pager_next %}<a class="next" href="{{ pager_next.url }}"><div class="dir">{{ __('下一篇', 'theme') }} →</div><div class="name">{{ pager_next.title }}</div></a>{% endif %}
+        </nav>
+    {% endif %}
+    {% endif %}
+
+    {% include 'partials/footer.twig' %}
+</div>
+<script src="{{ asset('shell.js') }}" defer></script>
+{{ footer_output }}
+</body>
+</html>

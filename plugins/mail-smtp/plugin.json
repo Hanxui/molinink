@@ -1,0 +1,33 @@
+{
+    "name": "mail-smtp",
+    "title": "SMTP 发信",
+    "version": "1.2.1",
+    "contract": "1.x",
+    "author": "墨林官方",
+    "description": "通过 SMTP 服务器发送站点邮件：找回密码的重置链接、新评论通知。后台自带设置页，填完存一次即可；配置仍落在 storage/.secrets/mail.php（不进仓库、不入数据库）。",
+    "license": "MIT",
+    "requires": {
+        "php": ">=8.2",
+        "ext": ["openssl"]
+    },
+    "hooks": ["user/lostpassword/after", "comment/submit/after"],
+    "capabilities": ["mail.send", "log.write", "setting.read", "setting.write", "db.direct", "file.write", "admin.menu", "admin.page"],
+    "main": "bootstrap.php",
+    "admin": {
+        "menu": [
+            {
+                "id": "mail-smtp",
+                "title": "SMTP 发信",
+                "children": [
+                    {
+                        "id": "mail-smtp-settings",
+                        "title": "SMTP 设置",
+                        "route": "mail-smtp",
+                        "template": "index.twig",
+                        "controller": "Molin\\Plugins\\MailSmtp\\SettingsPage"
+                    }
+                ]
+            }
+        ]
+    }
+}

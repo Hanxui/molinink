@@ -1,0 +1,83 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+   独立页面样式(《114》;源件:assets/ui/独立页面-定稿-2026-09-30.html 与
+   独立页面-移动端-定稿-2026-09-30.html)。
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
+
+/* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(#56 页脚钉底) */
+.head{margin:74px auto 0;max-width:720px;width:100%;}
+.head h1{font-size:72px;font-weight:400;line-height:1.24;letter-spacing:.01em;}
+.underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
+
+.body{margin:64px auto 0;max-width:720px;width:100%;font-size:calc(var(--font-size) + 2px);line-height:1.95;letter-spacing:.01em;}
+.body p{margin-top:1.7em;}
+.body p:first-child{margin-top:0;}
+.body h2{margin-top:2.4em;font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
+.body blockquote{margin-top:2.2em;padding-left:30px;border-left:2px solid var(--rule);color:var(--muted);
+  font-size:calc(var(--font-size) + 3px);}
+/* 三级标题:与文章详情同口径(article.css 那条),独立页面的正文区共用一套档位 */
+.body h3{margin-top:2em;font-size:24px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
+.body a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;
+  text-decoration-color:var(--rule);}
+.body a:hover{color:var(--accent);text-decoration-color:var(--accent);}
+.body ul{margin-top:1.6em;padding-left:1.3em;}
+.body li{margin-top:.6em;}
+.body code{font-family:var(--font-mono);font-size:.86em;background:#F1EFEA;
+  padding:.12em .38em;border-radius:2px;}
+.body pre{margin-top:1.8em;padding:18px 20px;overflow-x:auto;background:#F1EFEA;border:1px solid var(--rule);
+  border-radius:4px;font-family:var(--font-mono);font-size:14px;line-height:1.7;-webkit-overflow-scrolling:touch;}
+.body pre code{background:none;padding:0;font-size:inherit;border:0;}
+.body table{margin-top:1.8em;width:100%;border-collapse:collapse;font-size:.9em;line-height:1.7;}
+.body th,.body td{padding:10px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;}
+.body th{font-family:var(--font-sans);font-size:12px;letter-spacing:.08em;font-weight:400;color:var(--muted);}
+.body tbody tr:last-child td{border-bottom:0;}
+.body figure{margin-top:2.4em;}
+.body figure img{width:100%;border:1px solid var(--rule);display:block;}
+.body figcaption{margin-top:14px;font-family:var(--font-sans);font-size:12.5px;letter-spacing:.08em;color:var(--muted);}
+/* 编辑器直插的图片(#56 报障):等比限宽 + 发丝边框;不裁不改原文件 */
+.body img{max-width:100%;height:auto;border:1px solid var(--rule);display:block;cursor:zoom-in;}
+
+.subs{margin:96px auto 0;max-width:720px;width:100%;padding-top:30px;border-top:1px solid var(--rule);}
+.subs .lab{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.2em;color:var(--muted);}
+.subs ul{margin-top:16px;list-style:none;}
+.subs li + li{margin-top:14px;}
+.subs a{font-size:19px;color:var(--ink);text-decoration:none;}
+.subs a:hover{color:var(--accent);}
+
+/* 灯箱(#56):点开看大图、关回原位,开合位移由 shell.js 驱动;底色用墨的 alpha 态 */
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(27,28,30,.9);opacity:0;
+  transition:opacity .24s ease;cursor:zoom-out;}
+.lightbox.open{opacity:1;}
+.lightbox img{position:absolute;transform-origin:0 0;will-change:transform;
+  box-shadow:0 24px 80px rgba(27,28,30,.5);}
+.lightbox .lb-close{position:absolute;top:18px;right:14px;width:44px;height:44px;
+  background:none;border:0;cursor:pointer;}
+.lightbox .lb-close::before,.lightbox .lb-close::after{content:"";position:absolute;top:21px;left:11px;
+  width:22px;height:1.4px;background:var(--paper);}
+.lightbox .lb-close::before{transform:rotate(45deg);}
+.lightbox .lb-close::after{transform:rotate(-45deg);}
+@media (prefers-reduced-motion: reduce){ .lightbox{transition:none;} }
+
+@media (max-width:768px){
+  .head{margin-top:34px;}
+  .head h1{font-size:34px;line-height:1.3;}
+  .underline{margin-top:20px;width:56px;}
+
+  .body{margin-top:36px;font-size:calc(var(--font-size) - 1px);line-height:1.9;}
+  .body p{margin-top:1.6em;}
+  .body h2{margin-top:2.2em;font-size:22px;}
+  .body h3{margin-top:1.9em;font-size:18px;}
+  .body ul{margin-top:1.5em;padding-left:1.2em;}
+  .body li{margin-top:.55em;}
+  .body blockquote{padding-left:18px;font-size:var(--font-size);}
+  .body figure{margin-top:2.2em;}
+  .body figcaption{margin-top:11px;font-size:10.5px;}
+  .body pre{padding:14px 14px;font-size:13px;}
+  .body table{font-size:.82em;}
+  .body th,.body td{padding:8px 8px;}
+
+  .subs{margin-top:52px;padding-top:20px;}
+  .subs .lab{font-size:10.5px;letter-spacing:.18em;}
+  .subs ul{margin-top:13px;}
+  .subs li + li{margin-top:11px;}
+  .subs a{font-size:16px;}
+}

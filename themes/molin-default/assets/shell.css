@@ -1,0 +1,102 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+   全站外壳:页头 / 发丝线 / 浮层菜单 / 页脚 / 触控目标。各页面模板在页面样式之前引入,页面样式只管内容区。
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{background:var(--paper);}
+body{color:var(--ink);-webkit-font-smoothing:antialiased;}
+.page{margin:0 auto;padding:62px 96px 72px;
+  min-height:100vh;display:flex;flex-direction:column;}
+
+header{display:flex;align-items:baseline;justify-content:space-between;gap:40px;}
+.wordmark{font-size:42px;line-height:1;letter-spacing:.02em;color:var(--ink);text-decoration:none;white-space:nowrap;}
+.wordmark:hover{color:var(--ink);}
+nav{display:flex;gap:44px;font-family:var(--font-sans);font-size:14px;letter-spacing:.2em;white-space:nowrap;}
+nav a{color:var(--ink);text-decoration:none;}
+nav a:hover{color:var(--accent);}
+.menu-btn{display:none;}
+hr.rule{border:0;border-top:1px solid var(--rule);margin-top:26px;}
+
+/* 页脚钉底(#56):短页时 footer 吃剩余高度沉到视口底;长页时上一块垫 104px */
+.page > :nth-last-child(2){margin-bottom:104px;}
+footer{margin-top:auto;padding-top:28px;border-top:1px solid var(--rule);
+  display:flex;align-items:baseline;justify-content:space-between;
+  font-family:var(--font-sans);font-size:12.5px;line-height:1.8;letter-spacing:.06em;color:var(--muted);}
+footer a{color:var(--muted);text-decoration:none;}
+footer a:hover{color:var(--accent);}
+.site-footer{flex-wrap:wrap;}
+/* 行距放宽到 1.8,行间留出 24px —— 页脚 11–12.5px 小字也能垫出 44px 命中区而不互相压住 */
+.footer-nav{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:22px;margin-bottom:24px;}
+
+/* 移动端浮层导航 */
+.overlay{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;background:rgba(250,250,248,.52);
+  -webkit-backdrop-filter:blur(30px) saturate(180%);backdrop-filter:blur(30px) saturate(180%);
+  opacity:0;visibility:hidden;transform:scale(1.02);
+  transition:opacity .3s ease,transform .3s ease,visibility 0s linear .3s;}
+.overlay.open{opacity:1;visibility:visible;transform:scale(1);transition-delay:0s;}
+.overlay::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.45),transparent 40%);}
+.overlay-nav{display:flex;flex-direction:column;align-items:center;gap:30px;}
+.overlay-nav a{position:relative;font-family:var(--font-serif);font-size:26px;letter-spacing:.06em;
+  color:var(--ink);text-decoration:none;padding:8px 0;}
+.overlay-nav a::after{content:"";position:absolute;left:50%;right:50%;bottom:-2px;height:2px;
+  background:var(--accent);transition:left .22s ease,right .22s ease;}
+.overlay-nav a:hover::after,.overlay-nav a.active::after{left:8px;right:8px;}
+.close-btn{position:absolute;top:24px;right:22px;width:44px;height:44px;background:none;border:0;cursor:pointer;}
+.close-btn::before,.close-btn::after{content:"";position:absolute;top:20px;left:11px;width:22px;height:1.4px;
+  background:var(--ink);}
+.close-btn::before{transform:rotate(45deg);}
+.close-btn::after{transform:rotate(-45deg);}
+
+/* 触控目标:视觉尺寸与版面不动,命中区靠伪元素垫到 44px
+   (padding 会撑高 flex 基线,实测页头 +4px、页脚 +12px,所以不能用 padding) */
+.menu-btn{position:relative;}
+.menu-btn::after{content:"";position:absolute;inset:-12px -9px;}
+nav a{position:relative;}
+nav a::after{content:"";position:absolute;inset:-15px -8px;}
+footer a{position:relative;}
+footer a::after{content:"";position:absolute;inset:-15px -6px;}
+.pages a{position:relative;}
+.pages a::after{content:"";position:absolute;inset:-15px -8px;}
+
+/* 占位文字不吃浏览器默认半透明,保证对比度 */
+input::placeholder,textarea::placeholder{color:var(--muted);opacity:1;}
+
+/* 平板:1025–1199 横排导航放不下(实测 1150 时整行溢出 28px),收紧一格;字标不折行 */
+@media (min-width:1025px) and (max-width:1199px){
+  .page{padding-left:56px;padding-right:56px;}
+  header{gap:28px;}
+  .wordmark{font-size:36px;}
+  nav{gap:26px;font-size:13px;letter-spacing:.08em;}
+}
+
+/* 1024 及以下:横排放不下,统一改汉堡 + 浮层(内容区版式仍按各页自己的断点走) */
+@media (max-width:1024px){
+  header{align-items:center;gap:12px;}
+  .wordmark{font-size:24px;}
+  .primary-nav{display:none;}
+  .menu-btn{display:inline-flex;flex-direction:column;justify-content:center;gap:5px;width:26px;height:20px;
+    padding:0;background:none;border:0;cursor:pointer;}
+  .menu-btn span{display:block;height:1.6px;width:100%;background:var(--ink);transition:transform .28s ease;}
+  .menu-btn[aria-expanded="true"] span:nth-child(1){transform:translateY(3.3px) rotate(45deg);}
+  .menu-btn[aria-expanded="true"] span:nth-child(2){transform:translateY(-3.3px) rotate(-45deg);}
+  hr.rule{margin-top:16px;}
+}
+
+/* 手机:外壳收边 + 页脚两栏不换行 */
+@media (max-width:768px){
+  .page{padding:26px 22px 34px;}
+  .page > :nth-last-child(2){margin-bottom:52px;}
+  footer{padding-top:18px;gap:10px;font-size:10px;line-height:1.8;letter-spacing:.04em;}
+  footer .copy-site,footer .copy-program{white-space:nowrap;}
+  .footer-nav{gap:28px 22px;margin-bottom:28px;}
+  footer a::after{inset:-17px -6px;}
+  .overlay-nav a{font-size:22px;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .overlay{transition:none;}
+  .overlay-nav a::after{transition:none;}
+  .menu-btn span{transition:none;}
+}

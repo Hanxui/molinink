@@ -1,0 +1,82 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+   搜索结果页样式(《28》;源件:搜索结果-定稿 / 移动端-定稿 / 无结果-2026-09-30)。
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
+
+.head{margin-top:78px;}
+.eyebrow{font-family:var(--font-sans);font-size:13px;letter-spacing:.34em;color:var(--ink);}
+h1{margin-top:30px;font-size:56px;font-weight:400;line-height:1.22;letter-spacing:.01em;}
+.underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
+.tally{margin-top:28px;font-family:var(--font-sans);font-size:13px;line-height:1.8;
+  letter-spacing:.18em;color:var(--muted);}
+
+.search{margin-top:44px;display:flex;align-items:stretch;gap:16px;}
+.search input{flex:1 1 auto;min-width:0;font-family:var(--font-sans);font-size:14px;color:var(--ink);
+  background:#fff;border:1px solid var(--rule);border-radius:6px;padding:12px 14px;letter-spacing:.02em;
+  -webkit-appearance:none;appearance:none;transition:border-color .18s ease,box-shadow .18s ease;}
+.search input::placeholder{color:#A9A7A1;}
+.search input:focus{outline:0;border-color:var(--accent);box-shadow:0 0 0 3px rgba(185,106,46,.13);}
+.search .btn{flex:0 0 auto;font-family:var(--font-sans);font-size:13px;letter-spacing:.06em;
+  cursor:pointer;border-radius:6px;padding:11px 24px;border:1px solid transparent;
+  background:var(--ink);color:var(--paper);}
+.search .vh{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;}
+
+mark{background:transparent;color:var(--accent);
+  text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:var(--accent);
+  text-underline-offset:3px;}
+
+.index{margin-top:56px;}
+.item{display:flex;gap:56px;align-items:flex-start;padding:34px 0;border-top:1px solid var(--rule);}
+.num{flex:0 0 auto;width:44px;padding-top:10px;font-family:var(--font-sans);font-size:15px;
+  letter-spacing:.12em;color:var(--muted);}
+.item h2{font-size:34px;font-weight:400;line-height:1.3;letter-spacing:.01em;}
+.item h2 a{color:var(--ink);text-decoration:none;}
+.item h2 a:hover{color:var(--accent);}
+.meta{margin-top:14px;font-family:var(--font-sans);font-size:13px;letter-spacing:.18em;color:var(--muted);}
+.dt-short{display:none;}
+.excerpt{margin-top:14px;font-size:16px;line-height:1.85;color:var(--muted);max-width:820px;}
+
+/* 无结果态(《104》§4.1,数值照源件 搜索结果-无结果-2026-09-30) */
+.empty{margin-top:56px;}
+.empty .msg{font-size:var(--font-size);line-height:1.9;color:var(--muted);letter-spacing:.01em;}
+.suggest{margin-top:60px;padding-top:24px;border-top:1px solid var(--rule);}
+.suggest .lab{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.2em;color:var(--muted);}
+.suggest ul{margin-top:16px;list-style:none;}
+.suggest li + li{margin-top:14px;}
+.suggest a{font-size:19px;color:var(--ink);text-decoration:none;}
+.suggest a:hover{color:var(--accent);}
+
+.pages{margin-top:56px;display:flex;align-items:center;gap:26px;
+  font-family:var(--font-sans);font-size:13px;letter-spacing:.1em;}
+.pages a{color:var(--muted);text-decoration:none;}
+.pages a:hover{color:var(--accent);}
+.pages .cur{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:3px;}
+.pages .spacer{flex:1 1 auto;}
+.pages .count{font-size:12px;letter-spacing:.12em;color:var(--muted);}
+.pages .count .c-comp{display:none;}
+
+@media (max-width:768px){
+  .head{margin-top:44px;}
+  .eyebrow{font-size:10.5px;letter-spacing:.28em;}
+  h1{margin-top:18px;font-size:40px;line-height:1.24;}
+  .underline{margin-top:22px;width:56px;}
+  .tally{margin-top:18px;font-size:11px;line-height:1.75;letter-spacing:.14em;}
+
+  .search{margin-top:28px;gap:12px;}
+  .search input{font-size:13.5px;padding:10px 12px;}
+  .search .btn{font-size:12.5px;padding:10px 18px;}
+
+  .index{margin-top:34px;}
+  .item{gap:24px;padding:22px 0;}
+  .num{width:24px;padding-top:7px;font-size:11px;}
+  .item h2{font-size:23px;line-height:1.32;}
+  .meta{margin-top:10px;font-size:11px;letter-spacing:.14em;}
+  .dt-long{display:none;}
+  .dt-short{display:inline;}
+  .excerpt{display:none;}
+
+  .pages{margin-top:36px;gap:18px;font-size:12px;letter-spacing:.08em;}
+  .pages .cur{padding-bottom:2px;}
+  .pages .count{font-size:10.5px;letter-spacing:.1em;}
+  .pages .count .c-full{display:none;}
+  .pages .count .c-comp{display:inline;}
+}

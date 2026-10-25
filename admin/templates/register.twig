@@ -1,0 +1,60 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{#
+  注册屏(《122-注册页实现规格》)。五字段顺序固定:用户名 → 邮箱 → 昵称 → 密码(带强度条)→ 确认密码。
+  关闭态**整块不渲染表单**(不是 disabled),只留一句中灰 `.off`;不加"同意条款"一类勾选件。
+#}
+{% extends "auth_layout.twig" %}
+
+{% set page_title = __('注册') %}
+{% set card_title = __('注册') %}
+
+{% block title %}{{ __('注册') }} · {{ __('墨林') }}{% endblock %}
+{% block shell_class %} auth-register{% if not open %} auth-off{% endif %}{% endblock %}
+
+{% block card %}
+    {% if open %}
+        <p class="lede">{{ __('一个账号，写作与评论都用它。') }}</p>
+
+        {% if notice is not empty %}
+            <p class="strip">{{ notice }}</p>
+        {% endif %}
+
+        <form method="post" action="{{ path('register') }}">
+            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+            <div class="fld">
+                <label for="u">{{ __('用户名') }}<span class="req">*</span></label>
+                <input id="u" type="text" name="username" value="{{ username }}" autocomplete="username" required>
+                <p class="hint h-m">{{ __('用于登录，创建后不可更改。') }}</p>
+            </div>
+            <div class="fld">
+                <label for="e">{{ __('邮箱') }}<span class="req">*</span></label>
+                <input id="e" type="email" name="email" value="{{ email }}" autocomplete="email" required>
+                <p class="hint">{{ __('同一邮箱只能注册一次。') }}</p>
+            </div>
+            <div class="fld">
+                <label for="n">{{ __('昵称') }}</label>
+                <input id="n" type="text" name="nickname" value="{{ nickname }}" placeholder="{{ __('文章署名与评论区显示的名字') }}">
+            </div>
+            <div class="fld">
+                <label for="p">{{ __('密码') }}<span class="req">*</span></label>
+                <input id="p" type="password" name="password" autocomplete="new-password" required>
+                <div class="meter-row">
+                    <span class="meter"><i style="width:0"></i></span>
+                    <span class="meter-txt">{{ __('强度：—') }}</span>
+                </div>
+                <p class="hint">{{ __('至少 8 位，建议含大小写字母、数字与符号。') }}</p>
+            </div>
+            <div class="fld">
+                <label for="p2">{{ __('确认密码') }}</label>
+                <input id="p2" type="password" name="password2" autocomplete="new-password">
+            </div>
+
+            <button class="btn btn-primary" type="submit">{{ __('注册') }}</button>
+
+            <div class="links"><a class="lnk" href="{{ path('login') }}">{{ __('已有账号？去登录') }}</a></div>
+        </form>
+    {% else %}
+        <p class="off">{{ __('本站未开放注册。') }}</p>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,140 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <h1>安装完成</h1>
+    <p class="lede">站点已经能用了。下面三个地址请自己记下，向导不会再重复显示密码。</p>
+
+    <div class="feed">
+        <div class="fh">全部七步已完成</div>
+        <dl>
+            <dt>站点地址</dt><dd><u>{{ site.url }}</u></dd>
+            <dt>后台地址</dt><dd><u>{{ admin_url }}</u></dd>
+            <dt>用户名</dt><dd><u>{{ admin.username }}</u></dd>
+            <dt>数据库</dt><dd><u>{{ db.name }}</u>　表前缀 <u>{{ db.prefix }}</u></dd>
+            <dt>程序版本</dt><dd>v{{ version }}</dd>
+        </dl>
+    </div>
+
+    <section class="grp">
+        <h2>接着做三件事</h2>
+        <div class="tbl">
+            <div class="tr">
+                <div class="k">进后台写第一篇</div>
+                <div class="c">设置里的「固定链接」「阅读」建议先过一眼，改结构会重新生成站内链接。</div>
+            </div>
+            <div class="tr">
+                <div class="k">删掉安装目录</div>
+                <div class="c">删掉后本向导不再可访问；没删之前，后台顶部会一直挂着这条警告。</div>
+            </div>
+            <div class="tr">
+                <div class="k">把下面两段服务器配置粘上</div>
+                <div class="c">这两段只能写在 Web 服务器的配置里，程序自己加不了 —— 不粘的话，后台与文章页会 404、备份能被直接下载。片段和复制按钮就在下面。</div>
+            </div>
+        </div>
+    </section>
+
+    {# 2026-10-25：把两段必配规则直接摆在这一屏，带复制按钮。此前只写"见服务器配置.txt"，
+       结果安装文档漏了伪静态，装完 /admin 与文章页全 404。两段都不含占位符，原样复制即可。 #}
+    <section class="grp">
+        <h2>服务器配置：两段，各粘一次</h2>
+        <div class="gdesc">两段都不用改路径，原样复制；粘完重载一次 Web 服务即可。</div>
+
+        <div class="codes">
+            <div class="code-card">
+                <div class="lab">① 伪静态 · 必加（宝塔：网站 → 设置 → 伪静态）</div>
+                <div class="code" id="snip-rewrite">location / {
+    try_files $uri $uri/ /index.php$is_args$args;
+}</div>
+                <div class="snip-act">
+                    <span class="tip">不加这段：首页能开，但 /admin 与所有文章页都是 404</span>
+                    <button type="button" class="btn btn-ghost" data-copy="snip-rewrite">复制</button>
+                </div>
+            </div>
+
+            <div class="code-card">
+                <div class="lab">② 挡住 /storage/ · 必加（宝塔：网站 → 设置 → 配置文件）</div>
+                <div class="code" id="snip-storage">location ^~ /storage/ {
+    return 404;
+}</div>
+                <div class="snip-act">
+                    <span class="tip">里面是备份包与日志，不拦会被别人顺着地址下载</span>
+                    <button type="button" class="btn btn-ghost" data-copy="snip-storage">复制</button>
+                </div>
+            </div>
+        </div>
+
+        <p class="snip-note"><b>图片不用配。</b>上传的图片由程序自己发出去；想把 /uploads/ 与 /themes/ 交给
+            nginx 提速，片段见安装目录里的 <b>服务器配置.txt</b>。</p>
+    </section>
+
+    <div class="strip">
+        安全提醒：请立即删除 <b>安装目录</b>。
+        <span class="sub">留着它，别人可以再次打开安装页；虽然程序会挡住重复安装，但把目录删掉才最干净。</span>
+    </div>
+
+    <section class="grp">
+        <h2>安全收尾</h2>
+        <div class="chk">
+            <div class="ck">
+                <div class="k">删除安装目录</div>
+                <div class="d">从服务器上删除安装目录；删掉后本向导不再可访问</div>
+                <div class="s todo">待删除</div>
+            </div>
+            <div class="ck">
+                <div class="k">校正文件权限</div>
+                <div class="d">配置文件设为 644、目录设为 755，属主与运行网站的用户一致</div>
+                <div class="s warn">需确认</div>
+            </div>
+            <div class="ck">
+                <div class="k">关闭目录列表与错误显示</div>
+                <div class="d">关闭服务器的目录列表与错误显示；日志仍照常记录</div>
+                <div class="s ok">已通过</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="acts">
+        <div class="right">
+            <a class="btn btn-primary" href="{{ admin_url }}">进入后台</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+<script>
+// 复制服务器片段：优先用 Clipboard API，旧浏览器退回 textarea + execCommand
+(function () {
+    function fallback(text, done) {
+        var box = document.createElement('textarea');
+        box.value = text;
+        box.setAttribute('readonly', 'readonly');
+        box.style.position = 'fixed';
+        box.style.left = '-9999px';
+        document.body.appendChild(box);
+        box.select();
+        try { document.execCommand('copy'); done(); } catch (e) { /* 复制不了就让用户自己选文字 */ }
+        document.body.removeChild(box);
+    }
+
+    var buttons = document.querySelectorAll('[data-copy]');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].addEventListener('click', function () {
+            var source = document.getElementById(this.getAttribute('data-copy'));
+            if (!source) { return; }
+            var text = source.textContent || '';
+            var button = this;
+            var done = function () {
+                button.textContent = '已复制';
+                setTimeout(function () { button.textContent = '复制'; }, 1500);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(done, function () { fallback(text, done); });
+            } else {
+                fallback(text, done);
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

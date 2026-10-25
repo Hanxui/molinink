@@ -1,0 +1,47 @@
+{
+    "name": "molin/molinkit",
+    "description": "墨林 · 极轻内核强扩展博客程序",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-mbstring": "*",
+        "ext-json": "*",
+        "ext-openssl": "*",
+        "ext-fileinfo": "*",
+        "nikic/fast-route": "^1.3",
+        "psr/simple-cache": "^3.0",
+        "psr/container": "^2.0",
+        "monolog/monolog": "^3.0",
+        "twig/twig": "^3.0",
+        "symfony/mailer": "^7.0",
+        "symfony/console": "^7.0",
+        "paragonie/constant_time_encoding": "^3.0"
+    },
+    "suggest": {
+        "ext-zip": "从后台上传安装插件/主题包时需要;缺了对应入口会给出提示",
+        "ext-gd": "媒体库生成多尺寸缩略图(或装 imagick)",
+        "ext-intl": "本地化日期格式(IntlDateFormatter)",
+        "ext-curl": "远程备份上传到对象存储"
+    },
+    "autoload": {
+        "psr-4": {
+            "Molin\\": "core/"
+        },
+        "files": [
+            "core/helpers.php"
+        ],
+        "classmap": [
+            "core/Migrations/"
+        ]
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true,
+        "platform": {
+            "php": "8.2.0"
+        }
+    }
+}

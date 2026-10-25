@@ -1,0 +1,72 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  站点健康(《111》,基准 后台站点健康-定稿-2026-09-30 桌面 / 移动端)。
+  18 项检查分五组 6/3/3/2/4;桌面五列网格(表头行只在首组),移动一行三叠 + 状态词。
+  三档状态:ok=实心墨点 / tip=空心点 / bad=暖赭实心点且当前值整段暖赭。
+  取值、计数、链接全部在 Health 备好;模板只做展示。桌面与移动各挂一份 section(CSS 切换显隐),
+  为的是行底发丝线的 :last-child 在两边都只认自己那份 —— 与基准逐线对齐。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('工具') }}</div>
+            <h1>{{ __('站点健康') }}</h1>
+            <p class="lede">{{ __('一次体检，把环境问题摆在台面上。严重项先处理，建议项可以再看。') }}</p>
+        </div>
+        {# 2026-10-17:进页面不再自动跑一遍,点这颗才真测(结果存快照,下次进来直接看) #}
+        <a class="btn {{ has_result ? 'btn-ghost' : 'btn-primary' }}" href="{{ run_url }}">{{ has_result ? __('重新检测') : __('开始检测') }}</a>
+    </div>
+
+    {% include 'partials/tools-nav.twig' with {tools_kind: 'health'} %}
+
+    {% if not has_result %}
+        <section class="hv-empty">
+            <div class="et">{{ __('还没有检测过') }}</div>
+            <p class="gdesc">{{ __('检测要读数据库、扫日志、看 PHP 扩展与缓存状态 —— 由你按一下才跑，不是每次进页面都跑一遍。') }}</p>
+            <a class="btn" href="{{ run_url }}">{{ __('开始检测') }}</a>
+        </section>
+    {% else %}
+    {% if not fresh %}
+        <p class="gdesc">{{ __('下面是上次检测的结果。页面重进不会再测一遍；要看最新的，点右上角「重新检测」。') }}</p>
+    {% endif %}
+
+    <div class="sum">
+        <span class="s ok"><i></i><b>{{ sum.ok.n }}</b> {{ sum.ok.label }}</span>
+        <span class="s tip"><i></i><b>{{ sum.tip.n }}</b> {{ sum.tip.label }}</span>
+        <span class="s bad"><i></i><b>{{ sum.bad.n }}</b> {{ sum.bad.label }}</span>
+        <span class="when">{{ when }}</span>
+    </div>
+
+    {% for group in groups %}
+        <section class="group g-d">
+            <div class="gh"><span class="g">{{ group.name }}</span><span class="gs">{{ group.note }}</span></div>
+            {% if loop.first %}
+                <div class="hrow"><span></span><span>{{ __('检查项') }}</span><span>{{ __('当前值') }}</span><span>{{ __('判定标准') }}</span><span>{{ __('修复建议') }}</span></div>
+            {% endif %}
+            {% for row in group.rows %}
+                <div class="row{% if row.state == 'tip' %} tip{% elseif row.state == 'bad' %} bad{% endif %}">
+                    <i class="dot"></i>
+                    <div class="nm">{{ row.name }}</div>
+                    <div class="cv">{% for p in row.cv %}{% if p.t == 'c' %}<code>{{ p.x }}</code>{% elseif p.t == 'd' %}<span class="dim">{{ p.x }}</span>{% else %}{{ p.x }}{% endif %}{% endfor %}</div>
+                    <div class="jd">{{ row.jd }}</div>
+                    {% if row.fix %}<a class="fx"{% if row.fix.url is defined and row.fix.url %} href="{{ row.fix.url }}"{% endif %}>{{ row.fix.label }}</a>{% else %}<span class="fx none">—</span>{% endif %}
+                </div>
+            {% endfor %}
+        </section>
+
+        <section class="group m">
+            <div class="gh"><span class="g">{{ group.name }}</span><span class="gs">{{ group.note }}</span></div>
+            {% for row in group.rows %}
+                <div class="row{% if row.state == 'tip' %} tip{% elseif row.state == 'bad' %} bad{% endif %}">
+                    <div class="l1"><i></i><div class="nm">{{ row.name }}</div><div class="tag">{{ row.tag }}</div></div>
+                    <div class="l2">{% for p in row.cv %}{% if p.t == 'c' %}<code>{{ p.x }}</code>{% elseif p.t == 'd' %}<span class="dim">{{ p.x }}</span>{% else %}{{ p.x }}{% endif %}{% endfor %}</div>
+                    <div class="l3"><span>{{ __('判定：') }}{{ row.jd }}</span>{% if row.fix %}<a{% if row.fix.warn|default(false) %} class="warn"{% endif %}{% if row.fix.url is defined and row.fix.url %} href="{{ row.fix.url }}"{% endif %}>{{ row.fix.label }}</a>{% endif %}</div>
+                </div>
+            {% endfor %}
+        </section>
+    {% endfor %}
+    {% endif %}
+{% endblock %}

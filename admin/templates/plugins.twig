@@ -1,0 +1,141 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  插件列表(《85》,基准 后台插件列表-定稿-2026-09-30)。
+  页签 / 筛选要的接口与路由还没落地,先落「页头 + 行列表 + 底注」;
+  页头「＋ 安装或升级(.zip)」是离线上传 zip(《92》§8):同名包走覆盖升级(自动停用 →
+  换代码 → 恢复原启用状态),新包只装入不启用(口径同主题屏);表单契约与主题屏同一套
+  (data-progress + .upbar + .uperr)。
+  停用行名称转中灰(.tr.off),装不上的目录与原因单独一块。
+  行内「启用 / 停用 / 删除」为 POST 表单(带 CSRF),目标 plugins/{activate|deactivate|delete},
+  删除只在停用时出现,二次确认走 <details class="delp"> 内联展开(同主题屏),真删目录不可恢复;
+  「装不上的」那一栏每行另有「清理」(plugins/purge):清单读不出来的没有插件对象可删,
+  只能按目录名整棵清掉,连 {p}plugins 里的残骸行与启用名单里的同名项一起摘掉;
+  按钮范式同主题屏 .tr .op > .btn。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('扩展') }}</div>
+            <h1>{{ __('插件') }}</h1>
+            <p class="lede">{{ __('功能都是从外面长进来的。这里只管开关：能声明什么能力，才能干什么事。') }}</p>
+        </div>
+        {% if current_user and current_user.holds('plugin.activate') %}
+            {# 离线上传 zip(《92》§8):选文件即传,真进度条走 .upbar;同名包升级,新包只装入 #}
+            <form class="upf" method="post" action="{{ upload_url }}" enctype="multipart/form-data" data-progress>
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="file" name="file" id="plugin-file" accept=".zip" data-auto hidden>
+                <label class="btn btn-primary" for="plugin-file" title="{{ __('上传插件') }}"><span class="plus">＋</span>{{ __('安装或升级(.zip)') }}</label>
+                {# 进度契约:外层脚本认 data-progress + .upbar(真进度)、.uperr(失败位) #}
+                <div class="upbar" hidden><i></i><span class="pc">0%</span></div>
+                <div class="uperr" hidden></div>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="table plugins-list">
+        <div class="thead">
+            <span>{{ __('插件') }}</span>
+            <span>{{ __('版本') }}</span>
+            <span>{{ __('作者') }}</span>
+            <span>{{ __('状态') }}</span>
+            <span class="op-h">{{ __('操作') }}</span>
+        </div>
+
+        {% for name, plugin in available %}
+            <div class="tr{{ name in active ? '' : ' off' }}">
+                <div class="nm">
+                    <div class="t">{{ plugin.manifest.title }}<span class="key">{{ name }}</span></div>
+                    {% if plugin.manifest.description %}<div class="sub">{{ plugin.manifest.description }}</div>{% endif %}
+                </div>
+                <span class="cell num nowrap">{{ plugin.version }}</span>
+                <span class="cell nowrap">{{ plugin.manifest.authorName }}</span>
+                <span class="cell ink">{{ name in active ? __('已启用') : __('已停用') }}</span>
+                {% if current_user and current_user.holds('plugin.activate') %}
+                    <div class="op">
+                        {# 管理入口:启用的插件声明了后台页才有,指向它声明的第一页(《12》§7.1;路由由内核解析) #}
+                        {% if name in active and plugin.manifest.adminPages|length > 0 %}
+                            <a class="btn btn-ghost" href="{{ path('admin', {path: plugin.manifest.adminPages[0].route}) }}">{{ __('管理') }}</a>
+                        {% endif %}
+                        <form method="post" action="{{ path('admin', {path: name in active ? 'plugins/deactivate' : 'plugins/activate'}) }}">
+                            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                            <input type="hidden" name="slug" value="{{ name }}">
+                            <button class="btn btn-ghost" type="submit">{{ name in active ? __('停用') : __('启用') }}</button>
+                        </form>
+                        {% if name not in active %}
+                            {# 真删目录,不可恢复;二次提醒走内联展开,不用浏览器弹窗(同主题屏) #}
+                            <details class="delp">
+                                <summary class="danger">{{ __('删除') }}</summary>
+                                <form method="post" action="{{ path('admin', {path: 'plugins/delete'}) }}">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <input type="hidden" name="slug" value="{{ name }}">
+                                    <button class="danger" type="submit">{{ __('确认删除，不可恢复') }}</button>
+                                </form>
+                            </details>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="op"></div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="empty"><div class="et">{{ __('plugins/ 下没有插件。') }}</div></div>
+        {% endfor %}
+    </div>
+
+    {% if broken or skipped %}
+        <div class="sub-h">{{ __('装不上的') }}</div>
+        <p class="sub-note">{{ __('「清理」会把目录整棵删掉，并从启用名单里摘掉同名项，不可恢复。') }}</p>
+        <div class="table">
+            <div class="thead">
+                <span>{{ __('目录') }}</span>
+                <span>{{ __('原因') }}</span>
+                <span class="op-h">{{ __('操作') }}</span>
+            </div>
+            {# 启用名单里却没有可用目录的,排在最前:它比"装不上的"更严重,站点是在少一个插件的情况下跑的 #}
+            {% for name, reason in skipped %}
+                <div class="tr">
+                    <div class="nm">{{ name }}<span class="key">{{ __('已启用') }}</span></div>
+                    <span class="cell">{{ __('本趟已跳过（站点照常运行）：') }}{{ reason }}</span>
+                    {% if current_user and current_user.holds('plugin.activate') %}
+                        <div class="op">
+                            {# 残骸只能按目录名整棵清,没有清单可读;名字与范围由 Loader::purge 把关 #}
+                            <details class="delp">
+                                <summary class="danger">{{ __('清理') }}</summary>
+                                <form method="post" action="{{ path('admin', {path: 'plugins/purge'}) }}">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <input type="hidden" name="dir" value="{{ name }}">
+                                    <button class="danger" type="submit">{{ __('确认清理，删除全部文件') }}</button>
+                                </form>
+                            </details>
+                        </div>
+                    {% else %}
+                        <div class="op"></div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            {% for dir, reason in broken %}
+                <div class="tr">
+                    <div class="nm">{{ dir }}</div>
+                    <span class="cell">{{ reason }}</span>
+                    {% if current_user and current_user.holds('plugin.activate') %}
+                        <div class="op">
+                            <details class="delp">
+                                <summary class="danger">{{ __('清理') }}</summary>
+                                <form method="post" action="{{ path('admin', {path: 'plugins/purge'}) }}">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <input type="hidden" name="dir" value="{{ dir }}">
+                                    <button class="danger" type="submit">{{ __('确认清理，删除全部文件') }}</button>
+                                </form>
+                            </details>
+                        </div>
+                    {% else %}
+                        <div class="op"></div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,390 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{#
+  后台媒体库(《80-后台媒体库实现规格》)。
+  结构、类名与文案逐字取自 assets/ui/后台媒体库-定稿-2026-09-29.html(网格)与
+  后台媒体库-列表视图-2026-09-30.html(列表),二次确认照《80》第 10.3 节。
+  缩略图:文件在盘上就出真图,不在就留基准图那套灰描边线稿(《80》第 4.5 节)。
+  这一屏不用 JS 也能走通:选中 ?sel=、视图 ?view=、页签筛选分页都是 GET,删除确认走 ?confirm=trash。
+  只有图片才配 <img>:文档/音视频一律线稿,别拿载不动的文件当图源(那会留一块纯白)。
+
+  详情块拆成宏:pane(网格右栏)/ qedit(列表行下展开)。整屏走 `fragment=false`,照常套 layout;
+  AJAX 换栏时走 `fragment=true`,只吐详情那一块,由前端替换容器内容,不整页刷新。
+#}
+{% macro line(kind) %}
+    {%- if kind == 'image' -%}
+        <svg viewBox="0 0 120 90" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="88" cy="26" r="8"/>
+            <path d="M8 70 34 42 52 60 72 34 112 70"/>
+            <path d="M8 70h104"/>
+            <path d="M30 70v-9M78 70v-7"/>
+        </svg>
+    {%- elseif kind == 'video' -%}
+        <svg viewBox="0 0 120 90" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="20" y="22" width="80" height="46" rx="3"/>
+            <path d="M52 36 70 45 52 54z"/>
+            <path d="M28 22v46M92 22v46"/>
+        </svg>
+    {%- elseif kind == 'audio' -%}
+        <svg viewBox="0 0 120 90" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M50 58V26l30-6v32"/>
+            <circle cx="43" cy="60" r="7"/>
+            <circle cx="73" cy="54" r="7"/>
+        </svg>
+    {%- else -%}
+        <svg viewBox="0 0 120 90" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M36 14h34l20 20v42a2 2 0 0 1-2 2H36a2 2 0 0 1-2-2V16a2 2 0 0 1 2-2z"/>
+            <path d="M70 14v20h20"/>
+            <path d="M46 50h28M46 60h28M46 70h16"/>
+        </svg>
+    {%- endif -%}
+{% endmacro %}
+
+{% macro refs(detail) %}
+    {%- if detail.refs.count > 0 -%}
+        <span>{{ __('被') }} <b>{{ detail.refs.count }}</b> {{ __('处引用') }}</span>
+        {%- for ref in detail.refs.list -%}
+            <a href="{{ ref.url }}">· {{ ref.title }}</a>
+        {%- endfor -%}
+    {%- else -%}
+        <span>{{ __('未被任何内容引用') }}</span>
+    {%- endif -%}
+{% endmacro %}
+
+{# 网格右栏详情(《80》第 4.7 节)。Ajax 换栏时只渲染这一块,替换 #media-detail 的内容 #}
+{% macro pane(detail, field, token, edited) %}
+    <div class="dh">{{ __('附件详情') }}</div>
+    <div class="prev">
+        {%- if detail.preview -%}
+            <img src="{{ detail.preview }}" alt="">
+        {%- else -%}
+            {{ _self.line(detail.art) }}
+        {%- endif -%}
+    </div>
+    <div class="fn2">{{ detail.name }}</div>
+
+    <dl class="meta2">
+        <dt>{{ __('尺寸') }}</dt><dd>{{ detail.dims }}</dd>
+        <dt>{{ __('大小') }}</dt><dd>{{ detail.size_text }}</dd>
+        <dt>{{ __('类型') }}</dt><dd>{{ detail.mime }}</dd>
+        <dt>{{ __('上传') }}</dt><dd>{{ detail.uploaded }}</dd>
+    </dl>
+
+    <div class="sub-h">{{ __('文件地址') }}</div>
+    <div class="urlbox">
+        <code>{{ detail.url }}</code>
+        <button type="button" data-copy="{{ detail.url }}">{{ __('复制') }}</button>
+    </div>
+
+    <form id="meta-form" method="post" action="{{ detail.edit_url }}">
+        <input type="hidden" name="{{ field }}" value="{{ token }}">
+        <div class="fld">
+            <label for="alt">{{ __('替代文本') }}</label>
+            <input id="alt" name="alt" type="text" value="{{ detail.alt }}">
+        </div>
+        <div class="fld">
+            <label for="ttl">{{ __('标题') }}</label>
+            <input id="ttl" name="title" type="text" value="{{ detail.title_text }}">
+        </div>
+        <div class="fld">
+            <label for="cap">{{ __('说明') }}</label>
+            <textarea id="cap" name="caption" rows="3">{{ detail.caption }}</textarea>
+            <p class="save-note{% if edited %} show{% endif %}">{{ __('已保存') }}</p>
+            {# 有脚本时失焦即保存(《80》第 6 节);没脚本时这一钮就是唯一的保存出口 #}
+            <noscript><button class="btn btn-ghost" type="submit">{{ __('保存') }}</button></noscript>
+        </div>
+    </form>
+
+    <div class="sub-h">{{ __('引用') }}</div>
+    <div class="refs">{{ _self.refs(detail) }}</div>
+
+    <div class="acts">
+        {% if detail.removed %}
+            {% if detail.can_trash %}
+                <form method="post" action="{{ detail.restore_url }}">
+                    <input type="hidden" name="{{ field }}" value="{{ token }}">
+                    <button class="btn btn-ghost" type="submit">{{ __('还原') }}</button>
+                </form>
+                <a class="btn del" href="{{ detail.destroy_url }}">{{ __('彻底删除') }}</a>
+            {% endif %}
+        {% else %}
+            <a class="btn btn-ghost" href="{{ detail.download_url }}" download>{{ __('下载') }}</a>
+            {% if detail.can_trash %}
+                <a class="btn del" href="{{ detail.trash_url }}">{{ __('移到回收站') }}</a>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endmacro %}
+
+{# 列表视图行下展开块(《80》第 10.1 节)。与 pane 同源数据,Ajax 换栏时整块吐出插到行后 #}
+{% macro qedit(detail, field, token, edited) %}
+    <div class="qedit">
+        <div class="qe-top">
+            <div>
+                <div class="sub-h">{{ __('文件地址') }}</div>
+                <div class="urlbox">
+                    <code>{{ detail.url }}</code>
+                    <button type="button" data-copy="{{ detail.url }}">{{ __('复制') }}</button>
+                </div>
+            </div>
+            <div>
+                <div class="sub-h">{{ __('引用') }}</div>
+                <div class="refs">{{ _self.refs(detail) }}</div>
+            </div>
+        </div>
+
+        <form id="meta-form" method="post" action="{{ detail.edit_url }}">
+            <input type="hidden" name="{{ field }}" value="{{ token }}">
+            <div class="qe-grid">
+                <div class="qe-f"><label for="alt">{{ __('替代文本') }}</label><input class="qe-in" id="alt" name="alt" type="text" value="{{ detail.alt }}"></div>
+                <div class="qe-f"><label for="ttl">{{ __('标题') }}</label><input class="qe-in" id="ttl" name="title" type="text" value="{{ detail.title_text }}"></div>
+                <div class="qe-f"><label for="cap">{{ __('说明') }}</label><input class="qe-in" id="cap" name="caption" type="text" value="{{ detail.caption }}"></div>
+            </div>
+            <p class="save-note{% if edited %} show{% endif %}">{{ __('已保存') }}</p>
+            <noscript><button class="btn btn-ghost" type="submit">{{ __('保存') }}</button></noscript>
+        </form>
+
+        {# 操作钮在表单外:还原本身也是一次提交,不能套两层 form #}
+        <div class="qe-acts">
+            {% if detail.removed %}
+                {% if detail.can_trash %}
+                    <form method="post" action="{{ detail.restore_url }}">
+                        <input type="hidden" name="{{ field }}" value="{{ token }}">
+                        <button class="btn btn-ghost" type="submit">{{ __('还原') }}</button>
+                    </form>
+                    <a class="btn del" href="{{ detail.destroy_url }}">{{ __('彻底删除') }}</a>
+                {% endif %}
+            {% else %}
+                <a class="btn btn-ghost" href="{{ detail.download_url }}" download>{{ __('下载') }}</a>
+                {% if detail.can_trash %}
+                    <a class="btn del" href="{{ detail.trash_url }}">{{ __('移到回收站') }}</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endmacro %}
+
+{% if fragment|default(false) %}
+    {# AJAX 只吐这一块:JS 收到后替换 #media-detail(网格)或插到被点那行之后(列表) #}
+    {%- if view == 'list' -%}
+        {{ _self.qedit(detail, csrf_field, csrf_token, false) }}
+    {%- else -%}
+        {{ _self.pane(detail, csrf_field, csrf_token, false) }}
+    {%- endif -%}
+{% else %}
+    {% embed "layout.twig" %}
+        {% block body %}
+            {% import "media.twig" as art %}
+            <div class="head">
+                <div class="tx">
+                    <div class="eyebrow">{{ eyebrow }}</div>
+                    <h1>{{ heading }}</h1>
+                    <p class="lede">{{ lede }}</p>
+                </div>
+                <form id="upload-form" class="upload" method="post" action="{{ upload_url }}" enctype="multipart/form-data"
+                      data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <input type="hidden" name="view" value="{{ view }}">
+                    <input type="hidden" name="tab" value="{{ active_tab }}">
+                    <input type="hidden" name="q" value="{{ filters.q }}">
+                    <input type="hidden" name="month" value="{{ filters.month }}">
+                    <input type="hidden" name="order" value="{{ filters.order }}">
+                    <input type="hidden" name="per" value="{{ per }}">
+                    <input type="hidden" name="page" value="{{ pagination.page }}">
+                    {% if detail %}<input type="hidden" name="sel" value="{{ detail.id }}">{% endif %}
+                    <label class="btn btn-primary new" for="upload-input"><span class="plus">＋</span>{{ __('上传文件') }}</label>
+                    <input type="file" id="upload-input" name="files[]" multiple hidden>
+                    <noscript><button class="btn btn-primary" type="submit">{{ __('开始上传') }}</button></noscript>
+                </form>
+            </div>
+
+            <nav class="tabs">
+                <div class="tabset">
+                    {% for tab in tabs %}
+                        <a href="{{ tab.url }}"{% if tab.active %} class="active"{% endif %}>{{ tab.label }}<span class="n">{{ tab.n }}</span></a>
+                    {% endfor %}
+                </div>
+                <span class="spacer"></span>
+                <span class="viewtog">
+                    {% for mode in views %}
+                        <a href="{{ mode.url }}"{% if mode.on %} class="on"{% endif %}>{{ mode.label }}</a>
+                    {% endfor %}
+                </span>
+            </nav>
+
+            <form class="filters" method="get" action="{{ filters.action }}">
+                <input type="hidden" name="view" value="{{ view }}">
+                <input type="hidden" name="tab" value="{{ active_tab }}">
+                <input type="hidden" name="per" value="{{ per }}">
+                <div class="search">
+                    <span class="ico"></span>
+                    <input type="text" name="q" placeholder="{{ __('搜索文件名') }}" value="{{ filters.q }}">
+                </div>
+                <select name="month">
+                    {% for month in filters.months %}
+                        <option value="{{ month.value }}"{% if month.value == filters.month %} selected{% endif %}>{{ month.label }}</option>
+                    {% endfor %}
+                </select>
+                <select name="order">
+                    {% for value, label in filters.orders %}
+                        <option value="{{ value }}"{% if value == filters.order %} selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="spacer"></div>
+                <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+            </form>
+
+            <div class="meta">
+                <div class="count">{{ __('共') }} <b>{{ stats.count }}</b> {{ __('项 · 已用') }} <b>{{ stats.used }}</b></div>
+                <div class="spacer"></div>
+                <div class="hint">{{ __('或将文件拖到此处上传') }}</div>
+            </div>
+
+            {# 队列容器常驻但默认收起:XHR 上传要往这里插行(《80》第 10.2 节) #}
+            <div class="upq" id="upq"{% if queue is empty %} hidden{% endif %}>
+                {% for row in queue %}
+                    {% include "media-queue-row.twig" with {row: row} %}
+                {% endfor %}
+            </div>
+
+            <div class="cols{% if view == 'list' %} cols-one{% endif %}"
+                 data-csrf-field="{{ csrf_field }}"
+                 data-csrf-token="{{ csrf_token }}">
+                <div class="grid-col">
+                    {% if view == 'list' %}
+                        <div class="table">
+                            <div class="thead">
+                                {# 列表视图第一列是占位:真复选框在下面每行里,表头这一格与文章屏不同,是本页特有的对齐件 #}
+                                <span></span>
+                                <span>{{ __('预览') }}</span>
+                                <span>{{ __('名称') }}</span>
+                                <span class="h-type">{{ __('类型') }}</span>
+                                <span class="h-size">{{ __('尺寸') }}</span>
+                                <span>{{ __('大小') }}</span>
+                                <span class="h-up">{{ __('上传') }}</span>
+                                <span class="h-ref">{{ __('引用') }}</span>
+                                <span class="h-ops">{{ __('操作') }}</span>
+                            </div>
+
+                            {% for item in items %}
+                                <div class="tr{% if item.selected %} sel{% endif %}" data-href="{{ item.url }}"
+                                     data-id="{{ item.id }}" data-detail-url="{{ item.detail_url }}">
+                                    <span>
+                                        <input type="checkbox" class="cb"{% if item.selected %} checked{% endif %} data-select="{{ item.url }}" aria-label="{{ __('选中 %s', 'molin', item.name) }}">
+                                    </span>
+                                    <div class="pv">
+                                        <i>{{ item.kind }}</i>
+                                        {%- if item.thumb -%}
+                                            <img src="{{ item.thumb }}" alt="">
+                                        {%- else -%}
+                                            {{ art.line(item.art) }}
+                                        {%- endif -%}
+                                    </div>
+                                    <div class="nm"><a class="nm-link" href="{{ item.url }}">{{ item.name }}</a></div>
+                                    <span class="cell h-type">{{ item.category }}</span>
+                                    <span class="cell h-size">{{ item.dims }}</span>
+                                    <span class="cell">{{ item.size_text }}</span>
+                                    <span class="cell h-up">{{ item.date }}</span>
+                                    <span class="cell h-ref{% if item.unreferenced %} ur{% endif %}">{{ item.refs_text }}</span>
+                                    <div class="ops h-ops">
+                                        <a href="{{ item.download_url }}">{{ __('预览') }}</a>
+                                        <a href="{{ item.download_url }}" download>{{ __('下载') }}</a>
+                                        {% if not item.removed and item.can_trash %}
+                                            <a class="del" href="{{ item.trash_url }}">{{ __('回收站') }}</a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if item.selected and detail %}
+                                    {{ art.qedit(detail, csrf_field, csrf_token, edited) }}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if items is empty %}
+                                <p class="lede">{{ __('还没有文件。点上面的「＋ 上传文件」放第一份进来。') }}</p>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="grid">
+                            {% for item in items %}
+                                <a class="cell{% if item.selected %} sel{% endif %}" href="{{ item.url }}"
+                                   data-id="{{ item.id }}" data-detail-url="{{ item.detail_url }}">
+                                    <span class="kind">{{ item.kind }}</span>
+                                    <span class="tick"></span>
+                                    <div class="thumb">
+                                        {%- if item.thumb -%}
+                                            <img src="{{ item.thumb }}" alt="">
+                                        {%- else -%}
+                                            {{ art.line(item.art) }}
+                                        {%- endif -%}
+                                    </div>
+                                    <div class="bd">
+                                        <div class="fn">{{ item.name }}</div>
+                                        <div class="mi">{{ item.dims }}{% if item.dims %} · {% endif %}{{ item.size_text }}{% if item.removed %} · <span class="ur">{{ __('待清理') }}</span>{% elseif item.unreferenced %} · <span class="ur">{{ __('未引用') }}</span>{% endif %}</div>
+                                    </div>
+                                </a>
+                            {% endfor %}
+
+                            {% if items is empty %}
+                                <p class="lede">{{ __('还没有文件。点上面的「＋ 上传文件」放第一份进来。') }}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if pagination.show %}
+                        <div class="pager">
+                            <div class="info">{{ pagination.info }}</div>
+                            <div class="pages">
+                                <a href="{{ pagination.prev.url }}">{{ __('上一页') }}</a>
+                                {% for link in pagination.links %}
+                                    <a href="{{ link.url }}"{% if link.active %} class="cur"{% endif %}>{{ link.page }}</a>
+                                {% endfor %}
+                                {% if pagination.gap %}<span class="gap">…</span>{% endif %}
+                                {% if pagination.next %}<a href="{{ pagination.next.url }}">{{ __('下一页') }}</a>{% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                {% if view != 'list' and detail %}
+                    <aside class="detail" id="media-detail">
+                        {{ art.pane(detail, csrf_field, csrf_token, edited) }}
+                    </aside>
+                {% endif %}
+            </div>
+        {% endblock %}
+
+        {% block dialog %}
+            {% if confirm %}
+                <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg-title">
+                    <div class="tag">{{ __('危险操作') }}</div>
+                    <h2 id="dlg-title">{% if confirm.mode == 'destroy' %}{{ __('彻底删除？') }}{% else %}{{ __('移到回收站？') }}{% endif %}</h2>
+                    {% if confirm.mode == 'destroy' %}
+                        <p class="tx2">{{ __('「%s」的文件与记录会一并删除，不可恢复。清理任务本会在确认无引用后移除文件与记录，这里手动执行同一件事。', 'molin', confirm.title) }}</p>
+                    {% else %}
+                        <p class="tx2">{{ __('「%s」对应的', 'molin', confirm.title) }}{{ confirm.is_image ? __('图片') : '' }}{{ __('文件将被移入回收站。文件不会立即物理删除，清理任务会在确认无引用后移除文件与记录。') }}</p>
+                    {% endif %}
+                    {% if confirm.refs.count > 0 %}
+                        <p class="rh">{{ __('当前被') }} <b>{{ confirm.refs.count }}</b> {{ __('处引用：') }}</p>
+                        <div class="dr">
+                            {% for ref in confirm.refs.list %}
+                                <a href="{{ ref.url }}">· {{ ref.title }}</a>
+                            {% endfor %}
+                        </div>
+                        {% if confirm.mode == 'destroy' %}
+                            <p class="warn">{{ __('还有 %s 处引用，这一步会被挡下 —— 先处理引用。', 'molin', confirm.refs.count) }}</p>
+                        {% else %}
+                            <p class="warn">{{ __('移入后') }}{{ confirm.count_text }}{{ confirm.is_image ? __('引用涉及的图片将无法显示。') : __('引用会失效。') }}</p>
+                        {% endif %}
+                    {% endif %}
+                    <div class="foot">
+                        <a class="btn btn-ghost" href="{{ confirm.cancel_url }}" data-cancel data-focus>{{ __('取消') }}</a>
+                        <form method="post" action="{{ confirm.action_url }}">
+                            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                            <button class="btn btn-danger" type="submit">{% if confirm.mode == 'destroy' %}{{ __('彻底删除') }}{% else %}{{ __('移到回收站') }}{% endif %}</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        {% endblock %}
+    {% endembed %}
+{% endif %}

@@ -1,0 +1,44 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * 墨林 - Molinink
+ * @author Kira
+ * @link   https://www.molinink.com
+ */
+
+declare(strict_types=1);
+
+/*
+ * molin 命令行入口(《58-CLI工具》)。与 index.php 共用 Bootstrap 的装配路径,
+ * 区别只在:这里不注册路由、不分发请求。退出码见《58》第 4 节。
+ *
+ * 未装站点时容器是空的,只能跑不依赖数据库的命令(core:version、key:generate、install)。
+ */
+
+use Composer\Autoload\ClassLoader;
+use Molin\Bootstrap;
+use Molin\Cli\Application;
+use Molin\Container\Container;
+
+define('MOLIN_ROOT', __DIR__);
+
+// 契约版本与产品版本各自演进(《00》第 1 节、《56》第 1 节)
+define('MOLIN_CONTRACT', '1.0');
+
+/** @var ClassLoader $autoloader */
+$autoloader = require MOLIN_ROOT . '/vendor/autoload.php';
+
+if (Bootstrap::isConfigured(MOLIN_ROOT)) {
+    $container = Bootstrap::start(MOLIN_ROOT, $autoloader);
+} else {
+    if (!defined('APP_DEBUG')) {
+        define('APP_DEBUG', false);
+    }
+
+    $container = new Container();
+    $container->instance('root', MOLIN_ROOT);
+    $container->instance('config', ['debug' => false]);
+}
+
+exit((new Application($container))->run());

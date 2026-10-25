@@ -1,0 +1,24 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 作者页(《115》):与分类页同壳,头部换成信息卡(头像 + 姓名 + 简介 + 篇数),短线在信息卡之下。 #}
+{% extends 'archive.twig' %}
+
+{% block title %}{{ term.name }} · {{ site.name }}{% endblock %}
+
+{% block head %}
+    <section class="head">
+        <div class="eyebrow">{{ __('作者', 'theme') }}</div>
+        <div class="who">
+            <div class="pic">{{ author.initial }}</div>
+            <div class="who-tx">
+                <h1>{{ term.name }}</h1>
+                {% if term.description %}
+                    <p class="bio">{{ term.description }}</p>
+                {% endif %}
+                <div class="count"><b>{{ author.count }}</b> {{ __('篇文章', 'theme') }}</div>
+            </div>
+        </div>
+        <div class="underline"></div>
+    </section>
+{% endblock %}
+
+{% block empty %}{{ __('这位作者还没有发表文章。', 'theme') }}{% endblock %}

@@ -1,0 +1,133 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  用户新建与编辑(《106》,基准 后台用户新建与编辑-定稿-2026-09-30):四个分组 + 固定底部保存栏。
+  同屏两态:编辑态照基准;新建态按《106》§11-1 的保守推定(用户名可写、无概况行、无额外能力行、
+  无上次保存),已登记待办清单待作者追认。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="eyebrow">{{ __('权限') }}</div>
+        <h1>{{ mode == 'new' ? __('新建用户') : __('编辑用户') }}</h1>
+        <p class="lede">{{ __('谁能在站点里写字、审评论、改设置，都在这里定。') }}</p>
+        {% if meta_line is not null and meta_line.date != '' %}
+            <p class="metaline">{{ __('最后活跃') }} <b>{{ meta_line.date }}</b><span class="sep">·</span><b>{{ meta_line.posts }}</b> {{ __('篇文章') }}</p>
+        {% endif %}
+    </div>
+
+    <form class="form" id="user-form" method="post" action="{{ save_url }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+        <section class="group">
+            <h2>{{ __('基本信息') }}</h2>
+            <p class="gdesc">{{ __('昵称会出现在文章署名与评论区；用户名只用于登录。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('用户名') }}<span class="req">*</span></label>
+                    <div class="ctrl">
+                        {% if mode == 'new' %}
+                            <input type="text" name="username" value="{{ values.username }}">
+                        {% else %}
+                            <input type="text" value="{{ values.username }}" readonly>
+                        {% endif %}
+                        <div class="hint">{{ __('创建后不可更改，且全站不可重复。') }}</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>{{ __('昵称') }}<span class="req">*</span></label>
+                    <div class="ctrl"><input type="text" name="display_name" value="{{ values.display_name }}" maxlength="60"></div>
+                </div>
+                <div class="field">
+                    <label>{{ __('邮箱') }}<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input type="email" name="email" value="{{ values.email }}">
+                        <div class="hint">{{ __('用于接收通知与找回密码，不会公开显示。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('角色与能力') }}</h2>
+            <p class="gdesc">{{ __('角色是一组能力的集合，换角色就换一批权限；额外能力单独加在人身上。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('角色') }}</label>
+                    <div class="ctrl">
+                        <select name="role">
+                            {% for r in roles %}
+                                <option value="{{ r.v }}"{{ r.sel ? ' selected' : '' }}>{{ r.t }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="hint">{{ __('插件注册的新角色会自动出现在这里。') }}</div>
+                    </div>
+                </div>
+                {% if caps is not empty %}
+                    <div class="field">
+                        <label>{{ __('额外能力') }}</label>
+                        <div class="ctrl">
+                            <div class="caps">
+                                {% for cap in caps %}
+                                    <div class="cap{{ cap.lock ? ' lock' : '' }}">
+                                        <div class="k"><code>{{ cap.k }}</code><span class="why">{{ cap.why }}</span></div>
+                                        <div class="from">{{ cap.from }}</div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="cap-note"><i></i>{{ __('本页只读，增删请到授予它的插件里操作') }}</div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('密码') }}</h2>
+            <p class="gdesc">{{ __('密码以 argon2id 存储，任何人都取不回来，只能重置。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('新密码') }}</label>
+                    <div class="ctrl">
+                        <div class="pw">
+                            <input type="password" name="new_password" value="" autocomplete="new-password">
+                            <div class="meter"><i></i><i></i><i></i><i></i></div>
+                            <div class="mrow"><span class="lv">{{ __('强度 · —') }}</span><span>{{ __('8 位以上，含大小写与数字') }}</span></div>
+                        </div>
+                        <div class="hint">{{ __('留空表示不修改。改动密码后，他在其他设备上的登录会失效，需要重新登录。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('通知') }}</h2>
+            <p class="gdesc">{{ __('只影响这一次保存，不会替他做别的订阅。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('发送欢迎邮件') }}</label>
+                    <div class="ctrl">
+                        <label class="switch">
+                            <input type="hidden" name="welcome_mail" value="0">
+                            <input type="checkbox" name="welcome_mail" value="1" data-switch checked>
+                            <span class="track"><span class="knob"></span></span>
+                            <span class="txt">{{ __('已开启') }}</span>
+                        </label>
+                        <div class="hint">{{ __('保存后往该邮箱发一封欢迎信，正文与投递由邮件插件提供。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+{% endblock %}
+
+{% block savebar %}
+    <footer class="savebar savebar-user-edit">
+        <div class="status">{% if last_saved is not null %}{{ __('上次保存：') }}<b><span class="d">{{ last_saved.date }} </span>{{ last_saved.time }}</b>{% endif %}</div>
+        <div class="btns">
+            <a class="btn btn-ghost" href="{{ cancel_url }}">{{ __('取消') }}</a>
+            <button class="btn btn-primary" type="submit" form="user-form">{{ __('保存用户') }}</button>
+        </div>
+    </footer>
+{% endblock %}

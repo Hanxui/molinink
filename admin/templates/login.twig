@@ -1,0 +1,45 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{#
+  登录屏(《121-登录页实现规格》)。三态:默认 / 会话失效(.strip)/ 锁定(.note + 全禁用)。
+  两态互斥,同时成立按"锁定优先"(§6.3)。锁定阈值两个数字随配置渲染,不写死(§10)。
+#}
+{% extends "auth_layout.twig" %}
+
+{% set page_title = __('登录') %}
+{% set card_title = __('登录') %}
+
+{% block card %}
+    {% if not locked and notice is not empty %}
+        <p class="strip">{{ notice }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ path('login') }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+        <div class="fld">
+            <label for="i">{{ __('用户名或邮箱') }}</label>
+            <input id="i" type="text" name="identity" value="{{ identity }}" autocomplete="username" placeholder="{{ __('用户名或邮箱') }}"{% if locked %} disabled{% endif %}>
+        </div>
+        <div class="fld">
+            <label for="p">{{ __('密码') }}</label>
+            <input id="p" type="password" name="password" autocomplete="current-password" placeholder="{{ __('密码') }}"{% if locked %} disabled{% endif %}>
+        </div>
+
+        <label class="check{% if locked %} is-off{% endif %}" for="r"{% if locked %} aria-disabled="true"{% endif %}>
+            <input id="r" type="checkbox" name="remember" value="1"{% if locked %} disabled{% endif %}>
+            <span class="box"></span>
+            <span class="txt">{{ __('记住我（%d 天）', 'molin', remember_days) }}</span>
+        </label>
+
+        <button class="btn btn-primary" type="submit"{% if locked %} disabled{% endif %}>{{ __('登录') }}</button>
+
+        {% if locked %}
+            <p class="note">{{ __('失败次数过多，请 %d 分钟后再试。', 'molin', lock_minutes) }}<span class="sub">{{ __('同一账号或同一 IP 连续失败 %d 次即临时锁定，期间不接受登录请求。', 'molin', max_attempts) }}</span></p>
+        {% endif %}
+
+        <div class="links">
+            <a class="lnk" href="{{ path('lostpassword') }}">{{ __('忘记密码？') }}</a>
+            {% if can_register %}<a class="lnk" href="{{ path('register') }}">{{ __('注册新账号') }}</a>{% endif %}
+        </div>
+    </form>
+{% endblock %}

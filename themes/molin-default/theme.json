@@ -1,0 +1,82 @@
+{
+    "name": "molin-default",
+    "title": "墨林·默认主题",
+    "version": "1.0.6",
+    "contract": "1.x",
+    "author": "墨林官方",
+    "description": "极简、以写作为主的默认主题。",
+    "license": "MIT",
+    "parent": null,
+    "screenshot": "screenshot.png",
+    "supports": {
+        "blocks": false,
+        "darkmode": false,
+        "menus": ["primary", "footer"],
+        "widgets": ["footer"]
+    },
+    "settings": {
+        "colors": {
+            "label": "配色",
+            "type": "group",
+            "desc": "三处颜色决定整站的墨、纸、点睛。",
+            "fields": {
+                "ink": { "label": "墨色", "type": "color", "default": "#1B1C1E", "hint": "默认 #1B1C1E，用于正文与深色底。" },
+                "paper": { "label": "纸色", "type": "color", "default": "#FAFAF8", "hint": "默认 #FAFAF8，用于页面底色。" },
+                "accent": { "label": "强调色", "type": "color", "default": "#B96A2E", "hint": "默认 #B96A2E，用于链接与点睛。" }
+            }
+        },
+        "layout": {
+            "label": "布局",
+            "type": "group",
+            "fields": {
+                "width": {
+                    "label": "内容宽度",
+                    "type": "select",
+                    "default": "medium",
+                    "options": { "narrow": "窄", "medium": "中", "wide": "宽" },
+                    "hint": "默认「中」。选项由主题声明，只有声明过的值能保存。"
+                }
+            }
+        },
+        "fonts": {
+            "label": "字体",
+            "type": "group",
+            "fields": {
+                "body": { "label": "正文字体", "type": "select", "default": "serif", "options": { "serif": "衬线（系统栈）", "sans": "无衬线（系统栈）" }, "hint": "默认衬线栈。主题不自带字体文件。" },
+                "size": { "label": "正文字号", "type": "number", "default": 17, "min": 14, "max": 20, "unit": "px", "hint": "范围 14–20，默认 17。" }
+            }
+        },
+        "header": {
+            "label": "页头",
+            "type": "group",
+            "fields": {
+                "tagline": { "label": "标语", "type": "text", "default": "书写成林，墨笔成荫", "maxlength": 120, "hint": "默认「书写成林，墨笔成荫」。输出时转义。" }
+            }
+        },
+        "home": {
+            "label": "首页",
+            "type": "group",
+            "fields": {
+                "eyebrow": { "label": "眉题", "type": "text", "default": "随笔 · 长文 · 观察", "maxlength": 60, "hint": "默认「随笔 · 长文 · 观察」。输出时转义。" },
+                "hero": { "label": "大标题", "type": "textarea", "rows": 3, "default": "一个更安静的互联网，\n留给更深的思考。", "hint": "默认两行文案，换行保留；输出时转义。" },
+                "featured": {
+                    "label": "精选栏目",
+                    "type": "repeater",
+                    "default": [],
+                    "fields": {
+                        "name": { "type": "text", "maxlength": 40 },
+                        "category": { "type": "text", "maxlength": 40 }
+                    },
+                    "hint": "每行一个精选栏目：栏目名 + 分类别名。前台首页照此渲染栏目区；不配则不出。顺序即前台顺序。"
+                }
+            }
+        },
+        "code": {
+            "label": "自定义代码",
+            "type": "group",
+            "fields": {
+                "css": { "label": "自定义 CSS", "type": "code", "default": "", "lang": "css", "hint": "代码类字段仅管理员可见，展开后为代码框。" }
+            }
+        }
+    }
+}

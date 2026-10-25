@@ -1,0 +1,62 @@
+name: Release
+
+# 打 tag（如 v0.1.4）就出安装包并发 Release：
+# 带 vendor、不带仓库里的开发件，storage 只留骨架，解压到站点根就能装。
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, json, openssl, fileinfo, gd, zip, intl, curl
+          coverage: none
+          tools: composer:v2
+
+      - name: 只装运行时依赖（vendor 随包走）
+        run: composer install --no-dev --optimize-autoloader --prefer-dist --no-interaction --no-progress
+
+      - name: 组包
+        run: |
+          set -euo pipefail
+          VER="${GITHUB_REF_NAME#v}"
+          rm -rf build && mkdir -p build/molin
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='config.php' --exclude='storage/*/*' ./ build/molin/
+          for d in "" backups cache cache/data cache/pages cache/twig logs plugins trash uploads; do
+            mkdir -p "build/molin/storage/$d"
+            touch "build/molin/storage/$d/.gitkeep"
+          done
+          cd build/molin
+          zip -qr "../../molin-$VER.zip" .
+          cd ../..
+          sha256sum "molin-$VER.zip" > "molin-$VER.zip.sha256"
+          cat "molin-$VER.zip.sha256"
+
+      - name: 发 Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 墨林 ${{ github.ref_name }}
+          files: |
+            molin-*.zip
+            molin-*.zip.sha256
+          body: |
+            安装包自带 `vendor/`，解压到站点根目录即可安装，不需要 composer。
+
+            1. 解压到站点根目录 —— 根下要能直接看到 `index.php`、`core/`、`install/`
+            2. 打开站点地址，跟着安装向导走
+            3. 删掉 `install/`
+            4. 在服务器上挡住 `/storage/`（片段见 `install/服务器配置.txt`）
+
+            The package bundles `vendor/`: unzip it into your site root and run the installer — no Composer needed.
+
+            **这是测试版（0.x）**，升级前请备份。

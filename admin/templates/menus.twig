@@ -1,0 +1,123 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  后台菜单编辑器(《107》,基准 后台菜单编辑器-定稿桌面 / 移动端两张)。
+  一页一菜单:顶栏「菜单位」选当前位,左栏「可选项目」读站点真内容(页面 / 分类 / 自定义链接 / 搜索),右栏当前菜单可编辑项树。
+  整页一张表单(保存栏贴底),桌面与移动共用同一份 DOM,差异全交给 admin.css 的移动段。
+  可编辑项用带前缀的表单域(items[0][label] / items[0][children][1][url]…)提交,服务端按前缀重建树。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="eyebrow">{{ __('外观') }}</div>
+    <h1>{{ __('菜单') }}</h1>
+    <p class="lede">{{ __('前台导航有哪几项、按什么顺序排，在这里定。主题只管摆，不管给。') }}</p>
+
+    {% include 'partials/appearance-nav.twig' %}
+
+    {# 菜单位选择条:GET 切位,选中值即当前位 slug #}
+    <form class="locbar" method="get" action="{{ switch_url }}">
+        <label class="lab" for="menu-switch">{{ __('菜单位') }}<span class="req">*</span></label>
+        <select id="menu-switch" name="menu" onchange="this.form.submit()">
+            {% for o in menu_options %}
+                <option value="{{ o.slug }}"{{ o.selected ? ' selected' : '' }}>{{ o.label }}</option>
+            {% endfor %}
+        </select>
+        <div class="spacer"></div>
+        <span class="hint">{{ __('桌面与移动端共用这一套项目与顺序。') }}</span>
+    </form>
+
+    <div class="split{% if pick.enabled %} pick{% endif %}">
+        <section class="panel">
+            <h2>{{ __('可选项目') }}</h2>
+            <p class="pdesc">{{ __('勾上想要的，点「加入菜单」挂到末尾；自定义链接单独填。') }}</p>
+            {% for g in groups %}
+                <div class="pgroup">
+                    <button class="phead" type="button" aria-expanded="true">{{ g.name }}<span class="fold"></span></button>
+                    {% if g.form is defined and g.form %}
+                        <div class="linkform">
+                            <input class="lnk-url" type="text" placeholder="{{ __('网址，例如 https://example.com') }}">
+                            <input class="lnk-label" type="text" placeholder="{{ __('链接文字，例如 我的书架') }}">
+                            <div class="btns"><button class="btn btn-ghost sm" type="button" data-add-link>{{ __('加入菜单') }}</button></div>
+                        </div>
+                    {% else %}
+                        <div class="pbody">
+                            {% for it in g.items %}
+                                <label class="pitem"><input type="checkbox" class="cb"><span>{{ it.label }}</span><span class="addr">{{ it.url }}</span></label>
+                            {% endfor %}
+                            {% if g.items is empty %}<p class="pempty">{{ __('这一组暂时还没有内容。') }}</p>{% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <button class="btn btn-primary add" type="button" data-add-picked>{{ __('加入菜单') }}</button>
+        </section>
+
+        <section class="tree">
+            <div class="thd">
+                <h2>{{ __('当前菜单') }}</h2>
+                <span class="loc">{{ current }}</span>
+            </div>
+
+            {% if rows is not empty %}
+                <div class="mhd">
+                    <span></span><span>{{ __('名称') }}</span>{% if pick.enabled %}<span>{{ __('链接到') }}</span>{% endif %}<span>{{ __('地址') }}</span><span></span>
+                </div>
+            {% endif %}
+
+            <form id="menus-form" method="post" action="{{ save_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="hidden" name="menu" value="{{ current }}">
+
+                {% for row in rows %}
+                    <div class="mrow{{ row.child ? ' child' : '' }}">
+                        <span class="handle" tabindex="0" role="button" aria-label="{{ __('拖动排序，或用上下方向键移动') }}"><i></i><i></i><i></i></span>
+                        <div class="fields2">
+                            <input type="hidden" name="{{ row.field }}[id]" value="{{ row.id }}">
+                            <input class="nm" type="text" name="{{ row.field }}[label]" value="{{ row.label }}">
+                            {% if pick.enabled %}
+                                <select class="lk" name="{{ row.field }}[target]">
+                                    {% for o in pick.options %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
+                                </select>
+                            {% endif %}
+                            <input class="url" type="text" name="{{ row.field }}[url]" value="{{ row.url }}" readonly>
+                        </div>
+                        <button class="rm" type="button">{{ __('移除') }}</button>
+                    </div>
+                {% endfor %}
+            </form>
+
+            <p class="tip tip-d">{{ __('按住左侧三条短横拖动可改顺序；把一个项拖到另一项下方就变成它的子项，最多两级。名称随你改，地址由站点按固定链接规则生成，不能手写。') }}</p>
+            <p class="tip tip-m">{{ __('按住左侧三条短横拖动可改顺序；拖到另一项下方就变成它的子项，最多两级。地址由站点按固定链接规则生成，不能手写。') }}</p>
+        </section>
+    </div>
+
+    {# 新加的行照这份克隆:字段名先给占位前缀(都是 items[0]),插进表单后由脚本统一重排 #}
+    <template id="menu-row-tpl">
+        <div class="mrow">
+            <span class="handle" tabindex="0" role="button" aria-label="{{ __('拖动排序，或用上下方向键移动') }}"><i></i><i></i><i></i></span>
+            <div class="fields2">
+                <input type="hidden" name="items[0][id]" value="">
+                <input class="nm" type="text" name="items[0][label]" value="">
+                {% if pick.enabled %}
+                    <select class="lk" name="items[0][target]">
+                        {% for o in pick.options %}<option value="{{ o.value }}">{{ o.label }}</option>{% endfor %}
+                    </select>
+                {% endif %}
+                <input class="url" type="text" name="items[0][url]" value="" readonly>
+            </div>
+            <button class="rm" type="button">{{ __('移除') }}</button>
+        </div>
+    </template>
+{% endblock %}
+
+{% block savebar %}
+    <footer class="savebar savebar-menus">
+        <div class="status">{{ __('上次保存：') }}<b>{% if updated is not empty %}<span class="d">{{ updated|slice(0, 16) }}</span><span class="m">{{ updated|slice(11, 5) }}</span>{% else %}—{% endif %}</b></div>
+        <div class="btns">
+            <a class="btn btn-ghost" href="{{ cancel_url }}">{{ __('取消') }}</a>
+            <button class="btn btn-primary" type="submit" form="menus-form">{{ __('保存菜单') }}</button>
+        </div>
+    </footer>
+{% endblock %}

@@ -1,0 +1,158 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  个人资料(《84》,基准 后台个人资料-定稿-2026-09-30):四个分组 + 固定底部保存栏。
+  保存栏是 .content 的兄弟(外壳已留 block);文案与字段逐字对照基准图,不自行发挥。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('权限') }}</div>
+            <h1>{{ __('个人资料') }}</h1>
+            <p class="lede">{{ __('这里只改你自己的事：怎么写、以什么名字出现、用什么语言。') }}</p>
+        </div>
+    </div>
+
+    <form class="form" id="profile-form" method="post" action="{{ path('admin', {path: 'profile'}) }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+
+        <section class="group">
+            <h2>{{ __('基本信息') }}</h2>
+            <p class="gdesc">{{ __('昵称会出现在文章署名与评论区；用户名只用于登录。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('用户名') }}</label>
+                    <div class="ctrl">
+                        <input type="text" value="{{ values.username }}" readonly>
+                        <div class="hint">{{ __('创建后不可更改。') }}</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>{{ __('昵称') }}<span class="req">*</span></label>
+                    <div class="ctrl"><input type="text" name="display_name" value="{{ values.display_name }}" maxlength="60"></div>
+                </div>
+                <div class="field">
+                    <label>{{ __('邮箱') }}<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <input type="email" name="email" value="{{ values.email }}">
+                        <div class="hint">{{ __('用于接收通知与找回密码，不会公开显示。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('头像') }}</h2>
+            <p class="gdesc">{{ __('「头像来源」决定站点各处用哪一张；上传自己的那张后，来源会自动切到「自己上传头像」。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('当前头像') }}</label>
+                    <div class="ctrl">
+                        <div class="picrow">
+                            <img class="pic" src="{{ avatar_url }}" alt="">
+                            <div class="who">
+                                <div class="n">{{ values.display_name }}</div>
+                                <div class="r">{{ meta_line }}</div>
+                            </div>
+                            <label class="btn btn-ghost btn-sm" for="avatar-file">{{ __('上传自定义头像') }}</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>{{ __('头像来源') }}</label>
+                    <div class="ctrl">
+                        <select name="avatar_source" data-avatar-source>
+                            <option value="gravatar"{{ values.avatar_source == 'gravatar' ? ' selected' : '' }}>{{ __('Gravatar（按邮箱哈希）') }}</option>
+                            <option value="upload"{{ values.avatar_source == 'upload' ? ' selected' : '' }}>{{ __('自己上传头像') }}</option>
+                            <option value="custom"{{ values.avatar_source == 'custom' ? ' selected' : '' }}>{{ __('自定义头像源') }}</option>
+                            <option value="local"{{ values.avatar_source == 'local' ? ' selected' : '' }}>{{ __('本地首字母头像') }}</option>
+                        </select>
+                        <div class="hint">{{ __('选「自己上传头像」且传过图才用上传的；其余来源一律不看上传件。') }}</div>
+                    </div>
+                </div>
+                <div class="field" data-avatar-custom{{ values.avatar_source != 'custom' ? ' hidden' : '' }}>
+                    <label>{{ __('头像源地址') }}</label>
+                    <div class="ctrl">
+                        <input type="text" name="avatar_source_url" value="{{ values.avatar_source_url }}" placeholder="https://cdn.example.com/avatar/{hash}">
+                        <div class="hint">{{ __('用 {hash} 占位邮箱哈希（md5 小写）；留空自动回落 Gravatar。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('简介与语言') }}</h2>
+            <p class="gdesc">{{ __('简介显示在文章署名下；语言只影响你看到的后台界面。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('简介') }}</label>
+                    <div class="ctrl">
+                        <textarea name="bio" maxlength="500">{{ values.bio }}</textarea>
+                        <div class="hint">{{ __('建议 200 字以内，纯文本，不解析 HTML。') }}</div>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>{{ __('界面语言') }}</label>
+                    <div class="ctrl">
+                        <select name="locale">
+                            <option value="site"{{ values.locale == 'site' ? ' selected' : '' }}>{{ __('跟随站点') }}</option>
+                            {% for code, name in languages %}
+                                <option value="{{ code }}"{{ values.locale == code ? ' selected' : '' }}>{{ name }}</option>
+                            {% endfor %}
+                            <option value="auto"{{ values.locale == 'auto' ? ' selected' : '' }}>{{ __('跟随浏览器') }}</option>
+                        </select>
+                        <div class="hint">{{ __('缺少词条时回落简体中文。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="group">
+            <h2>{{ __('修改密码') }}</h2>
+            <p class="gdesc">{{ __('密码以 argon2id 存储，任何人都取不回来，只能重置。') }}</p>
+            <div class="fields">
+                <div class="field">
+                    <label>{{ __('密码') }}<span class="req">*</span></label>
+                    <div class="ctrl">
+                        <div class="pw">
+                            <input type="password" name="current_password" placeholder="{{ __('当前密码') }}" autocomplete="current-password">
+                            <input type="password" name="new_password" placeholder="{{ __('新密码') }}" autocomplete="new-password">
+                            <input type="password" name="confirm_password" placeholder="{{ __('确认新密码') }}" autocomplete="new-password">
+                        </div>
+                        <div class="hint">{{ __('至少 8 位，且同时含字母与数字。修改后其他设备的登录会失效，需要重新登录。') }}</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+
+    {# 头像上传走独立表单:文件不能塞进主表单里(嵌套的表单会被浏览器丢掉,提交就串到保存资料上) #}
+    <form id="avatar-form" method="post" action="{{ path('admin', {path: 'profile/avatar'}) }}" enctype="multipart/form-data" data-progress>
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        <input type="file" name="avatar" id="avatar-file" accept="image/*" data-auto hidden>
+        {# 进度契约:外层脚本认 data-progress + .upbar(真进度)、.uperr(失败位) #}
+        <div class="upbar" hidden><i></i><span class="pc">0%</span></div>
+        <div class="uperr" hidden></div>
+    </form>
+{% endblock %}
+
+{% block savebar %}
+    <div class="savebar savebar-profile">
+        <div class="status">{{ __('上次保存于') }} <b class="d">{{ last_saved_date }}</b> <b class="t">{{ last_saved_time }}</b></div>
+        <div class="btns">
+            <details class="rst">
+                <summary class="btn btn-ghost">{{ __('放弃修改') }}</summary>
+                <div class="rsc">
+                    <p>{{ __('还原为已保存的值，未保存的改动会丢掉。') }}</p>
+                    <div class="acts">
+                        <button class="btn btn-ghost btn-sm" type="reset" form="profile-form" data-rst>{{ __('确定还原') }}</button>
+                        <button class="lnk" type="button" data-close>{{ __('取消') }}</button>
+                    </div>
+                </div>
+            </details>
+            <button class="btn btn-primary" type="submit" form="profile-form">{{ __('保存资料') }}</button>
+        </div>
+    </div>
+{% endblock %}

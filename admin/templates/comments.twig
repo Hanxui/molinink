@@ -1,0 +1,148 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  评论管理(《31》§3/§9;版式照 后台评论管理-定稿-2026-09-30)。
+  结构与文章列表同一套(.tabs/.filters/.bulk/.table/.pager),行内容是评论;样式挂 .page-comments。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('互动') }}</div>
+            <h1>{{ __('评论') }}</h1>
+            <p class="lede">{{ __('读者的话都停在这里等一次判断。通过的才会上线，垃圾的不会打扰任何人。') }}</p>
+        </div>
+    </div>
+
+    <nav class="tabs" aria-label="{{ __('按状态筛选') }}">
+        {% for tab in tabs %}
+            <a href="{{ tab.url }}"{% if tab.active %} class="active"{% endif %}>{{ tab.label }}<span class="n">{{ tab.count }}</span></a>
+        {% endfor %}
+    </nav>
+
+    <form class="filters" method="get" action="{{ filters_action|default('/admin/comments') }}">
+        <div class="search">
+            <span class="ico" aria-hidden="true"></span>
+            <input type="text" name="q" placeholder="{{ __('搜索评论内容或作者') }}" value="{{ filters.q }}">
+        </div>
+        <select name="post" aria-label="{{ __('按文章筛选') }}">
+            <option value="">{{ __('全部文章') }}</option>
+            {% for post in post_choices %}
+                <option value="{{ post.id }}"{% if filters.post == post.id %} selected{% endif %}>{{ post.title }}</option>
+            {% endfor %}
+        </select>
+        <select name="who" aria-label="{{ __('按作者类型筛选') }}">
+            <option value="">{{ __('全部作者') }}</option>
+            <option value="user"{% if filters.who == 'user' %} selected{% endif %}>{{ __('登录用户') }}</option>
+            <option value="guest"{% if filters.who == 'guest' %} selected{% endif %}>{{ __('游客') }}</option>
+        </select>
+        <select name="period" aria-label="{{ __('按时间筛选') }}">
+            <option value="">{{ __('全部时间') }}</option>
+            <option value="today"{% if filters.period == 'today' %} selected{% endif %}>{{ __('今天') }}</option>
+            <option value="week"{% if filters.period == 'week' %} selected{% endif %}>{{ __('近 7 天') }}</option>
+        </select>
+        <input type="hidden" name="status" value="{{ filters.status }}">
+        <div class="spacer"></div>
+        <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+    </form>
+
+    <form class="bulk" id="bulk-form" method="post" action="{{ bulk_url }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        <select name="bulk" aria-label="{{ __('批量操作') }}">
+            <option value="">{{ __('批量操作') }}</option>
+            <option value="approve">{{ __('通过审核') }}</option>
+            <option value="spam">{{ __('标记为垃圾') }}</option>
+            <option value="trash">{{ __('移入回收站') }}</option>
+            <option value="destroy">{{ __('永久删除') }}</option>
+        </select>
+        <button class="btn btn-ghost" type="submit">{{ __('应用') }}</button>
+        <div class="spacer"></div>
+        <div class="count">{{ __('共') }} <b>{{ pagination.total }}</b> {{ __('条') }}</div>
+    </form>
+
+    <div class="table">
+        <div class="thead">
+            <span><input type="checkbox" class="cb" id="cb-all" form="bulk-form" aria-label="{{ __('全选本页') }}"></span>
+            <span>{{ __('评论') }}</span>
+            <span>{{ __('作者') }}</span>
+            <span>{{ __('状态') }}</span>
+            <span>{{ __('日期') }}</span>
+        </div>
+
+        {% for row in rows %}
+            <div class="tr">
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择一条评论') }}"></span>
+                <div class="body">
+                    <div class="q">{{ row.q }}</div>
+                    <div class="sub"><span>《{{ row.post_title }}》</span><span class="sep">·</span><span>{{ row.when }}</span></div>
+                    {# 移动端卡片:状态前置 + 作者行(《82》§5);桌面隐藏 #}
+                    <div class="mmeta">
+                        <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
+                        <span class="sep">·</span><span>《{{ row.post_title }}》</span><span class="sep">·</span><span class="num">{{ row.when }}</span>
+                    </div>
+                    <div class="mwho"><span class="who">{{ row.who }}</span>{% if row.mail %}<span class="sep">·</span><span class="mail">{{ row.mail }}</span>{% endif %}</div>
+                    <div class="acts">
+                        {% if row.status in ['pending', 'spam'] %}
+                            <form method="post" action="{{ row.approve_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button type="submit">{{ __('通过') }}</button></form>
+                        {% endif %}
+
+                        {# 行内「回复」「编辑」(《82》§6):零 JS,<details> 展开;正文与提交同一条白名单 #}
+                        {% if row.status in ['pending', 'approved'] %}
+                            <details class="ed">
+                                <summary>{{ __('回复') }}</summary>
+                                <form method="post" action="{{ row.reply_url }}">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <textarea name="content" rows="2" placeholder="{{ __('回复给 %s', 'molin', row.who) }}"></textarea>
+                                    <div class="edf"><button class="edb" type="submit">{{ __('发表回复') }}</button></div>
+                                </form>
+                            </details>
+                        {% endif %}
+
+                        {% if row.status != 'trash' %}
+                            <details class="ed">
+                                <summary>{{ __('编辑') }}</summary>
+                                <form method="post" action="{{ row.edit_url }}">
+                                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                    <textarea name="content" rows="3">{{ row.content }}</textarea>
+                                    <div class="edf"><button class="edb" type="submit">{{ __('保存') }}</button></div>
+                                </form>
+                            </details>
+                        {% endif %}
+
+                        {% if row.status == 'spam' %}
+                            <form method="post" action="{{ row.trash_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button class="danger" type="submit">{{ __('移入回收站') }}</button></form>
+                        {% elseif row.status in ['pending', 'approved'] %}
+                            <form method="post" action="{{ row.spam_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button class="danger" type="submit">{{ __('垃圾') }}</button></form>
+                        {% endif %}
+
+                        {% if row.status != 'trash' %}
+                            <form method="post" action="{{ row.trash_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button class="danger" type="submit">{{ __('删除') }}</button></form>
+                        {% else %}
+                            <form method="post" action="{{ row.restore_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button type="submit">{{ __('恢复') }}</button></form>
+                            <form method="post" action="{{ row.destroy_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button class="danger" type="submit">{{ __('永久删除') }}</button></form>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="cell"><span class="who">{{ row.who }}</span><span class="mail">{{ row.mail }}</span></div>
+                <span><span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span></span>
+                <span class="cell num">{{ row.when }}</span>
+            </div>
+        {% else %}
+            <div class="empty">
+                <div class="et">{{ __('没有符合条件的评论') }}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.total > 0 %}
+        <div class="pager">
+            <div class="info">{{ __('第 %s–%s 条，共 %s 条', 'molin', pagination.from, pagination.to, pagination.total) }}</div>
+            <div class="pages">
+                {% for link in pagination.links %}
+                    <a href="{{ link.url }}"{% if link.active %} class="cur"{% endif %}>{{ link.page }}</a>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

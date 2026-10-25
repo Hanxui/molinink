@@ -1,0 +1,248 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  工具页 = 备份与恢复(《109》,基准 后台备份与恢复-定稿-2026-09-30)。
+  左栏发起、右栏列表与恢复确认。加密密码、远端推送与凭据对话框(《109》§12)已接线;
+  定时策略仍不摆出来 —— 没有去处不给门(与《77》§11.2、外观页同一口径)。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('工具') }}</div>
+            <h1>{{ __('备份与恢复') }}</h1>
+            <p class="lede">{{ __('备份要能还原得回来，否则等于没有。恢复之前，系统会先给当前数据留一份。') }}</p>
+        </div>
+    </div>
+
+    {% include 'partials/tools-nav.twig' %}
+
+    <div class="split">
+        <section class="col">
+            <h2>{{ __('新建备份') }}</h2>
+            <p class="gdesc">{{ __('含数据库、上传文件与加密后的配置；官方主题与插件不必备份。') }}</p>
+            <form method="post" action="{{ create_url }}" data-prog-job="backup" data-prog-url="{{ progress_url|default('') }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <div class="fields">
+                    <div class="f">
+                        <label class="lab" for="backup-password">{{ __('加密密码') }}</label>
+                        <input id="backup-password" type="password" name="password" autocomplete="new-password" value="">
+                        <p class="hint">{{ __('留空则不加密；包内含') }} <code>config.php</code>{{ __('，建议 AES-256。') }}</p>
+                    </div>
+                    <div class="f">
+                        <div class="lab">{{ __('推送到远端') }}</div>
+                        <div class="flexrow">
+                            <label class="switch"><input type="checkbox" name="remote_on" value="1"{% if remote_any %} checked{% endif %}><span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span></label>
+                            <select class="remote-sel" name="remote">
+                                <option value="s3">{{ __('S3 兼容对象存储') }}</option>
+                                <option value="webdav">WebDAV</option>
+                                <option value="ftp">FTP</option>
+                            </select>
+                        </div>
+                        <p class="hint">{{ __('凭据存于') }} <code>storage/backups/remote.json</code>{{ __('，不进备份包、不落日志。') }} <a class="inline" href="{{ tools_url }}?remote=s3">{{ __('管理凭据') }}</a></p>
+                    </div>
+                </div>
+                <button class="btn btn-primary go" type="submit">{{ __('开始备份') }}</button>
+                <p class="hint pstage" hidden></p>
+                <div class="upbar" hidden><i></i><span class="pc">0%</span></div>
+                <p class="uperr" hidden></p>
+            </form>
+        </section>
+
+        <section class="col">
+            <h2>{{ __('备份列表') }}</h2>
+            <div class="ltable">
+                <div class="lhead">
+                    <span>{{ __('文件名') }}</span><span>{{ __('大小') }}</span><span>{{ __('时间') }}</span><span>{{ __('来源') }}</span><span>{{ __('操作') }}</span>
+                </div>
+
+                {% for backup in backups %}
+                    <div class="lrow">
+                        <div class="fn">{{ backup.name }}{% if backup.encrypted %}<span class="enc">{{ __('已加密') }}</span>{% else %}<span class="enc">{{ __('未加密') }}</span>{% endif %}</div>
+                        <div class="sz">{{ backup.size_text }}</div>
+                        <div class="dt">{{ backup.time_text }}</div>
+                        <div class="src">{{ backup.source }}</div>
+                        <div class="meta">{{ backup.size_text }} · {{ backup.time_text }} · {{ backup.source }}</div>
+                        <div class="acts">
+                            <a href="{{ backup.download_url }}">{{ __('下载') }}</a>
+                            <a href="{{ tools_url }}?restore={{ backup.name }}">{{ __('恢复') }}</a>
+                            <form method="post" action="{{ delete_url }}" onsubmit="return confirm('{{ __('删除这份备份？不可恢复。') }}');">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <input type="hidden" name="name" value="{{ backup.name }}">
+                                <button class="danger" type="submit">{{ __('删除') }}</button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="lrow">
+                        <div class="fn">{{ __('还没有备份。用左边那枚「开始备份」留第一份。') }}</div>
+                        <div class="sz"></div><div class="dt"></div><div class="src"></div><div class="acts"></div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if has_unencrypted %}
+                <p class="warn">{{ __('未加密：任何人拿到这个文件就能读到整站数据，请自行保管好') }}</p>
+            {% endif %}
+
+            <p class="note">{{ __('备份文件存于') }} <code>storage/backups/</code>{{ __('，不对外暴露；下载链接一次性、限时。删除与恢复均记审计日志。') }}</p>
+
+            {% if target %}
+                <div class="confirm">
+                    <div class="ch">
+                        <div class="ct">{{ __('恢复确认') }}</div>
+                        <div class="cf">{{ target }}</div>
+                    </div>
+                    <p class="warn">{{ __('恢复会用这份备份覆盖当前的数据库、上传文件与配置，操作不可撤销。恢复前会自动先备份当前数据。') }}</p>
+                    {% if not target_encrypted %}
+                        <p class="warn">{{ __('未加密：任何人拿到这个文件就能读到整站数据，请自行保管好') }}</p>
+                    {% endif %}
+                    {% if target_encrypted %}
+                        {# 恢复表单在下面的 .cbtns 里:密码框留在原位、用 form= 认领,
+                           免得把它挪进按钮行改了版式。不认领的话密码根本不会被提交。 #}
+                        <div class="f">
+                            <label class="lab" for="restore-password">{{ __('解密密码') }}</label>
+                            <input id="restore-password" type="password" name="password" form="restore-form" autocomplete="off" value="">
+                            <p class="hint">{{ __('这份备份已加密：恢复前先填上创建时设置的密码。') }}</p>
+                        </div>
+                    {% endif %}
+                    <div class="cbtns">
+                        <a class="btn btn-ghost" href="{{ tools_url }}">{{ __('取消') }}</a>
+                        <form id="restore-form" method="post" action="{{ restore_url }}" data-prog-job="restore" data-prog-url="{{ progress_url|default('') }}">
+                            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                            <input type="hidden" name="name" value="{{ target }}">
+                            <input type="hidden" name="confirm" value="1">
+                            <button class="btn btn-warn" type="submit">{{ __('确认恢复') }}</button>
+                            <p class="hint pstage" hidden></p>
+                            <div class="upbar" hidden><i></i><span class="pc">0%</span></div>
+                            <p class="uperr" hidden></p>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+{% endblock %}
+
+{% block dialog %}
+    {% if dialog_open %}
+        <div class="dlg remote" role="dialog" aria-modal="true" aria-labelledby="remote-title">
+            <div class="tag">{{ __('远端存储') }}</div>
+            <h2 id="remote-title">{{ __('远端凭据') }}</h2>
+            <p class="tx2">{{ __('S3 / WebDAV / FTP 任选其一。凭据只存本机服务器，不进备份包、不落日志；密钥类字段留空表示不修改。') }}</p>
+
+            <div class="ftabs">
+                <a href="{{ tools_url }}?remote=s3"{% if remote_tab == 's3' %} class="cur"{% endif %}>{{ __('S3 兼容对象存储') }}</a>
+                <a href="{{ tools_url }}?remote=webdav"{% if remote_tab == 'webdav' %} class="cur"{% endif %}>WebDAV</a>
+                <a href="{{ tools_url }}?remote=ftp"{% if remote_tab == 'ftp' %} class="cur"{% endif %}>FTP</a>
+            </div>
+
+            <form method="post" action="{{ remote_save_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="hidden" name="driver" value="{{ remote_tab }}">
+
+                {% if remote_tab == 's3' %}
+                    <div class="rf">
+                        <label class="lab" for="r-endpoint">{{ __('服务端点') }}</label>
+                        <input id="r-endpoint" type="text" name="endpoint" value="{{ remote_values.endpoint|default('') }}" placeholder="https://s3.example.com" spellcheck="false">
+                        <p class="hint">{{ __('不带存储桶的对象存储地址；自建 MinIO 之类也填这里。') }}</p>
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-bucket">{{ __('存储桶') }}</label>
+                        <input id="r-bucket" type="text" name="bucket" value="{{ remote_values.bucket|default('') }}" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-region">{{ __('区域') }}</label>
+                        <input id="r-region" type="text" name="region" value="{{ remote_values.region|default('') }}" placeholder="us-east-1" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-key">{{ __('Access Key') }}</label>
+                        <input id="r-key" type="text" name="key" value="{{ remote_values.key|default('') }}" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-secret">{{ __('Secret Key') }}</label>
+                        <input id="r-secret" type="password" name="secret" value="" autocomplete="new-password"{% if remote_configured %} placeholder="{{ __('已保存 · 留空表示不修改') }}"{% endif %}>
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-prefix">{{ __('路径前缀') }}</label>
+                        <input id="r-prefix" type="text" name="prefix" value="{{ remote_values.prefix|default('') }}" placeholder="{{ __('可空') }}" spellcheck="false">
+                    </div>
+                {% elseif remote_tab == 'webdav' %}
+                    <div class="rf">
+                        <label class="lab" for="r-url">{{ __('地址') }}</label>
+                        <input id="r-url" type="text" name="url" value="{{ remote_values.url|default('') }}" placeholder="https://dav.example.com/backups" spellcheck="false">
+                        <p class="hint">{{ __('备份目录地址，末尾可带 /。') }}</p>
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-user">{{ __('用户名') }}</label>
+                        <input id="r-user" type="text" name="user" value="{{ remote_values.user|default('') }}" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-pass">{{ __('密码') }}</label>
+                        <input id="r-pass" type="password" name="password" value="" autocomplete="new-password"{% if remote_configured %} placeholder="{{ __('已保存 · 留空表示不修改') }}"{% endif %}>
+                    </div>
+                    <div class="rf">
+                        <label class="lab">{{ __('校验 TLS 证书') }}</label>
+                        <input type="hidden" name="verify_tls" value="0">
+                        <label class="switch"><input type="checkbox" name="verify_tls" value="1"{% if remote_values.verify_tls|default(true) %} checked{% endif %}><span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span></label>
+                        <p class="hint">{{ __('自签证书的内网服务才关掉它。') }}</p>
+                    </div>
+                {% else %}
+                    <div class="rf">
+                        <label class="lab" for="r-host">{{ __('主机') }}</label>
+                        <input id="r-host" type="text" name="host" value="{{ remote_values.host|default('') }}" placeholder="ftp.example.com" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-port">{{ __('端口') }}</label>
+                        <input id="r-port" type="text" name="port" value="{{ remote_values.port|default('') }}" placeholder="21" inputmode="numeric">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-fuser">{{ __('用户名') }}</label>
+                        <input id="r-fuser" type="text" name="user" value="{{ remote_values.user|default('') }}" autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-fpass">{{ __('密码') }}</label>
+                        <input id="r-fpass" type="password" name="password" value="" autocomplete="new-password"{% if remote_configured %} placeholder="{{ __('已保存 · 留空表示不修改') }}"{% endif %}>
+                    </div>
+                    <div class="rf">
+                        <label class="lab" for="r-dir">{{ __('目录') }}</label>
+                        <input id="r-dir" type="text" name="dir" value="{{ remote_values.dir|default('') }}" placeholder="{{ __('可空；留空传根目录') }}" spellcheck="false">
+                    </div>
+                    <div class="rf">
+                        <label class="lab">{{ __('被动模式') }}</label>
+                        <input type="hidden" name="passive" value="0">
+                        <label class="switch"><input type="checkbox" name="passive" value="1"{% if remote_values.passive|default(true) %} checked{% endif %}><span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span></label>
+                    </div>
+                    <div class="rf">
+                        <label class="lab">{{ __('加密（SSL）') }}</label>
+                        <input type="hidden" name="ssl" value="0">
+                        <label class="switch"><input type="checkbox" name="ssl" value="1"{% if remote_values.ssl|default(false) %} checked{% endif %}><span class="track"><span class="knob"></span></span><span class="txt">{{ __('开启') }}</span></label>
+                        <p class="hint">{{ __('服务器支持 FTPS 时打开。') }}</p>
+                    </div>
+                {% endif %}
+
+                <p class="rtest" hidden></p>
+
+                <div class="foot">
+                    {% if remote_configured %}
+                        <button class="danger" type="submit" form="remote-clear">{{ __('清除凭据') }}</button>
+                    {% endif %}
+                    {# 「测试连接」只探一次真写入、不提交表单:填了一半也能先测,结果就地回显 #}
+                    <button class="btn btn-ghost" type="button" data-remote-test="{{ remote_test_url|default('') }}">{{ __('测试连接') }}</button>
+                    <span class="spacer"></span>
+                    <a class="btn btn-ghost" href="{{ tools_url }}">{{ __('取消') }}</a>
+                    <button class="btn btn-primary" type="submit">{{ __('保存凭据') }}</button>
+                </div>
+            </form>
+
+            {% if remote_configured %}
+                <form id="remote-clear" method="post" action="{{ remote_clear_url }}" onsubmit="return confirm('{{ __('清除这个驱动的凭据？已推上去的备份不受影响。') }}');">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <input type="hidden" name="driver" value="{{ remote_tab }}">
+                    <input type="hidden" name="confirm" value="1">
+                </form>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

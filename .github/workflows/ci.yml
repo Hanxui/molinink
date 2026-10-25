@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  check:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.2', '8.3' ]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, mbstring, json, openssl, fileinfo, gd, zip, intl, curl
+          coverage: none
+          tools: composer:v2
+
+      # ── 两道闸：把"不像人写的说明"和"不属于程序的文件"挡在推送这一关 ──
+      - name: 提交说明检查
+        run: |
+          msg=$(git log -1 --pretty=%B)
+          banned='纯文档|不升号|不动版本号|口径|铁律|交接|内部记录|项目负责人|主人'
+          if printf '%s' "$msg" | grep -Eq "$banned"; then
+            echo "::error::提交说明里出现了内部用语 —— 只写改了什么就行"
+            printf '%s\n' "$msg" | grep -En "$banned"
+            exit 1
+          fi
+
+      - name: 仓库边界检查
+        run: |
+          fail=0
+          # 1) 根目录只允许这些条目
+          allowed='^(\.git|\.github|admin|assets|core|install|plugins|storage|themes|vendor|index\.php|molin|favicon\.ico|composer\.json|composer\.lock|config\.example\.php|LICENSE|README\.md|README\.en\.md|CHANGELOG\.md|SECURITY\.md|THIRD-PARTY-NOTICES\.md|phpstan\.neon|phpstan-bootstrap\.php|\.editorconfig|\.gitattributes|\.gitignore)$'
+          extra=$(ls -A | grep -Ev "$allowed" || true)
+          if [ -n "$extra" ]; then echo "::error::根目录出现不该有的条目"; echo "$extra"; fail=1; fi
+
+          # 2) 主题与插件只允许随包那一份
+          bad=$(ls -A themes | grep -Ev '^(molin-default|\.gitkeep)$' || true)
+          if [ -n "$bad" ]; then echo "::error::themes 里多了不该公开的"; echo "$bad"; fail=1; fi
+          bad=$(ls -A plugins | grep -Ev '^(mail-smtp|\.gitkeep)$' || true)
+          if [ -n "$bad" ]; then echo "::error::plugins 里多了不该公开的"; echo "$bad"; fail=1; fi
+
+          # 3) 测试与开发件一个都不许有
+          for p in tests tools audit phpunit.xml .php-cs-fixer.php config.php; do
+            if [ -e "$p" ]; then echo "::error::不该出现的开发件：$p"; fail=1; fi
+          done
+
+          # 4) 源码与文档里不许有内部用语（vendor 与 .github 自身除外）
+          if grep -rInE '项目负责人|铁律|内部记录|交接文件|交接文档|AGENTS\.md|主人' \
+               --include='*.php' --include='*.twig' --include='*.md' --include='*.txt' \
+               --include='*.js' --include='*.css' \
+               --exclude-dir=vendor --exclude-dir=.github . ; then
+            echo "::error::源码或文档里出现内部用语"; fail=1
+          fi
+
+          # 5) storage 只留骨架
+          leftover=$(find storage -type f ! -name '.gitkeep' 2>/dev/null | head -5)
+          if [ -n "$leftover" ]; then echo "::error::storage 里有运行期文件"; echo "$leftover"; fail=1; fi
+
+          exit $fail
+      - name: 安装运行时依赖
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      # 程序声明支持 PHP 8.2+，所以每个版本都得真能解析全部源码
+      - name: 语法自检
+        run: |
+          fail=0
+          while IFS= read -r f; do
+            out=$(php -l "$f" 2>&1) || { printf '%s\n' "$out"; fail=1; }
+          done < <(find . -path ./vendor -prune -o -name '*.php' -print)
+          exit $fail
+
+      # 静态分析要在"装过站"的形态下跑：插件会 require 站点根的 config.php
+      - name: 生成一份示例 config.php
+        run: cp config.example.php config.php
+
+      # 钉版本：和 composer.lock 里的一致。新版 phar 的推断规则会变，容易凭空报一堆错
+      - name: 静态分析
+        run: |
+          curl -sSLo phpstan.phar https://github.com/phpstan/phpstan/releases/download/2.1.12/phpstan.phar
+          php phpstan.phar analyse --no-progress

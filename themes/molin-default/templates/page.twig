@@ -1,0 +1,46 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 独立页面(《114》):标题区 / 正文 / 子页块三块居中于 720px 内容栏;无 eyebrow、无 byline、无评论区。
+   post.content 是内核已处理的正文(可信富文本),按《14》第 3.5 节允许 |raw,该位置由契约测试登记复核。
+   子页列表 subs 由内核按 parent_id 查好(《34》§1),顺序取自定义序 menu_order。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ post.title }} · {{ site.name }}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('page.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <article>
+        <div class="head">
+            <h1>{{ post.title }}</h1>
+            <div class="underline"></div>
+        </div>
+
+        <div class="body">{{ post.content|raw }}</div>
+
+        {% if subs %}
+            <div class="subs">
+                <div class="lab">{{ __('本页的子页', 'theme') }}</div>
+                <ul>
+                    {% for item in subs %}
+                        <li><a href="{{ item.url }}">{{ item.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </article>
+
+    {% include 'partials/footer.twig' %}
+</div>
+{{ footer_output }}
+<script src="{{ asset('shell.js') }}" defer></script>
+</body>
+</html>

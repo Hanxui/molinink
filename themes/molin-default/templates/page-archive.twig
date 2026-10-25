@@ -1,0 +1,82 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# molin:template 归档页 #}
+{# 归档页页面模板(《74》):年 → 月 → 文章三级折叠,默认全收起;整树由内核 archive_tree() 聚合好,模板只负责铺开。
+   页头、页脚与首页/文章详情同源,一律走 partial,本模板不另写导航。
+   月/日补零靠字符串拼 + slice,Twig 受限子集里没有 sprintf 类的补位过滤器。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ post.title }} · {{ site.name }}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('page-archive.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <section class="head">
+        <div class="eyebrow">{{ __('全部文章', 'theme') }}</div>
+        <h1>{{ __('归档', 'theme') }}</h1>
+        <p class="lede">{{ __('这里按时间倒序存放所有写过的文字。慢一点写，也慢一点读。', 'theme') }}</p>
+        <div class="underline"></div>
+    </section>
+
+    {# 两枚开关的两种文案都落到 data-*,脚本按状态取,免得 JS 里再存一份译文 #}
+    <div class="toolbar">
+        <button id="toggleMonths" type="button" data-expand="{{ __('展开月份', 'theme') }}" data-collapse="{{ __('收起月份', 'theme') }}">{{ __('展开月份', 'theme') }}</button>
+        <button id="toggleAll" type="button" data-expand="{{ __('展开全部', 'theme') }}" data-collapse="{{ __('收起全部', 'theme') }}">{{ __('展开全部', 'theme') }}</button>
+    </div>
+
+    <section class="archive" id="archive">
+        {% set tree = archive_tree() %}
+        {% if tree is empty %}
+            <div class="note">{{ __('还没有文章，写完第一篇就会出现在这里。', 'theme') }}</div>
+        {% else %}
+            {% for year in tree %}
+                <div class="year">
+                    <div class="year-head">
+                        <span class="y">{{ year.year }}</span>
+                        <span class="meta">
+                            <span class="months">{{ year.preview }}</span>
+                            <span class="count">{{ __('%d 篇', 'theme', year.count) }}</span>
+                            <span class="pm"></span>
+                        </span>
+                    </div>
+                    <div class="year-body">
+                        {% for month in year.months %}
+                            <div class="month">
+                                <div class="month-head">
+                                    <span class="m">{{ __('%s 月', 'theme', ('0' ~ month.month)|slice(-2)) }}</span>
+                                    <span class="mcount">{{ __('%d 篇', 'theme', month.count) }}</span>
+                                    <span class="pm sm"></span>
+                                </div>
+                                <div class="month-body">
+                                    {% for row in month.rows %}
+                                        {# 日期只到「日」,月已在分组标题里;无分类的文章右侧留空 #}
+                                        <a class="row" href="{{ row.url }}">
+                                            <span class="d">{{ __('%s 日', 'theme', ('0' ~ row.day)|slice(-2)) }}</span>
+                                            <span class="t">{{ row.title }}</span>
+                                            {% if row.category %}<span class="c">{{ row.category }}</span>{% endif %}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    {% include 'partials/footer.twig' %}
+</div>
+{{ footer_output }}
+<script src="{{ asset('shell.js') }}" defer></script>
+<script src="{{ asset('page-archive.js') }}" defer></script>
+</body>
+</html>

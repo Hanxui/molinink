@@ -1,0 +1,101 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 附件页(《117》):标题区 / 媒体框 / 元数据表 / 引用列表 —— 内容栏居中 900px,页头页脚通栏。
+   媒体框:盘上落了真文件才输出 <img>(《117》§10),否则线稿占位(§11 第 10 条待拍板);
+   占位 SVG 的 aria-label 取替代文本,经自动转义输出。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ heading }} · {{ site.name }}</title>
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('attachment.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <section class="head">
+        <div class="eyebrow">{{ __('附件', 'theme') }}</div>
+        <h1>{{ heading }}</h1>
+        <div class="underline"></div>
+    </section>
+
+    <figure class="shot">
+        <div class="frame">
+            {% if media.url %}
+                <img src="{{ media.url }}"{% if media.srcset %} srcset="{{ media.srcset }}"{% endif %} alt="{{ media.alt }}" loading="lazy">
+            {% else %}
+                <svg viewBox="0 0 120 80" fill="none" stroke="#B3B0A9" stroke-width="1.6"
+                    stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="{{ media.alt }}">
+                    <circle cx="88" cy="22" r="7"/>
+                    <path d="M6 62 30 36 46 52 66 28 114 62"/>
+                    <path d="M6 62h108"/>
+                    <path d="M14 54h16M74 46h20"/>
+                    <path d="M26 62v-8M70 62v-6"/>
+                </svg>
+            {% endif %}
+        </div>
+        {% if media.caption %}<figcaption>{{ media.caption }}</figcaption>{% endif %}
+    </figure>
+
+    <dl class="info">
+        <div class="row">
+            <dt>{{ __('文件', 'theme') }}</dt>
+            <dd><span class="path">{{ media.file_text }}</span></dd>
+        </div>
+        {% if media.width %}
+            <div class="row">
+                <dt>{{ __('尺寸', 'theme') }}</dt>
+                <dd>{{ media.width }} × {{ media.height }} {{ __('像素', 'theme') }}</dd>
+            </div>
+        {% endif %}
+        <div class="row">
+            <dt>{{ __('大小', 'theme') }}</dt>
+            <dd>{{ media.size_text }} · {{ media.mime }}</dd>
+        </div>
+        <div class="row">
+            <dt>{{ __('上传', 'theme') }}</dt>
+            <dd>{{ media.created_text }}{% if media.uploader %} · {{ __('由', 'theme') }} {{ media.uploader }}{% endif %}</dd>
+        </div>
+        <div class="row">
+            <dt>{{ __('替代文本', 'theme') }}</dt>
+            <dd>{{ media.alt }}</dd>
+        </div>
+        {% if sizes %}
+            <div class="row">
+                <dt>{{ __('尺寸档', 'theme') }}</dt>
+                <dd>
+                    <div class="sizes">
+                        {% for s in sizes %}
+                            <a href="{{ s.url ?: '#' }}"><b>{{ s.name }}</b><span class="px">{{ s.edge }}</span></a>
+                        {% endfor %}
+                    </div>
+                </dd>
+            </div>
+        {% endif %}
+    </dl>
+
+    {% if references %}
+        <section class="refs">
+            <div class="subh">{{ __('引用它的内容', 'theme') }}</div>
+            <ul class="list">
+                {% for r in references %}
+                    <li>
+                        <div class="t"><a href="{{ r.url }}">{{ r.title }}</a></div>
+                        <div class="m">{{ r.type_label }}{% if r.date_text %} · {{ r.date_text }}{% endif %} · {{ r.usage_label }}</div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+    {% include 'partials/footer.twig' %}
+</div>
+{{ footer_output }}
+<script src="{{ asset('shell.js') }}" defer></script>
+</body>
+</html>

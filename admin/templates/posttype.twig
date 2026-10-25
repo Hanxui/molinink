@@ -1,0 +1,166 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  自定义内容类型(CPT)列表(《34-内容模型与CPT》§10)。与文章列表同壳同源:
+  外壳、页签、筛选、批量条、分页、行内操作都复用文章屏那套(.page-posts);
+  差异只在文案随类型走、分类列改显声明的分类法、层级型多一个「层级」筛选与列。
+  page_kind 仍是 posts,为的是直接吃 .page-posts 的七列栅格 —— 后台不新增颜色、也不改 CSS。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('内容') }}</div>
+            <h1>{{ type_label }}</h1>
+            <p class="lede">{{ __('这一类型下的内容都在这里，可筛选、可批量处理，点标题进编辑。') }}</p>
+        </div>
+        {% if new_url %}
+            <a class="btn btn-primary" href="{{ new_url }}"><span class="plus">＋</span>{{ __('新建%s', 'molin', type_singular) }}</a>
+        {% endif %}
+    </div>
+
+    <nav class="tabs" aria-label="{{ __('按状态筛选') }}">
+        {% for tab in tabs %}
+            <a href="{{ tab.url }}"{% if tab.active %} class="active"{% endif %}>{{ tab.label }}<span class="n">{{ tab.count }}</span></a>
+        {% endfor %}
+    </nav>
+
+    <form class="filters" method="get" action="{{ filters_action }}">
+        <div class="search">
+            <span class="ico" aria-hidden="true"></span>
+            <input type="text" name="q" placeholder="{{ __('搜索标题或内容') }}" value="{{ filters.q }}">
+        </div>
+        {% if is_hierarchical %}
+            <select name="parent" aria-label="{{ __('按父级筛选') }}">
+                <option value="">{{ __('全部父级') }}</option>
+                <option value="0"{% if filters.parent == '0' %} selected{% endif %}>{{ __('无（顶层）') }}</option>
+                {% for item in parent_choices %}
+                    <option value="{{ item.id }}"{% if filters.parent == item.id %} selected{% endif %}>{{ item.title }}</option>
+                {% endfor %}
+            </select>
+            {# 层级型列表的排序入口(《86》口径的补充):默认最近修改;「按序号」走 menu_order #}
+            <select name="order" aria-label="{{ __('排序') }}">
+                <option value="">{{ __('最近修改') }}</option>
+                <option value="menu"{% if filters.order == 'menu' %} selected{% endif %}>{{ __('按序号') }}</option>
+            </select>
+        {% endif %}
+        <select name="author" aria-label="{{ __('按作者筛选') }}">
+            <option value="">{{ __('全部作者') }}</option>
+            {% for author in author_choices %}
+                <option value="{{ author.id }}"{% if filters.author == author.id %} selected{% endif %}>{{ author.name }}</option>
+            {% endfor %}
+        </select>
+        <select name="month" aria-label="{{ __('按时间筛选') }}">
+            <option value="">{{ __('全部时间') }}</option>
+            {% for month in month_choices %}
+                <option value="{{ month.value }}"{% if filters.month == month.value %} selected{% endif %}>{{ month.label }}</option>
+            {% endfor %}
+        </select>
+        <input type="hidden" name="status" value="{{ filters.status }}">
+        <div class="spacer"></div>
+        <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+    </form>
+
+    <form class="bulk" id="bulk-form" method="post" action="{{ bulk_url }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        <select name="bulk" aria-label="{{ __('批量操作') }}">
+            <option value="">{{ __('批量操作') }}</option>
+            <option value="trash">{{ __('移入回收站') }}</option>
+            <option value="draft">{{ __('移至草稿') }}</option>
+        </select>
+        <button class="btn btn-ghost" type="submit">{{ __('应用') }}</button>
+        <div class="spacer"></div>
+        <div class="picked" hidden>{{ __('已选') }} <b>0</b> {{ __('个') }}{{ type_label }}</div>
+        <div class="count">{{ __('共') }} <b>{{ pagination.total }}</b> {{ __('个') }}{{ type_label }}</div>
+    </form>
+
+    <div class="table">
+        <div class="thead">
+            <span><input type="checkbox" class="cb" id="cb-all" form="bulk-form" aria-label="{{ __('全选本页') }}"></span>
+            <span>{{ __('标题') }}</span>
+            <span>{{ __('作者') }}</span>
+            <span>{{ is_hierarchical ? __('层级') : __('分类') }}</span>
+            <span>{{ __('评论') }}</span>
+            <span>{{ __('状态') }}</span>
+            <span>{{ __('日期') }}</span>
+        </div>
+
+        {% for row in rows %}
+            <div class="tr" data-rows>
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择《%s》', 'molin', row.label) }}"></span>
+                <div class="ttl">
+                    <div class="t">
+                        {% if row.edit_url %}<a href="{{ row.edit_url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}
+                    </div>
+                    <div class="sub"><span>{{ row.sub }}</span></div>
+                    <div class="mmeta">
+                        <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
+                        <span class="sep">·</span><span>{{ __('%s 条评论', 'molin', row.comments) }}</span>
+                        <span class="sep">·</span><span>{{ row.date }}</span>
+                    </div>
+                    <div class="acts">
+                        {% if row.edit_url %}
+                            <a class="act" href="{{ row.edit_url }}">{{ __('编辑') }}</a>
+                        {% endif %}
+                        {% if row.view_url %}
+                            <a class="act" href="{{ row.view_url }}">{{ __('查看') }}</a>
+                        {% endif %}
+                        {% if row.trash_url %}
+                            <form method="post" action="{{ row.trash_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <button class="del" type="submit">{{ __('回收站') }}</button>
+                            </form>
+                        {% endif %}
+                        {% if row.restore_url %}
+                            <form method="post" action="{{ row.restore_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <button type="submit">{{ __('还原') }}</button>
+                            </form>
+                        {% endif %}
+                        {% if row.destroy_url %}
+                            <form method="post" action="{{ row.destroy_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <label class="confirm"><input type="checkbox" name="confirm" value="destroy">{{ __('确认彻底删除') }}</label>
+                                <button class="del" type="submit">{{ __('删除') }}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="cell ink">{{ row.author }}</span>
+                <span class="cell">{% if is_hierarchical %}{{ row.hierarchy }}{% else %}{{ row.categories }}{% endif %}</span>
+                <span class="cell num">{{ row.comments }}</span>
+                <span><span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span></span>
+                <span class="cell num">{{ row.date }}</span>
+            </div>
+        {% else %}
+            {% set filtering = filters.q or filters.author or filters.month or filters.status or filters.parent %}
+            <div class="empty">
+                <div class="et">{{ filtering ? __('没有符合条件的%s', 'molin', type_label) : __('还没有%s', 'molin', type_label) }}</div>
+                {% if filtering %}
+                    <a class="btn btn-ghost btn-clear" href="{{ filters_action }}">{{ __('清除筛选') }}</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    {% if pagination.total > 0 %}
+        <div class="pager">
+            <div class="info">{{ __('第 %s–%s 个，共 %s 个%s', 'molin', pagination.from, pagination.to, pagination.total, type_label) }}</div>
+            {% if pagination.total_pages > 1 %}
+                <div class="pages">
+                    {% for link in pagination.links %}
+                        {% if link.url %}
+                            <a href="{{ link.url }}"{% if link.active %} class="cur"{% endif %}>{{ link.page }}</a>
+                        {% else %}
+                            <a aria-disabled="true">{{ link.page }}</a>
+                        {% endif %}
+                        {% if loop.last and pagination.gap %}
+                            <span class="gap">…</span>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

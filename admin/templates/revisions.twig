@@ -1,0 +1,76 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  修订版本比对(《113》,基准 后台修订版本比对-定稿)。
+  两列对着看:左「选中修订」、右「当前版本」。页头三件 + 金属行、一条比对选择条、
+  两列正文、一条底部保存栏。结构树见《113》§4;文案逐字照 §7。
+  正文 HTML 由 RevisionDiff 备好(已转义、已带 <ins>/<del>),模板只摆,不做比对。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="eyebrow">{{ __('内容') }}</div>
+    <h1>{{ __('修订版本') }}</h1>
+    <p class="lede">{{ __('正文每改一次留一版。两列对着看，看清改了哪里，再决定要不要回去。') }}</p>
+    <p class="metaline">《{{ title }}》<span class="sep">·</span>{{ __('这篇已存') }} <b>{{ count }}</b> {{ __('份') }}<span class="sep">·</span><span class="d">{{ __('每篇最多留最近') }} <b>{{ kept }}</b> {{ __('份') }}</span><span class="m">{{ __('最多留最近') }} <b>{{ kept }}</b> {{ __('份') }}</span></p>
+
+    {% if has_any %}
+        <form class="revpick" method="get" action="{{ self_url }}">
+            <input type="hidden" name="post" value="{{ post_id }}">
+            <div class="revbar">
+                <label class="lab" for="rev-pick">{{ __('比对修订') }}</label>
+                <select id="rev-pick" name="rev" onchange="this.form.submit()">
+                    {% for opt in options %}
+                        <option value="{{ opt.value }}"{% if opt.selected %} selected{% endif %}>{{ opt.label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="spacer"></div>
+                <div class="legend">
+                    <span><ins class="mark">{{ __('新增') }}</ins>{{ __('暖赭下划线') }}</span>
+                    <span><del class="mark">{{ __('删除') }}</del>{{ __('中灰删除线') }}</span>
+                </div>
+            </div>
+        </form>
+
+        <div class="diff">
+            <section class="col">
+                <div class="chd">
+                    <div class="who"><span class="tag"><i></i>{{ __('选中修订') }}</span></div>
+                    <span class="when">{{ selected.when }}</span>
+                </div>
+                <div class="who-sub">{{ __('作者') }} {{ selected.author }}</div>
+                <div class="txt">{{ diff.left|raw }}</div>
+                <div class="gapline">{{ __('此版本共') }} {{ diff.left_paragraphs }} {{ __('段') }}<span class="sep">·</span>{{ __('与当前版本相差') }} {{ diff.changes }} {{ __('处') }}</div>
+            </section>
+
+            <section class="col cur">
+                <div class="chd">
+                    <div class="who"><span class="tag"><i></i>{{ __('当前版本') }}</span></div>
+                    <span class="when">{{ current.when }}</span>
+                </div>
+                <div class="who-sub">{{ __('作者') }} {{ current.author }}</div>
+                <div class="txt">{{ diff.right|raw }}</div>
+                <div class="gapline">{{ __('此版本共') }} {{ diff.right_paragraphs }} {{ __('段') }}<span class="sep">·</span>{{ __('已是前台正在显示的那一版') }}</div>
+            </section>
+        </div>
+    {% else %}
+        <p class="empty">{{ __('这篇文章还没有历史版本，改过一次之后这里才会出现可对照的两列。') }}</p>
+    {% endif %}
+{% endblock %}
+
+{% block savebar %}
+    {# 没有可恢复的版本就不摆这条动作栏(空态无基准,《113》§11-9 已记) #}
+    {% if has_any %}
+    <footer class="savebar savebar-revisions">
+        <div class="status"><span class="d">{{ __('恢复会改写当前正文。') }}<span class="warn">{{ __('这是敏感操作，点击后需再确认一次。') }}</span></span><span class="m">{{ __('恢复会改写当前正文，') }}<span class="warn">{{ __('需再确认一次。') }}</span></span></div>
+        <div class="btns">
+            <a class="btn btn-ghost" href="{{ cancel_url }}">{{ __('取消') }}</a>
+            <form method="post" action="{{ restore_url }}">
+                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                <input type="hidden" name="rev" value="{{ rev_id }}">
+                <button class="btn btn-warn" type="submit"><span class="d">{{ __('恢复此版本') }}</span><span class="m">{{ __('恢复') }}</span></button>
+            </form>
+        </div>
+    </footer>
+    {% endif %}
+{% endblock %}

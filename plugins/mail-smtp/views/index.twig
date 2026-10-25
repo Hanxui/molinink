@@ -1,0 +1,137 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  「SMTP 发信」设置页(插件后台页,《12》§13/§14)。
+  表单复用后台设置页那套皮肤(.page-settings),页头复用 .head —— 与 site-health 同一套写法。
+  action 指向本页(内核按路由现算);令牌用内核注入的 csrf_field / csrf_token。
+  密码框永远不回显:只提示"已经存过",留空 = 不改动。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="eyebrow">{{ __('插件', 'mail-smtp') }}</div>
+        <h1>{{ __('SMTP 发信', 'mail-smtp') }}</h1>
+        <p class="lede">{{ __('找回密码的重置邮件、新评论通知,都从这里发出去。填好服务器与账号,存一次即可。', 'mail-smtp') }}</p>
+    </div>
+
+    {% if notice is not empty %}
+        <p class="strip">{{ notice }}</p>
+    {% endif %}
+
+    {% if error is not empty %}
+        <p class="strip danger">{{ error }}</p>
+    {% endif %}
+
+    {# 最近一次发信失败(2026-10-17):配了却发不出去,最不该只躺在日志里 #}
+    {% if last_failed is not empty %}
+        <p class="strip danger">{{ __('最近一次发信没成:', 'mail-smtp') }} {{ last_failed }}</p>
+    {% endif %}
+
+    <div class="page-settings">
+        <form class="form" method="post" action="{{ page_url }}">
+            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+            <input type="hidden" name="do" value="save">
+
+            <section class="group">
+                <h2>{{ __('发信服务器', 'mail-smtp') }}</h2>
+                <p class="gdesc">{{ __('QQ 邮箱、163、Gmail 这类都要用「授权码」当密码,不是登录密码。', 'mail-smtp') }}</p>
+
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('服务器地址', 'mail-smtp') }}<span class="req">*</span></label>
+                        <div class="ctrl">
+                            <input type="text" name="host" value="{{ host }}" placeholder="smtp.example.com" autocomplete="off">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>{{ __('端口', 'mail-smtp') }}</label>
+                        <div class="ctrl">
+                            <input type="number" name="port" value="{{ port }}" placeholder="465" min="1" max="65535">
+                            <div class="hint">{{ __('SSL 一般 465,STARTTLS 一般 587;留空按加密方式自动取。', 'mail-smtp') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>{{ __('加密方式', 'mail-smtp') }}</label>
+                        <div class="ctrl">
+                            <select name="encryption">
+                                {% for value, label in encryptions %}
+                                    <option value="{{ value }}"{{ encryption == value ? ' selected' : '' }}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>{{ __('账号', 'mail-smtp') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="username" value="{{ username }}" autocomplete="off" placeholder="you@example.com">
+                            <div class="hint">{{ __('内网中继不需要认证时,账号与密码都留空。', 'mail-smtp') }}</div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>{{ __('密码 / 授权码', 'mail-smtp') }}</label>
+                        <div class="ctrl">
+                            <input type="password" name="password" value="" autocomplete="new-password"
+                                   placeholder="{{ has_password ? __('已存过,留空表示不改', 'mail-smtp') : __('没设过', 'mail-smtp') }}">
+                            <div class="hint">{{ __('密码只写进服务器上的配置文件,不进数据库、不进仓库,也不会回显。', 'mail-smtp') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="group">
+                <h2>{{ __('发件人', 'mail-smtp') }}</h2>
+                <p class="gdesc">{{ __('收件人看到的「谁寄来的」。发件地址通常要和上面账号同一个域,否则容易被判垃圾邮件。', 'mail-smtp') }}</p>
+
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('发件地址', 'mail-smtp') }}<span class="req">*</span></label>
+                        <div class="ctrl">
+                            <input type="email" name="from_address" value="{{ from_address }}" placeholder="noreply@example.com">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>{{ __('发件人名称', 'mail-smtp') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="from_name" value="{{ from_name }}" placeholder="{{ __('你的站点名', 'mail-smtp') }}">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="acts">
+                <div class="left">
+                    {% if configured %}
+                        <span class="st ok">{{ __('已配置', 'mail-smtp') }}</span>
+                    {% else %}
+                        <span class="st warn">{{ __('还没配置', 'mail-smtp') }}</span>
+                    {% endif %}
+                    <span class="sub">{{ __('配置文件:', 'mail-smtp') }} <code>{{ config_path }}</code></span>
+                </div>
+                <div class="right">
+                    <button class="btn btn-primary" type="submit">{{ __('保存', 'mail-smtp') }}</button>
+                </div>
+            </div>
+        </form>
+
+        {% if configured %}
+            <section class="group">
+                <h2>{{ __('试一下', 'mail-smtp') }}</h2>
+                <p class="gdesc">
+                    {{ __('用已经保存的配置发一封测试信 —— 能收到,就说明找回密码那条路也通了。', 'mail-smtp') }}
+                    {% if admin_email is not empty %}（{{ __('收件地址:%s', 'mail-smtp', admin_email) }}）{% endif %}
+                </p>
+                <form method="post" action="{{ page_url }}">
+                    <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                    <input type="hidden" name="do" value="test">
+                    <button class="btn btn-ghost" type="submit">{{ __('发一封试试', 'mail-smtp') }}</button>
+                </form>
+            </section>
+        {% endif %}
+    </div>
+{% endblock %}

@@ -1,0 +1,435 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{#
+  后台编辑页(《79-后台编辑页实现规格》)。数值与文案逐字取自
+  assets/ui/后台编辑页-定稿-2026-09-29.html 与其移动端版;右栏六盒顺序固定不可换。
+  页面变体按《86》§6:少「分类/标签/讨论」盒,多「父页面」盒(候选排除自己与后代)。
+  正文区按《41》§6.2 的"富文本"路线:contenteditable 直接排版,交表时同步进同名 textarea。
+  无 JS 时看到的就是 textarea,照样能写能存。落库前由 HtmlSanitizer 过白名单(《37》§9)。
+#}
+{% extends "layout.twig" %}
+
+{% block bands %}
+    {# 两条带默认藏着:自动保存成功后显第一条,有未保存改动又想走时才显第二条(《79》§10.4) #}
+    <div class="autosave{% if autosave_text is not empty %} on{% endif %}" id="ed-autosave"><i></i><span>{{ autosave_text }}</span></div>
+    <div class="leave" id="ed-leave">
+        <span class="lt">{{ __('当前修改尚未保存，离开前请先存草稿。') }}</span>
+        <button class="btn btn-ghost" type="button" data-leave="stay">{{ __('留在本页') }}</button>
+        <button class="btn btn-primary" type="button" data-leave="save">{{ __('保存草稿并离开') }}</button>
+        <button class="go" type="button" data-leave="go">{{ __('仍要离开') }}</button>
+    </div>
+{% endblock %}
+
+{% block body %}
+    {# data-id 是编辑器问"这篇落库了没"的唯一依据:空串 = 还没存过(特色图 / 插图本地传都要它) #}
+    <form id="ed-form" method="post" action="{{ form_action }}" data-autosave="{{ autosave_url|default('') }}" data-id="{{ fields.id }}">
+        <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        <input type="hidden" name="thumbnail_id" id="ed-thumbnail" value="{{ thumbnail.id }}">
+
+        <div class="ed-head">
+            <div class="crumb">
+                <a href="{{ list_url }}">{{ list_label }}</a><span class="sep">/</span><span class="cur">{{ is_new ? __('新建') : __('编辑') }}</span>
+            </div>
+            <div class="saved"><i></i>{{ saved_text }}</div>
+            {# 修订版本比对(《113》)的唯一门:它对文章列表与侧栏都没有入口,只在编辑这篇时才有意义。
+               条数由 PostsController 备好(revisions),0 份时不摆这块空按钮 #}
+            {% if not is_new and revisions|default(0) > 0 %}
+                <a class="btn btn-ghost btn-sm" href="{{ path('admin', {path: 'revisions'}) }}?post={{ fields.id }}">{{ __('修订 %s 份', 'molin', revisions) }}</a>
+            {% endif %}
+            {# 面板字段(panel 落位)收进右侧抽屉,这里只给入口(《34A》§5) #}
+            {% if field_groups.panel %}
+                <button class="btn btn-ghost btn-sm more-cf" type="button" id="ed-fields-tog" aria-controls="ed-fields-drawer" aria-expanded="false">{{ __('更多字段') }}<span class="n">{{ panel_count }}</span></button>
+            {% endif %}
+        </div>
+
+        {% if show_title %}
+        <input class="title-in" id="title" name="title" type="text" value="{{ fields.title }}" placeholder="{{ __('输入标题') }}" autocomplete="off">
+        {% endif %}
+
+        <div class="cols">
+            <div class="main-col">
+                {% if is_page %}
+                {# 页面地址(#10):放在标题之下、正文之上。填了用填的,留空按标题生成(PostWriter 口径);
+                   下面一行的完整地址 = 站点 URL + 固定链接的产物,data-base 留给 JS 就地重算 #}
+                <div class="prow slug-row">
+                    <span class="k">{{ __('地址') }}</span>
+                    <input class="mini-in" id="ed-slug" type="text" name="slug" value="{{ fields.slug }}" placeholder="{{ is_new ? __('留空自动生成') : __('留空不改') }}" autocomplete="off" spellcheck="false">
+                </div>
+                <p class="slug-note" id="ed-slug-note" data-base="{{ slug_base }}">{{ slug_note is empty ? __('留空则按标题生成一个地址。') : slug_note }}</p>
+                {% endif %}
+                {% if show_editor %}
+                <div class="ed">
+                    <div class="tbar">
+                        {# 段落样式:点开一层小菜单(《79》§4.6)。原来的 select 只活在前端 execCommand 里,
+                           从不随表提交,所以这里不需要 name,也不留隐藏兼容字段。
+                           用 button + 菜单容器(不再用 <details>:它的开合会被 summary 上的样式吞掉),
+                           开合由 admin.js 管:切 aria-expanded 与菜单的 hidden。
+                           档位三档:正文 / 二级标题 / 三级标题 —— 一级标题(h1)是文章标题那一格,
+                           正文里再出 h1 会把层级顶乱,所以不列;旧的「标题」「副标题」叫法认不出层级,
+                           一并换成标准叫法(2026-10-11 作者定) #}
+                        <div class="bpick" id="ed-bpick">
+                            <button type="button" class="bpick-tog" id="ed-bpick-tog" aria-haspopup="true" aria-expanded="false" aria-controls="ed-bpick-menu">
+                                <b id="ed-bpick-label">{{ __('正文') }}</b>
+                            </button>
+                            <div class="bpick-menu" id="ed-bpick-menu" hidden>
+                                <button type="button" class="bpick-i" data-block="p">{{ __('正文') }}</button>
+                                <button type="button" class="bpick-i" data-block="h2">{{ __('二级标题') }}</button>
+                                <button type="button" class="bpick-i" data-block="h3">{{ __('三级标题') }}</button>
+                            </div>
+                        </div>
+                        <span class="tsep"></span>
+                        <button class="tbtn" type="button" data-cmd="bold" aria-pressed="false" aria-label="{{ __('加粗') }}"><span class="mark b">B</span></button>
+                        <button class="tbtn" type="button" data-cmd="italic" aria-pressed="false" aria-label="{{ __('斜体') }}"><span class="mark i">I</span></button>
+                        <span class="tsep"></span>
+                        <button class="tbtn" type="button" data-cmd="link" aria-pressed="false" aria-label="{{ __('链接') }}"><svg viewBox="0 0 16 16"><path d="M6.6 9.4 9.4 6.6"/><path d="M6.9 11.6 5.6 12.9a2.3 2.3 0 0 1-3.2-3.2l1.9-1.9a2.3 2.3 0 0 1 3.2 0"/><path d="M9.1 4.4 10.4 3.1a2.3 2.3 0 0 1 3.2 3.2l-1.9 1.9a2.3 2.3 0 0 1-3.2 0"/></svg></button>
+                        <button class="tbtn" type="button" data-cmd="blockquote" aria-pressed="false" aria-label="{{ __('引用') }}"><svg viewBox="0 0 16 16"><path d="M6.5 5.5C4.9 6.2 4 7.4 4 8.9c0 1 .7 1.7 1.6 1.7s1.6-.7 1.6-1.6-.7-1.7-1.6-1.7"/><path d="M12 5.5C10.4 6.2 9.5 7.4 9.5 8.9c0 1 .7 1.7 1.6 1.7s1.6-.7 1.6-1.6-.7-1.7-1.6-1.7"/></svg></button>
+                        <button class="tbtn" type="button" data-cmd="ul" aria-pressed="false" aria-label="{{ __('列表') }}"><svg viewBox="0 0 16 16"><path d="M6 4.5h7M6 8h7M6 11.5h7"/><circle class="fl" cx="3.4" cy="4.5" r=".9"/><circle class="fl" cx="3.4" cy="8" r=".9"/><circle class="fl" cx="3.4" cy="11.5" r=".9"/></svg></button>
+                        <button class="tbtn" type="button" data-cmd="code" aria-pressed="false" aria-label="{{ __('代码') }}"><svg viewBox="0 0 16 16"><path d="M6.2 5 3 8l3.2 3"/><path d="M9.8 5 13 8l-3.2 3"/></svg></button>
+                        {# 图片钮:先问图从哪儿来(#13)。两个地址留给 JS,老的无 JS 现场点它没有落处(以前就是死钮) #}
+                        <button class="tbtn" type="button" data-cmd="image" aria-pressed="false" aria-label="{{ __('图片') }}"
+                                data-pick-url="{{ body_pick_url }}" data-upload-url="{{ img_upload_url }}"><svg viewBox="0 0 16 16"><rect x="2.2" y="3.2" width="11.6" height="9.6" rx="1.6"/><circle cx="5.8" cy="6.4" r="1.1"/><path d="M2.6 11.2 6 8.1l2.4 2.1 2.2-2.2 3.2 3.2"/></svg></button>
+                        <span class="tsep"></span>
+                        <button class="tbtn" type="button" data-cmd="more" aria-pressed="false" aria-label="{{ __('更多格式') }}"><span class="mark">＋</span></button>
+                    </div>
+
+                    <div class="eb eb-view" id="ed-view" contenteditable="true" role="textbox" aria-multiline="true" aria-label="{{ __('正文') }}" data-placeholder="{{ __('从这里开始写。') }}">{{ fields.content|raw }}</div>
+                    {# 源框里的稿子也是 |raw:正文已过白名单,能收尾 textarea 的裸 </textarea> 进不来;
+                       反过来(再转义一道)无 JS 的人每存一次,实体就往上叠一层 #}
+                    <textarea class="eb eb-src" id="ed-content" name="content" placeholder="{{ __('从这里开始写。') }}" spellcheck="false">{{ fields.content|raw }}</textarea>
+                </div>
+                <div class="wc" id="ed-wc">{{ word_count }}</div>
+                {% endif %}
+
+                {# position = main 的自定义字段:正文下方(《34A》§5「字段很少时的必要字段」) #}
+                {% if field_groups.main %}
+                    <section class="box box-cf-main">
+                        <h3>{{ __('字段') }}</h3>
+                        <div class="flds">
+                            {% for field in field_groups.main %}
+                                {% include "editor-field.twig" with {field: field} only %}
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+            </div>
+
+            <aside class="side-col">
+                <section class="box">
+                    <h3>{{ __('发布') }}</h3>
+                    <div class="prow">
+                        <span class="k">{{ __('状态') }}</span>
+                        <select class="mini" name="status">
+                            {% for option in statuses %}
+                                <option value="{{ option.value }}"{% if option.value == chosen %} selected{% endif %}>{{ option.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="prow">
+                        <span class="k">{{ __('可见性') }}</span>
+                        <select class="mini" name="visibility" id="ed-visibility">
+                            <option value="public"{% if visibility == 'public' %} selected{% endif %}>{{ __('公开') }}</option>
+                            <option value="private"{% if visibility == 'private' %} selected{% endif %}>{{ __('私密') }}</option>
+                            <option value="password"{% if visibility == 'password' %} selected{% endif %}>{{ __('密码保护') }}</option>
+                        </select>
+                    </div>
+                    {# 密码保护的口令格子(受可见性联动,见表单底部脚本)。永远留空,不把哈希带回页面;
+                       编辑已保护文章时留空 = 保持原口令,重新填才换新的 #}
+                    <div class="prow" id="ed-password-row"{% if visibility != 'password' %} hidden{% endif %}>
+                        <span class="k">{{ __('口令') }}</span>
+                        <input class="mini-in" type="password" name="password" id="ed-password"
+                               placeholder="{{ post_password_edit ? __('留空保持原口令') : __('设置访问口令') }}"
+                               autocomplete="new-password">
+                    </div>
+                    {# 时间可点可改(《79》§4.7 第 1 盒);留空 = 发布时取当下 #}
+                    <div class="prow">
+                        <span class="k">{{ __('时间') }}</span>
+                        <input class="mini-in" type="datetime-local" name="published_at" value="{{ published_input }}" aria-label="{{ __('发布时间') }}" title="{{ __('留空即发布时按当下时间') }}">
+                    </div>
+                    {# 地址(#10)只页面有:文章的地址由固定链接结构自动生成(标题来),不给输入口。
+                       页面的地址移到标题之下、正文之上(见 .main-col)。 #}
+                    <div class="pub-acts">
+                        <button class="btn btn-ghost btn-sm" type="submit" name="intent" value="draft">{{ __('保存草稿') }}</button>
+                        <button class="btn btn-primary btn-sm" type="submit" name="intent" value="publish">{{ __('发布') }}</button>
+                    </div>
+                    <div class="pub-links">
+                        {% if preview_url %}<a href="{{ preview_url }}">{{ __('预览') }}</a>{% endif %}
+                        {# 移到回收站是破坏性动作:只能 POST 带令牌走(拿 <a> 去 GET 会被令牌闸挡在列表页)。
+                           .trash-row 是给移动端靠右留的包裹位(《79》§5) #}
+                        {% if trash_url %}
+                            <form class="trash-row" method="post" action="{{ trash_url }}">
+                                <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                                <button class="del" type="submit">{{ __('移到回收站') }}</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </section>
+
+                {% if show_classic_taxboxes %}
+                {# 分类盒。行尾那颗「×」删的是**整个分类**(全局动作,与《87》管理屏同一个去处),
+                   所以走 XHR + 站内唯一的模态件做二次确认:删完把这一行收掉,人不用离开没保存的稿子。
+                   两道闸:门控 category.manage,兜底项「未分类」不给「×」—— 与《87》那屏逐条对齐 #}
+                <section class="box" id="box-cats"{% if can_manage_categories %} data-del-url="{{ term_delete_url }}" data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}"{% endif %}>
+                    <h3><span>{{ __('分类') }}</span>{% if can_manage_categories %}<a class="manage" href="{{ categories_url }}">{{ __('管理分类与标签') }}</a>{% endif %}</h3>
+                    <div class="cats">
+                        {% for choice in categories %}
+                            <div class="catrow">
+                                <label>
+                                    <input type="checkbox" class="cb" name="categories[]" value="{{ choice.term_taxonomy_id }}"{% if choice.checked %} checked{% endif %}>
+                                    <span>{{ choice.name }}</span><span class="n">{{ choice.count }}</span>
+                                </label>
+                                {% if choice.can_delete %}<button class="catdel" type="button" data-term="{{ choice.term_taxonomy_id }}" data-name="{{ choice.name }}" aria-label="{{ __('删除分类') }}" title="{{ __('删除分类') }}">×</button>{% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="add" type="button" id="ed-new-cat">{{ __('＋ 新建分类') }}</button>
+                    <input class="mini-in" id="ed-new-cat-in" type="text" name="new_category" placeholder="{{ __('输入新分类后按回车') }}"{% if new_category is empty %} hidden{% endif %} value="{{ new_category }}">
+                </section>
+
+                <section class="box">
+                    <h3>{{ __('标签') }}</h3>
+                    <div class="chips">
+                        {% for tag in tags %}
+                            <span class="chip">{{ tag.name }}<button type="button" data-tag="{{ tag.name }}" aria-label="{{ __('移除') }}">×</button></span>
+                        {% endfor %}
+                    </div>
+                    <input class="mini-in" id="ed-tags" type="text" name="tags" value="{{ tag_names }}" placeholder="{{ __('输入标签后按回车') }}">
+                </section>
+                {% endif %}
+
+                {# CPT 声明的分类法盒(《34》§2.2 taxonomies):多选;层级型给父子缩进候选 #}
+                {% for box in taxonomy_boxes %}
+                <section class="box">
+                    <h3>{{ box.label }}</h3>
+                    <div class="cats">
+                        {% for choice in box.choices %}
+                            <div class="catrow{% if choice.depth > 1 %} child{% endif %}">
+                                <label>
+                                    <input type="checkbox" class="cb" name="taxonomies[{{ box.taxonomy }}][]" value="{{ choice.term_taxonomy_id }}"{% if choice.checked %} checked{% endif %}>
+                                    <span>{{ choice.name }}</span><span class="n">{{ choice.count }}</span>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endfor %}
+
+                {% if show_parent_box %}
+                <section class="box">
+                    <h3>{{ __('父页面') }}</h3>
+                    <select class="mini" name="parent_id" aria-label="{{ __('父页面') }}">
+                        <option value="0"{% if parent_id == 0 %} selected{% endif %}>{{ __('无（顶层）') }}</option>
+                        {% for choice in parent_choices %}
+                            <option value="{{ choice.id }}"{% if choice.id == parent_id %} selected{% endif %}>{{ choice.title }}</option>
+                        {% endfor %}
+                    </select>
+                    {% if show_menu_order %}
+                    {# 序号:数字越小越靠前,前台导航与子页列表按它排;负数不收,与 min 0 同口径 #}
+                    <div class="prow">
+                        <span class="k">{{ __('序号') }}</span>
+                        <input class="mini-in" type="number" name="menu_order" min="0" step="1" value="{{ menu_order }}" aria-label="{{ __('序号') }}">
+                    </div>
+                    {% endif %}
+                </section>
+                {% endif %}
+
+                {% if show_page_template %}
+                {# 页面模板:主题没声明任何页面模板时整盒不出现(渲染空下拉没有意义) #}
+                {% if page_templates is not empty %}
+                <section class="box">
+                    <h3>{{ __('页面模板') }}</h3>
+                    <select class="mini" name="page_template" aria-label="{{ __('页面模板') }}">
+                        <option value=""{% if page_template_current is not defined or page_template_current == '' %} selected{% endif %}>{{ __('默认模板') }}</option>
+                        {% for choice in page_templates %}
+                            <option value="{{ choice.file }}"{% if choice.selected %} selected{% endif %}>{{ choice.name }}</option>
+                        {% endfor %}
+                    </select>
+                </section>
+                {% endif %}
+                {% endif %}
+
+                {% if show_thumbnail %}
+                <section class="box" id="box-feat">
+                    <h3>{{ __('特色图片') }}</h3>
+                    {% if thumbnail.id %}
+                        {# 点它先弹 #img-choose 问图从哪儿来(#13);href 留着,没 JS 时还是老路 —— 直接进媒体库 #}
+                        <a class="feat has" id="ed-feat" href="{{ pick_url }}" data-pick-url="{{ pick_url }}" data-upload-url="{{ img_upload_url }}">
+                            <span class="fpv">
+                                {# 原图不在盘上(或传的是非图片)时,给一张与媒体库同族的线稿占位,不留空框 #}
+                                {% if thumbnail.preview %}
+                                    <img src="{{ thumbnail.preview }}" alt="">
+                                {% else %}
+                                    <svg viewBox="0 0 120 75" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="88" cy="22" r="8"/><path d="M8 60 34 32 52 50 72 24 112 60"/><path d="M8 60h104"/></svg>
+                                {% endif %}
+                            </span>
+                            <span class="fname">{{ thumbnail.name }}</span>
+                        </a>
+                        <button class="add" type="button" id="ed-unset-thumb">{{ __('移除特色图片') }}</button>
+                    {% else %}
+                        {# 新建也照样能点:点开后首次上传 / 首次选图会先静默建一篇草稿拿 id(auto-draft),
+                           不必再"先存草稿"。#13 #}
+                        <a class="feat" id="ed-feat" href="{{ pick_url }}" data-pick-url="{{ pick_url }}" data-upload-url="{{ img_upload_url }}">{{ __('＋ 设置特色图片') }}</a>
+                    {% endif %}
+                    {# 特色图本地传的实时进度(admin.js 驱动;对话框里的那条 #img-upbar 更常被看到)#4 #}
+                    <div class="upbar" id="feat-upbar" hidden><i></i><span class="pc">0%</span></div>
+                    <p class="uperr" id="feat-uperr" hidden></p>
+                </section>
+                {% endif %}
+
+                {% if show_comments_box %}
+                <section class="box">
+                    <h3>{{ __('讨论') }}</h3>
+                    <label class="switch">
+                        <input type="checkbox" name="comment_status" value="open"{% if comment_open %} checked{% endif %}>
+                        <span class="track"><span class="knob"></span></span>
+                        <span class="txt">{{ __('允许评论') }}</span>
+                    </label>
+                </section>
+                {% endif %}
+
+                {% if show_meta_box %}
+                <section class="box">
+                    <h3>{{ __('自定义字段') }}</h3>
+                    {% for row in fields_meta %}
+                        <div class="cf">
+                            <input class="mini-in" type="text" name="meta_key[]" value="{{ row.key }}" placeholder="{{ __('键') }}">
+                            <input class="mini-in" type="text" name="meta_value[]" value="{{ row.value }}" placeholder="{{ __('值') }}">
+                        </div>
+                    {% endfor %}
+                    <button class="add" type="button" id="ed-add-meta">{{ __('＋ 添加字段') }}</button>
+                </section>
+                {% endif %}
+
+                {# position = side 的自定义字段:右栏独立盒(《34A》§5),按 priority 升序 #}
+                {% if field_groups.side %}
+                <section class="box box-cf">
+                    <h3>{{ __('字段') }}</h3>
+                    <div class="flds">
+                        {% for field in field_groups.side %}
+                            {% include "editor-field.twig" with {field: field} only %}
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+
+                {# position = panel 的自定义字段在表单底部的抽屉里,见下方 #}
+            </aside>
+        </div>
+
+        {# position = panel 的自定义字段:低频 / 成组,收进右侧真抽屉(《34A》§5)。
+           触发按钮在页头;开合 / Esc / 点遮罩由 admin.js 管。抽屉在表单内,字段照常提交。 #}
+        {% if field_groups.panel %}
+        <div class="drawer-scrim" id="ed-fields-scrim" hidden></div>
+        <aside class="drawer" id="ed-fields-drawer" role="dialog" aria-modal="true" aria-labelledby="ed-fields-title" hidden>
+            <div class="drawer-h">
+                <h2 id="ed-fields-title">{{ __('更多字段') }}</h2>
+                <button class="drawer-x" type="button" id="ed-fields-close" aria-label="{{ __('关闭') }}">×</button>
+            </div>
+            <div class="drawer-b">
+                <div class="flds">
+                    {% for field in field_groups.panel %}
+                        {% include "editor-field.twig" with {field: field} only %}
+                    {% endfor %}
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+    </form>
+
+    {# 口令格与「可见性」联动:选密码保护才露出来。admin.js 不动,这格用一行内联脚本自持 #}
+    <script>
+    (function () {
+        var sel = document.getElementById('ed-visibility');
+        var row = document.getElementById('ed-password-row');
+        if (!sel || !row) return;
+        var sync = function () { row.hidden = sel.value !== 'password'; };
+        sel.addEventListener('change', sync);
+        sync();
+    })();
+    </script>
+
+    {# 移动端固定底部保存栏(《79》§5);桌面端由右栏「发布」盒承担 #}
+    <div class="actionbar">
+        <button class="btn btn-ghost" type="submit" form="ed-form" name="intent" value="draft">{{ __('保存草稿') }}</button>
+        <button class="btn btn-primary" type="submit" form="ed-form" name="intent" value="publish">{{ __('发布') }}</button>
+    </div>
+{% endblock %}
+
+{% block dialog %}
+    {# 特色图与正文插图共用这一个「图从哪儿来」(#13)。没 JS 时它一直藏着:
+       特色图片还能走 href 那条老路,正文图片钮本来也没有无 JS 的落处 #}
+    <div class="dlg img-choose" id="img-choose" role="dialog" aria-modal="true" aria-labelledby="img-choose-title" hidden
+         data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}">
+        <h2 id="img-choose-title">{{ __('这张图从哪儿来？') }}</h2>
+        <div class="img-src">
+            {# 新建也照样能点:首次选图 / 首次上传时 admin.js 先静默建一篇草稿拿 id(auto-draft),再继续 #13 #}
+            <button class="btn btn-ghost" type="button" data-img="lib">{{ __('从媒体库选择') }}</button>
+            <label class="btn btn-primary">{{ __('本地上传') }}<input type="file" id="img-local" hidden accept="image/*"></label>
+        </div>
+        {# 本地传的实时进度(特色图与正文插图共用这一口框,都挂这条)#3 #4 #}
+        <div class="upbar" id="img-upbar" hidden><i></i><span class="pc">0%</span></div>
+        <p class="uperr" id="img-uperr" hidden></p>
+        <div class="foot">
+            <button class="btn btn-ghost" type="button" data-img="cancel">{{ __('取消') }}</button>
+        </div>
+    </div>
+
+    {% if picker %}
+        <div class="dlg wide" role="dialog" aria-modal="true" aria-labelledby="pick-title" data-meta-key="{{ picker.key|default('') }}">
+            <div class="tag">{{ __('媒体库') }}</div>
+            <h2 id="pick-title">{{ picker.mode == 'body' ? __('插入图片') : (picker.mode == 'meta' ? __('选择图片') : __('选择特色图片')) }}</h2>
+            <form class="filters" method="get" action="{{ picker.action }}">
+                <input type="hidden" name="pick" value="{{ picker.mode == 'body' ? 'body' : (picker.mode == 'meta' ? 'meta' : '1') }}">
+                {% if picker.mode == 'meta' %}<input type="hidden" name="key" value="{{ picker.key }}">{% endif %}
+                <div class="search">
+                    <span class="ico"></span>
+                    <input type="text" name="q" placeholder="{{ __('搜索文件名') }}" value="{{ picker.q }}">
+                </div>
+                <div class="spacer"></div>
+                <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+            </form>
+            {# 移动端:小图 + 固定每页 + 可滚动(#10 第 5 条)。列数与缩略图尺寸的移动端规则
+               由 admin.css 按 .pick-grid 兜(桌面仍复用 .grid 三列到 .dlg.wide 里)#}
+            <div class="grid pick-grid">
+                {% for item in picker.items %}
+                    {# 一张卡片的内里两态共用;{% set %} 抓下来的是 Markup,原样再输出不会再转义一道 #}
+                    {% set cell %}
+                        <span class="kind">{{ item.kind }}</span>
+                        <span class="tick"></span>
+                        <div class="thumb">
+                            {% if item.thumb %}<img src="{{ item.thumb }}" alt="">{% else %}<svg viewBox="0 0 120 90" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="88" cy="26" r="8"/><path d="M8 70 34 42 52 60 72 34 112 70"/><path d="M8 70h104"/><path d="M30 70v-9M78 70v-7"/></svg>{% endif %}
+                        </div>
+                        <div class="bd">
+                            <div class="fn">{{ item.name }}</div>
+                            <div class="mi">{{ item.dims }}{% if item.dims %} · {% endif %}{{ item.size_text }}</div>
+                        </div>
+                    {% endset %}
+                    {% if picker.mode == 'body' %}
+                        {# 正文插图(#13):选中的那张把原图地址交出来,由编辑器插进正文 #}
+                        <button class="cell" type="button" data-url="{{ item.url }}">{{ cell }}</button>
+                    {% elseif picker.mode == 'meta' %}
+                        {# 图片字段(《34A》§4):选中即把附件 id 写回该字段的隐藏输入与预览,不导航 #}
+                        <button class="cell" type="button" data-meta="{{ item.id }}" data-mname="{{ item.name }}" data-mthumb="{{ item.thumb }}">{{ cell }}</button>
+                    {% else %}
+                        <form method="post" action="{{ picker.set_url }}">
+                            <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+                            <input type="hidden" name="thumbnail_id" value="{{ item.id }}">
+                            <button class="cell{% if item.id == picker.selected %} sel{% endif %}" type="submit">{{ cell }}</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <p class="lede">{{ __('媒体库还是空的。先到「媒体」传一张图,再回来选。') }}</p>
+                {% endfor %}
+            </div>
+            <div class="pick-pager">
+                <div class="info">{{ picker.info }}</div>
+                <div class="pages">
+                    {% for link in picker.pages %}
+                        <a href="{{ link.url }}"{% if link.active %} class="cur"{% endif %}>{{ link.page }}</a>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="foot">
+                <a class="btn btn-ghost" href="{{ picker.cancel_url }}" data-cancel>{{ __('取消') }}</a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

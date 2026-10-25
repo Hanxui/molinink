@@ -1,0 +1,12 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  用户组二级导航(《41》§4「用户」组):用户 / 角色能力矩阵。
+  角色矩阵(《105》)的 menu 登记为 null、侧栏里借「用户」的位,这条是它唯一的门(同「外观」组那条)。
+  当前项按 users_kind 判:users / roles。
+#}
+{% set uk = users_kind|default('users') %}
+<nav class="sec-tabs" aria-label="{{ __('用户') }}">
+    <a href="{{ path('admin', {path: 'users'}) }}"{{ uk == 'users' ? ' class="active"' : '' }}>{{ __('用户') }}</a>
+    <a href="{{ path('admin', {path: 'roles'}) }}"{{ uk == 'roles' ? ' class="active"' : '' }}>{{ __('角色能力矩阵') }}</a>
+</nav>

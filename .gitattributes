@@ -1,0 +1,25 @@
+* text=auto eol=lf
+
+*.php   text
+*.twig  text
+*.css   text
+*.js    text
+*.json  text
+*.md    text
+*.txt   text
+*.yml   text
+*.neon  text
+composer.lock text
+molin         text eol=lf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.ico  binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.zip  binary

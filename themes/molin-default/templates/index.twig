@@ -1,0 +1,77 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{# 首页(《71/72》):hero + 编号列表。壳(页头/发丝线/浮层/页脚)与归档族同源，
+   样式落在 assets/home.css;hero 两句文案读首页设置,没配过就用参考图默认值。 #}
+<!DOCTYPE html>
+<html lang="{{ html_lang() }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ site.name }}</title>
+    {# 站点标语:后台外观「页头→标语」配了就出 meta description,不配则空(《36》取值回退) #}
+    {% if theme_setting('header.tagline') %}<meta name="description" content="{{ theme_setting('header.tagline') }}">{% endif %}
+    {# 安装向导第 3 步的"搜索引擎可见"关掉时,全站不进索引(《125》§6.3) #}
+    {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
+    {% include 'partials/theme-style.twig' %}
+    {{ inline_style('shell.css') }}
+    {{ inline_style('home.css') }}
+    {{ head_output }}
+</head>
+<body>
+<div class="page">
+    {% include 'partials/site-header.twig' %}
+
+    <section class="hero">
+        <div class="eyebrow">{{ theme_setting('home.eyebrow', '随笔 · 长文 · 观察') }}</div>
+        <h1>{{ theme_setting('home.hero', "一个更安静的互联网，\n留给更深的思考。")|nl2br }}</h1>
+        <div class="underline"></div>
+    </section>
+
+    {# 精选栏目:后台外观「首页→精选栏目」配了几行就出几列;不配整区不渲染。
+       每行是 栏目名 + 分类别名,渲染成指向对应分类归档的链接列(《34》分类固定链接)。 #}
+    {% set featured = theme_setting('home.featured') %}
+    {% if featured is not empty %}
+        <section class="featured">
+            <div class="eyebrow">{{ __('精选栏目', 'theme') }}</div>
+            <div class="featured-row">
+                {% for col in featured %}
+                    <div class="featured-col">
+                        <h2><a href="{{ path('category', {'slug': col.category}) }}">{{ col.name }}</a></h2>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <section class="index">
+        {% for item in items %}
+            <article class="item">
+                <div class="num">{{ item.num }}</div>
+                <div>
+                    {# 无标题的类型(说说)落回摘要:列表行永远有个认得出的名字,不出空行 #}
+                    {% set label = item.title is not empty ? item.title : item.excerpt|striptags|trim|truncate(30) %}
+                    <h2><a href="{{ item.url }}">{{ label is not empty ? label : __('(无标题)', 'theme') }}</a></h2>
+                    {# 首页基准图只此一版:分类 / 日期;评论数不上首页(归档族才有) #}
+                    <div class="meta">{% if item.category %}<a class="cat" href="{{ item.category.url }}">{{ item.category.name }}</a> / {% endif %}<span class="dt-long">{{ item.published_at|date(__('Y 年 n 月 j 日', 'theme')) }}</span><span class="dt-short">{{ item.published_at|date('Y.m.d') }}</span></div>
+                </div>
+            </article>
+        {% else %}
+            <div class="note">{{ __('还没有内容。', 'theme') }}</div>
+        {% endfor %}
+    </section>
+
+    {% if pagination.total_pages > 1 %}
+        <nav class="pages">
+            {% if pager.prev %}<a href="{{ pager.prev }}">← {{ __('上一页', 'theme') }}</a>{% endif %}
+            {% for p in pager.pages %}<a{% if p.current %} class="cur"{% endif %} href="{{ p.url }}">{{ p.n }}</a>{% endfor %}
+            {% if pager.next %}<a href="{{ pager.next }}">{{ __('下一页', 'theme') }} →</a>{% endif %}
+            <div class="spacer"></div>
+            <div class="count"><span class="c-full">{{ pager.count }}</span><span class="c-comp">{{ pager.count_compact }}</span></div>
+        </nav>
+    {% endif %}
+
+    {% include 'partials/footer.twig' %}
+</div>
+<script src="{{ asset('shell.js') }}" defer></script>
+{{ footer_output }}
+</body>
+</html>

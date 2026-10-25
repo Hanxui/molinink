@@ -1,0 +1,86 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  日志查看器(《112》,基准 后台日志查看器-定稿-2026-09-30 桌面 / 移动端)。
+  只读屏:六通道页签 + 筛选 + 表格(移动卡片流)+ 分页;整页没有"清空 / 删除日志"控件。
+  行内容由 LogsController + LogReader 备好(分段/URL 都算完),模板不拼地址、不做业务。
+#}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <div class="head">
+        <div class="tx">
+            <div class="eyebrow">{{ __('工具') }}</div>
+            <h1>{{ __('日志') }}</h1>
+            <p class="lede">{{ __('谁在何时做了什么，都在这里。敏感字段进日志前一律脱敏，密码与令牌永不落盘。') }}</p>
+        </div>
+        <button class="btn btn-ghost" type="button">{{ __('日志设置') }}</button>
+    </div>
+
+    {% include 'partials/tools-nav.twig' with {tools_kind: 'logs'} %}
+
+    <nav class="tabs">
+        {% for tab in tabs %}
+            <a href="{{ tab.url }}"{% if tab.active %} class="active"{% endif %}><span class="ch">{{ tab.ch }}</span><span class="n">{{ tab.n }}</span></a>
+        {% endfor %}
+    </nav>
+
+    <form class="filters" id="logs-filters" method="get" action="{{ logs_url }}">
+        <input type="hidden" name="ch" value="{{ channel }}">
+        <div class="search">
+            <span class="ico"></span>
+            <input type="text" name="q" value="{{ q }}" placeholder="{{ __('搜索摘要、用户或对象') }}">
+        </div>
+        <select name="level" aria-label="{{ __('级别') }}">
+            {% for value, label in levels %}<option value="{{ value }}"{% if value == level %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <select name="range" aria-label="{{ __('时间范围') }}">
+            {% for value, label in ranges %}<option value="{{ value }}"{% if value == range %} selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <select name="sort" aria-label="{{ __('排序') }}">
+            <option value="desc"{% if sort == 'desc' %} selected{% endif %}>{{ __('时间倒序') }}</option>
+            <option value="asc"{% if sort == 'asc' %} selected{% endif %}>{{ __('时间正序') }}</option>
+        </select>
+        <div class="spacer"></div>
+        <button class="btn btn-ghost more" type="submit">{{ __('筛选') }}</button>
+    </form>
+
+    <div class="rule">
+        <b>{{ __('审计通道单独保存，不可清空、不可编辑') }}</b>
+        <span class="rule-d">{{ __('常规通道按天轮转、保留 30 天；审计日志不随常规清理删除。脱敏规则：邮箱') }} <span class="mask">a***@b.com</span>{{ __('、常规日志 IP 掩末段、密码与令牌只记') }} <span class="mask">•••</span>{{ __('。') }}</span>
+        <span class="rule-m">{{ __('常规通道按天轮转、保留 30 天；审计日志不随常规清理删除。脱敏：邮箱') }} <span class="mask">a***@b.com</span>{{ __('、常规日志 IP 掩末段、密码与令牌只记') }} <span class="mask">•••</span>{{ __('。') }}</span>
+    </div>
+
+    <div class="table">
+        <div class="thead"><span>{{ __('时间') }}</span><span>{{ __('级别') }}</span><span>{{ __('通道') }}</span><span>{{ __('摘要') }}</span><span>{{ __('IP · UA 摘要') }}</span></div>
+
+        {% for row in rows %}
+            <div class="tr">
+                <div class="tm">{{ row.tm }}</div>
+                <div class="lv{% if row.hi %} hi{% endif %}">{{ row.lv }}</div>
+                <div class="cn">{{ row.ch }}</div>
+                <div class="msg">{% for p in row.parts %}{% if p.t == 'c' %}<code>{{ p.x }}</code>{% elseif p.t == 'd' %}<span class="dim">{{ p.x }}</span>{% elseif p.t == 'm' %}<span class="mask">{{ p.x }}</span>{% else %}{{ p.x }}{% endif %}{% endfor %}</div>
+                <div class="who">{% if row.ip %}<code>{{ row.ip }}</code>{% endif %}{% if row.ua %}{% if row.ip %} · {% endif %}{{ row.ua }}{% endif %}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="list">
+        {% for row in rows %}
+            <div class="card">
+                <div class="l1"><span class="tm">{{ row.tm }}</span><span class="lv{% if row.hi %} hi{% endif %}">{{ row.lv }}</span><span class="cn">{{ row.ch }}</span></div>
+                <div class="msg">{% for p in row.parts %}{% if p.t == 'c' %}<code>{{ p.x }}</code>{% elseif p.t == 'd' %}<span class="dim">{{ p.x }}</span>{% elseif p.t == 'm' %}<span class="mask">{{ p.x }}</span>{% else %}{{ p.x }}{% endif %}{% endfor %}</div>
+                <div class="who">{% if row.ip %}<code>{{ row.ip }}</code>{% endif %}{% if row.ua %}{% if row.ip %} · {% endif %}{{ row.ua }}{% endif %}</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="pager">
+        <div class="info">{{ pager.info }}</div>
+        <div class="pages">
+            <a href="{{ pager.prev }}">{{ __('上一页') }}</a>
+            {% for p in pager.pages %}{% if p.gap %}<span class="gap">…</span>{% else %}<a{% if p.current %} class="cur"{% endif %} href="{{ p.url }}">{{ p.n }}</a>{% endif %}{% endfor %}
+            <a href="{{ pager.next }}">{{ __('下一页') }}</a>
+        </div>
+    </div>
+{% endblock %}

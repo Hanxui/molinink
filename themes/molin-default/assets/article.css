@@ -1,0 +1,115 @@
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
+   文章详情样式(源件:assets/ui/文章详情-定稿-2026-09-29.html 与
+   文章详情-移动端-定稿-2026-09-29.html)。评论区另见 comments.css。
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
+
+/* 文章头:内容栏居中(width:100% 是给 .page 的 flex 列用的 —— 没有它,auto 外边距会把块收成内容宽,#56 页脚钉底时踩过) */
+.article{margin:74px auto 0;max-width:720px;width:100%;}
+.eyebrow{font-family:var(--font-sans);font-size:13px;letter-spacing:.24em;color:var(--muted);}
+.eyebrow .cat{color:inherit;text-decoration:none;}
+.eyebrow .cat:hover{color:var(--accent);}
+/* 桌面出长日期,移动端换短日期(与首页同口径,见 home.css) */
+.eyebrow .dt-short{display:none;}
+.article h1{margin-top:26px;font-size:72px;font-weight:400;line-height:1.24;letter-spacing:.01em;}
+.byline{margin-top:26px;font-family:var(--font-sans);font-size:13px;letter-spacing:.1em;color:var(--muted);}
+.underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
+
+/* 正文 */
+.body{margin:64px auto 0;max-width:720px;width:100%;font-size:calc(var(--font-size) + 2px);line-height:1.95;letter-spacing:.01em;}
+.body p{margin-top:1.7em;}
+.body p:first-child{margin-top:0;}
+.body h2{margin-top:2.4em;font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
+/* 三级标题(编辑器的第三档,《79》§12)。桌面字号取主题里既有的次级标题档(与 .pager .name 同款 24px),
+   不另造新的级差;字重必须写 400 —— 浏览器给 h3 的默认是加粗,不压掉就破了"衬线不加粗" */
+.body h3{margin-top:2em;font-size:24px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
+.body a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule);}
+.body a:hover{color:var(--accent);text-decoration-color:var(--accent);}
+.body blockquote{margin-top:2.2em;padding-left:30px;border-left:2px solid var(--rule);color:var(--muted);font-size:calc(var(--font-size) + 3px);}
+.body ul{margin-top:1.6em;padding-left:1.3em;}
+.body li{margin-top:.6em;}
+.body code{font-family:var(--font-mono);font-size:.86em;background:#F1EFEA;padding:.12em .38em;border-radius:2px;}
+.body pre{margin-top:1.8em;padding:18px 20px;overflow-x:auto;background:#F1EFEA;border:1px solid var(--rule);
+  border-radius:4px;font-family:var(--font-mono);font-size:14px;line-height:1.7;-webkit-overflow-scrolling:touch;}
+.body pre code{background:none;padding:0;font-size:inherit;border:0;}
+.body table{margin-top:1.8em;width:100%;border-collapse:collapse;font-size:.9em;line-height:1.7;}
+.body th,.body td{padding:10px 12px;border-bottom:1px solid var(--rule);text-align:left;vertical-align:top;}
+.body th{font-family:var(--font-sans);font-size:12px;letter-spacing:.08em;font-weight:400;color:var(--muted);}
+.body tbody tr:last-child td{border-bottom:0;}
+.body figure{margin-top:2.4em;}
+.body figure img{width:100%;border:1px solid var(--rule);display:block;}
+.body figcaption{margin-top:14px;font-family:var(--font-sans);font-size:12.5px;letter-spacing:.08em;color:var(--muted);}
+/* 编辑器直插的图片(#56 报障):等比限宽 + 发丝边框,与 figure 里的同款;不裁不改原文件 */
+.body img{max-width:100%;height:auto;border:1px solid var(--rule);display:block;cursor:zoom-in;}
+
+/* 口令锁态(私密正文,P0-2):无独立基准,沿用正文栏与评论区的既有部件(《73》口径) */
+.unlock-box h2{margin-top:0;font-size:34px;font-weight:400;line-height:1.3;}
+.unlock-box .note{margin-top:14px;font-family:var(--font-sans);font-size:12px;
+  letter-spacing:.06em;color:var(--muted);line-height:1.7;}
+.unlock-box form{margin-top:26px;display:flex;flex-wrap:wrap;gap:12px;}
+.unlock-box input[type=password]{flex:1 1 260px;max-width:360px;margin-top:0;}
+.unlock-box .btn{flex:0 0 auto;}
+
+/* 上/下篇 */
+.pager{margin:96px auto 0;max-width:720px;width:100%;padding-top:30px;border-top:1px solid var(--rule);
+  display:flex;justify-content:space-between;gap:60px;}
+.pager a{text-decoration:none;color:var(--ink);max-width:46%;}
+.pager .dir{font-family:var(--font-sans);font-size:12px;letter-spacing:.2em;color:var(--muted);}
+.pager .name{margin-top:14px;font-size:24px;line-height:1.4;}
+.pager a:hover .name{color:var(--accent);}
+.pager .next{text-align:right;margin-left:auto;}
+
+/* 文末标签(《73》§12,2026-10-11 增):分类在眉标里,这里只列标签 —— 读完正文给"更细的入口"。
+   版式照上/下篇那一档(发丝线 + 30px 内距 + 96px 上距),字号/字距/颜色全部取自既有档位,不新增;
+   没打标签的篇章整块不渲染,版面与从前逐像素一样 */
+.tags{margin:96px auto 0;max-width:720px;width:100%;padding-top:30px;border-top:1px solid var(--rule);
+  display:flex;align-items:baseline;flex-wrap:wrap;gap:9px 18px;}
+.tags .lab{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.2em;color:var(--muted);}
+.tags a{font-size:13px;letter-spacing:.1em;color:var(--muted);text-decoration:none;}
+.tags a:hover{color:var(--accent);}
+
+/* 灯箱(#56):点开看大图、关回原位,开合位移由 shell.js 驱动;底色用墨的 alpha 态 */
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(27,28,30,.9);opacity:0;
+  transition:opacity .24s ease;cursor:zoom-out;}
+.lightbox.open{opacity:1;}
+.lightbox img{position:absolute;transform-origin:0 0;will-change:transform;
+  box-shadow:0 24px 80px rgba(27,28,30,.5);}
+.lightbox .lb-close{position:absolute;top:18px;right:14px;width:44px;height:44px;
+  background:none;border:0;cursor:pointer;}
+.lightbox .lb-close::before,.lightbox .lb-close::after{content:"";position:absolute;top:21px;left:11px;
+  width:22px;height:1.4px;background:var(--paper);}
+.lightbox .lb-close::before{transform:rotate(45deg);}
+.lightbox .lb-close::after{transform:rotate(-45deg);}
+@media (prefers-reduced-motion: reduce){ .lightbox{transition:none;} }
+
+@media (max-width:768px){
+  .article{margin:34px 0 0;}
+  .eyebrow{font-size:10.5px;letter-spacing:.2em;}
+  .eyebrow .dt-long{display:none;}
+  .eyebrow .dt-short{display:inline;}
+  .article h1{margin-top:16px;font-size:34px;line-height:1.3;}
+  .byline{margin-top:16px;font-size:11px;}
+  .underline{margin-top:20px;width:56px;}
+
+  .body{margin-top:36px;font-size:calc(var(--font-size) - 1px);line-height:1.9;}
+  .body p{margin-top:1.6em;}
+  .body h2{margin-top:2.2em;font-size:22px;}
+  .body h3{margin-top:1.9em;font-size:18px;}
+  .body blockquote{padding-left:18px;font-size:var(--font-size);}
+  .body ul{margin-top:1.5em;padding-left:1.2em;}
+  .body li{margin-top:.55em;}
+  .body pre{padding:14px 14px;font-size:13px;}
+  .body table{font-size:.82em;}
+  .body th,.body td{padding:8px 8px;}
+  .body figure{margin-top:2.2em;}
+  .body figcaption{margin-top:11px;font-size:10.5px;}
+
+  .pager{margin:52px 0 0;padding-top:20px;flex-direction:column;gap:22px;}
+  .pager a{max-width:100%;}
+  .pager .name{margin-top:8px;font-size:18px;}
+  .pager .dir{font-size:10.5px;letter-spacing:.18em;}
+  .pager .next{text-align:right;}
+
+  .tags{margin:52px 0 0;padding-top:20px;gap:8px 14px;}
+  .tags .lab{font-size:10.5px;letter-spacing:.18em;}
+  .tags a{font-size:11px;}
+}

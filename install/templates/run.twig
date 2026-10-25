@@ -1,0 +1,58 @@
+{# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
+{% extends "layout.twig" %}
+
+{% block body %}
+    <h1>写入配置与初始化</h1>
+    <p class="lede">接下来程序会按顺序完成下面七件事。任何一步失败都会停下并复原，不会留下装了一半的状态。</p>
+
+    <form method="post" action="?step=4">
+        <input type="hidden" name="{{ field }}" value="{{ token }}">
+
+        <section class="grp">
+            <h2>执行进度</h2>
+            <p class="gdesc">数据表会按顺序一次性建好，以后升级也走同一条路。</p>
+            <div class="chk">
+                {% for stage in stages %}
+                    {% set row = loop.index %}
+                    <div class="ck">
+                        <div class="k">{{ stage[0] }}</div>
+                        <div class="d">{{ stage[1] }}{% if failure and failure.row == row %}<span class="why">{{ failure.reason }}</span>{% endif %}</div>
+                        {% if failure and row < failure.row %}
+                            <div class="s ok">完成</div>
+                        {% elseif failure and row == failure.row %}
+                            <div class="s fail">失败</div>
+                        {% else %}
+                            <div class="s todo">待执行</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+            {% if not failure %}
+                <p class="note">中途超时或断网，刷新本页会跳过已完成的部分继续；失败时按提示修正后重试即可。</p>
+            {% endif %}
+        </section>
+
+        <div class="strip">
+            {% if failure %}
+                这次没有装完：已经写入的内容已一并复原，不会留下装了一半的状态。
+                <span class="sub">对照上面的原因修正后点「重新写入」；数据库或站点参数要改，退回前面的步骤即可。</span>
+                {% if failure.trouble %}<span class="sub">{{ failure.trouble }}</span>{% endif %}
+            {% else %}
+                请不要关闭本页，也不要后退。
+                <span class="sub">失败时出错的那一步会转成 ✗，原因写在下边；已经建好的部分会一并复原，重来一次即可。</span>
+            {% endif %}
+        </div>
+
+        <div class="acts">
+            <div class="right">
+                {% if failure %}
+                    <button class="btn btn-ghost" type="submit" name="action" value="back">上一步</button>
+                    <button class="btn btn-primary" type="submit" name="action" value="run">重新写入</button>
+                {% else %}
+                    <button class="btn btn-ghost" type="button" disabled>上一步</button>
+                    <button class="btn btn-primary" type="submit" name="action" value="run">开始写入</button>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+{% endblock %}

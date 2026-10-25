@@ -1,0 +1,64 @@
+{#
+  墨林 - Molinink · 作者 Kira · https://www.molinink.com
+
+  单个注册字段的行(《34A-字段注册与编辑器控件规范》§4 控件映射 / §5 落位 / §7 转义 / §8 只读)。
+  只被 editor.twig 复用:顶层字段的值一律走 meta_key[]/meta_value[] 成对通道
+  (PostsController::pairs() 那一条写入口);group / repeater 整组以 JSON 存单条 postmeta,
+  子控件只带 data-subkey,由 admin.js 汇总序列化。
+  readonly 字段不出提交键 —— 《34A》§8:只读字段不得被表单覆盖。
+#}
+{% import "editor-control.twig" as w %}
+<div class="fld fld-{{ field.control }}">
+    {% if field.readonly %}
+        <span class="k">{{ field.label }}</span>
+        <div class="ctrl"><span class="ro">{{ field.value }}</span></div>
+    {% elseif field.control in ['group', 'repeater'] %}
+        <input type="hidden" name="meta_key[]" value="{{ field.key }}">
+        <span class="k">{{ field.label }}</span>
+        <div class="ctrl cfj" data-cfj="{{ field.control }}" data-sub="{{ field.sub_json|e }}">
+            <input type="hidden" name="meta_value[]" id="cf-{{ field.id }}" value="{{ field.value|e }}">
+            <div class="cfrows">
+                {% for row in field.rows %}
+                    <div class="cfrow">
+                        <span class="idx">{{ loop.index }}</span>
+                        {% for sub in field.subfields %}
+                            <span class="cfsub">{{ w.widget(sub, '', sub.key, row[sub.key] is defined ? row[sub.key] : '') }}</span>
+                        {% endfor %}
+                        {% if field.control == 'repeater' %}<button type="button" class="lnk" data-cfdel>{{ __('删除') }}</button>{% endif %}
+                    </div>
+                {% else %}
+                    {% if field.control == 'group' %}
+                        <div class="cfrow">
+                            {% for sub in field.subfields %}
+                                <span class="cfsub">{{ w.widget(sub, '', sub.key, '') }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% if field.control == 'repeater' %}
+                <button type="button" class="add" data-cfadd>{{ __('＋ 添加一项') }}</button>
+            {% endif %}
+        </div>
+    {% elseif field.control == 'image' %}
+        {# 图片字段:值是媒体库附件 id(《34A》§4);带预览与清除,「从媒体库选择」复用编辑页那个选择器 #}
+        <input type="hidden" name="meta_key[]" value="{{ field.key }}">
+        <label class="k" for="cf-{{ field.id }}">{{ field.label }}</label>
+        <div class="ctrl imgf">
+            <input type="hidden" name="meta_value[]" id="cf-{{ field.id }}" value="{{ field.value|e }}">
+            <span class="pv" id="imgpv-{{ field.id }}">{% if field.preview %}<img src="{{ field.preview }}" alt="">{% else %}<svg viewBox="0 0 120 75" fill="none" stroke="#B3B0A9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="88" cy="22" r="8"/><path d="M8 60 34 32 52 50 72 24 112 60"/><path d="M8 60h104"/></svg>{% endif %}</span>
+            <div class="pt">
+                <div class="fn">{{ field.media_name is not empty ? field.media_name : __('未选择图片') }}</div>
+                <div class="pa">
+                    {% if field.pick_url is defined and field.pick_url %}<a class="btn btn-ghost btn-sm" href="{{ field.pick_url }}">{{ __('从媒体库选择') }}</a>{% endif %}
+                    <button type="button" class="lnk" data-imgclear="cf-{{ field.id }}">{{ __('清除') }}</button>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <input type="hidden" name="meta_key[]" value="{{ field.key }}">
+        <label class="k" for="cf-{{ field.id }}">{{ field.label }}</label>
+        <div class="ctrl">{{ w.widget(field, 'meta_value[]', '', field.value) }}</div>
+    {% endif %}
+    {% if field.description %}<p class="hint">{{ field.description }}</p>{% endif %}
+</div>
