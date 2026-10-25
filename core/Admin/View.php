@@ -115,7 +115,7 @@ final class View
             'site_tagline' => (string) $this->options->get('site_description', '书写成林，墨笔成荫'),
             'site_url' => (string) $this->options->get('site_url', '/'),
             // 外观组二级导航要指向"当前启用主题"的设置页(partials/appearance-nav.twig):
-            // 菜单 / 挂件两屏自己不认主题,由这里统一给一个源
+            // 菜单屏自己不认主题,由这里统一给一个源
             'active_theme_slug' => (string) $this->options->get('active_theme', 'molin-default'),
             'kernel_version' => Kernel::VERSION,
             // 后台静态资源按文件修改时间换 URL：内核版本号不变时，改过 admin.js/admin.css 也能让浏览器拿到新文件

@@ -2362,7 +2362,6 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar .rsc { width: min(300px, calc(100vw - 36px)); }
 }
 
-
 /* ── 个人资料(《84》,基准 后台个人资料-定稿-2026-09-30)── */
 .page-profile .form { max-width: 780px; padding-bottom: 12px; }
 .page-profile .group { padding-top: 34px; }
@@ -3281,126 +3280,18 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar-menus .status .m { display: inline; }
 }
 
-/* ── 挂件(《108》§5/§6;基准 后台挂件-定稿 / 后台挂件-移动端-定稿)──
-   左「可用挂件」右「已有挂件」;全挂 .page-widgets 与 .savebar-widgets 下。 */
+/* ---------- 菜单屏的拖动与折叠(2026-10-16)----------
+   把手是唯一抓手:touch-action 归零,触屏按住它不会把页面滚走;正在拖的那一行压暗,省得跟落点看混。 */
+.page-menus .mrow .handle { touch-action: none; }
 
-/* ── 桌面 ── */
-.page-widgets .split.d {
-    margin-top: 34px;
-    display: grid;
-    grid-template-columns: 328px minmax(0, 1fr);
-    gap: 44px;
-    align-items: start;
-}
-
-.page-widgets h2 {
-    font-family: var(--font-serif);
-    font-size: 19px;
-    font-weight: 400;
-    letter-spacing: .02em;
-}
-
-.page-widgets .pdesc { margin-top: 8px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
-
-/* 可用挂件 */
-.page-widgets .avail { margin-top: 18px; border-top: 1px solid var(--rule); }
-.page-widgets .av {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px;
-    gap: 14px;
-    align-items: center;
-    padding: 13px 0;
-    border-bottom: 1px solid var(--rule);
-}
-.page-widgets .av .nm { min-width: 0; }
-.page-widgets .av .nm .t { font-size: 13.5px; letter-spacing: .02em; }
-.page-widgets .av .nm .s { margin-top: 5px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
-.page-widgets .av .to { display: flex; flex-direction: column; gap: 6px; align-items: stretch; }
-.page-widgets .btn.xs { font-size: 11.5px; letter-spacing: .03em; padding: 6px 10px; text-align: center; }
-.page-widgets .tip { margin-top: 18px; font-size: 12px; line-height: 1.75; color: var(--muted); }
-
-/* 挂件区 */
-.page-widgets .zone + .zone { margin-top: 34px; }
-.page-widgets .zone { border-top: 1px solid var(--rule); padding-top: 16px; }
-.page-widgets .zone:first-child { border-top: 0; padding-top: 0; }
-.page-widgets .zhd { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
-.page-widgets .zhd .slot { display: flex; align-items: baseline; gap: 10px; }
-.page-widgets .zhd .slot code {
-    font-family: var(--font-mono);
-    font-size: 12px;
-    color: var(--ink);
-    background: #F1EFEA;
-    padding: 3px 8px;
-    border-radius: 4px;
-}
-.page-widgets .zhd .slot .cn { font-size: 12.5px; letter-spacing: .03em; color: var(--muted); }
-.page-widgets .zhd .cnt { font-size: 12px; letter-spacing: .03em; color: var(--muted); }
-.page-widgets .zhd .cnt b { color: var(--ink); font-weight: 500; }
-.page-widgets .wrow {
-    display: grid;
-    grid-template-columns: 18px minmax(0, 1fr) 108px 44px;
-    gap: 14px;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--rule);
-    transition: background .15s ease;
-}
-.page-widgets .wrow:hover { background: #fff; }
-.page-widgets .wrow .handle {
-    width: 18px;
-    height: 22px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
-    cursor: grab;
-}
-.page-widgets .wrow .handle i { display: block; width: 10px; height: 1.4px; background: #C9C6BF; }
-.page-widgets .wrow:hover .handle i { background: var(--muted); }
-.page-widgets .wrow .t { font-size: 13.5px; letter-spacing: .02em; }
-.page-widgets .wrow .t .sub { margin-top: 5px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
-.page-widgets .wrow .from { font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
-.page-widgets .wrow .rm {
-    background: none;
-    border: 0;
-    padding: 0;
-    cursor: pointer;
-    font-family: var(--font-sans);
-    font-size: 12px;
-    letter-spacing: .03em;
-    color: var(--muted);
-    transition: color .18s ease;
-    text-align: left;
-}
-.page-widgets .wrow .rm:hover { color: var(--accent); }
-.page-widgets .drop {
-    margin-top: 2px;
-    padding: 13px 0;
-    border: 1px dashed #C9C6BF;
-    border-radius: 6px;
-    font-size: 12px;
-    letter-spacing: .03em;
-    color: #74736F;
-    text-align: center;
-}
-
-/* ---------- 两屏的拖动与折叠(2026-10-16)----------
-   把手是唯一抓手:touch-action 归零,触屏按住它不会把页面滚走;正在拖的那一行压暗,省得跟落点看混。
-   虚线框(《108》§11 悬停态无基准)不上任何颜色 —— 只让被拖的行与落点说话。 */
-.page-menus .mrow .handle,
-.page-widgets .wrow .handle { touch-action: none; }
-
-.page-menus .mrow.dragging,
-.page-widgets .wrow.dragging {
+.page-menus .mrow.dragging {
     opacity: .5;
     background: #fff;
     user-select: none;
     -webkit-user-select: none;
 }
 
-.page-menus .mrow.dragging .handle,
-.page-widgets .wrow.dragging .handle { cursor: grabbing; }
+.page-menus .mrow.dragging .handle { cursor: grabbing; }
 
 /* 左栏分组标题:展开态箭头朝下,收起转朝右(只动 UI 态,不动数据) */
 .page-menus .pgroup.closed .pbody,
@@ -3409,51 +3300,17 @@ a.btn { text-align: center; text-decoration: none; }
 .page-menus .pgroup.closed .phead .fold { transform: rotate(-45deg) translateY(-2px); }
 
 /* 把手可聚焦(键盘用户按 ↑↓ 挪行):给个看得见的焦点环 */
-.page-menus .mrow .handle:focus-visible,
-.page-widgets .wrow .handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.page-menus .mrow .handle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
 
 /* 左栏某一组还没有内容时的替代文案 */
 .page-menus .pempty { padding: 6px 0 2px; font-size: 12px; letter-spacing: .03em; color: var(--muted); }
 
 /* 桌面显示桌面结构,移动结构不着色 */
-.page-widgets .split.m { display: none; }
 
 /* ── 移动端 ── */
 @media (max-width: 768px) {
-    .page-widgets .split.d { display: none; }
-    .page-widgets .split.m { display: flex; flex-direction: column; gap: 32px; padding-top: 24px; }
-
-    .page-widgets h2 { font-size: 17px; }
-    .page-widgets .pdesc { margin-top: 7px; font-size: 11.5px; line-height: 1.65; }
-
-    .page-widgets .avail { margin-top: 14px; }
-    .page-widgets .av { display: block; padding: 13px 0; border-bottom: 1px solid var(--rule); }
-    .page-widgets .av .t { font-size: 13px; letter-spacing: .02em; }
-    .page-widgets .av .s { margin-top: 5px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
-    .page-widgets .av .to { margin-top: 10px; display: flex; gap: 8px; }
-    .page-widgets .btn.xs { font-size: 11.5px; letter-spacing: .03em; padding: 7px 12px; }
-    .page-widgets .tip { margin-top: 16px; font-size: 11.5px; line-height: 1.7; }
-
-    .page-widgets .zone { padding-top: 14px; }
-    .page-widgets .zone + .zone { margin-top: 26px; }
-    .page-widgets .zhd { gap: 12px; }
-    .page-widgets .zhd .slot { gap: 9px; }
-    .page-widgets .zhd .slot code { font-size: 11.5px; padding: 3px 7px; }
-    .page-widgets .zhd .slot .cn { font-size: 12px; }
-    .page-widgets .zhd .cnt { font-size: 11.5px; }
-    .page-widgets .wrow {
-        grid-template-columns: 18px minmax(0, 1fr) 44px;
-        gap: 12px;
-        padding: 13px 0;
-    }
-    .page-widgets .wrow .t { font-size: 13px; letter-spacing: .02em; min-width: 0; }
-    .page-widgets .wrow .t .sub { margin-top: 5px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
-    .page-widgets .wrow .t .from { margin-top: 5px; font-size: 11px; letter-spacing: .03em; color: #A9A7A1; }
-    .page-widgets .wrow .rm { font-size: 11.5px; letter-spacing: .02em; text-align: right; }
-    .page-widgets .drop { padding: 13px 0; font-size: 11.5px; }
 
     /* 保存栏只留时分(《108》§6) */
-    .savebar-widgets .status .d { display: none; }
 }
 
 /* ── 后台导入与导出(《110》§1–§11;基准 后台导入与导出-定稿-2026-09-30 / 移动端)──
@@ -4075,7 +3932,7 @@ a.btn { text-align: center; text-decoration: none; }
    用户组两屏(partials/users-nav.twig)共用这一套 sec-tabs 观感,与「设置」页的分组页签同源。
    2026-10-16 补外观组;2026-10-17 补工具组与用户组 —— 此前样式只认 .page-settings 与外观组三屏,
    工具/用户那六屏的页签**完全没有样式**(线上作者报"上面几个按钮没样式"即此)。 */
-.page-appearance .sec-tabs, .page-menus .sec-tabs, .page-widgets .sec-tabs,
+.page-appearance .sec-tabs, .page-menus .sec-tabs,
 .page-tools .sec-tabs, .page-import-export .sec-tabs, .page-health .sec-tabs,
 .page-logs .sec-tabs, .page-users .sec-tabs, .page-roles .sec-tabs {
     display: flex;
@@ -4084,7 +3941,7 @@ a.btn { text-align: center; text-decoration: none; }
     margin-top: 30px;
     border-bottom: 1px solid var(--rule);
 }
-.page-appearance .sec-tabs a, .page-menus .sec-tabs a, .page-widgets .sec-tabs a,
+.page-appearance .sec-tabs a, .page-menus .sec-tabs a,
 .page-tools .sec-tabs a, .page-import-export .sec-tabs a, .page-health .sec-tabs a,
 .page-logs .sec-tabs a, .page-users .sec-tabs a, .page-roles .sec-tabs a {
     padding: 10px 14px;
@@ -4096,10 +3953,10 @@ a.btn { text-align: center; text-decoration: none; }
     margin-bottom: -1px;
     transition: color .18s ease, border-color .18s ease;
 }
-.page-appearance .sec-tabs a:hover, .page-menus .sec-tabs a:hover, .page-widgets .sec-tabs a:hover,
+.page-appearance .sec-tabs a:hover, .page-menus .sec-tabs a:hover,
 .page-tools .sec-tabs a:hover, .page-import-export .sec-tabs a:hover, .page-health .sec-tabs a:hover,
 .page-logs .sec-tabs a:hover, .page-users .sec-tabs a:hover, .page-roles .sec-tabs a:hover { color: var(--ink); }
-.page-appearance .sec-tabs a.active, .page-menus .sec-tabs a.active, .page-widgets .sec-tabs a.active,
+.page-appearance .sec-tabs a.active, .page-menus .sec-tabs a.active,
 .page-tools .sec-tabs a.active, .page-import-export .sec-tabs a.active, .page-health .sec-tabs a.active,
 .page-logs .sec-tabs a.active, .page-users .sec-tabs a.active, .page-roles .sec-tabs a.active { color: var(--ink); border-bottom-color: var(--accent); }
 
@@ -4219,9 +4076,9 @@ a.btn { text-align: center; text-decoration: none; }
     .page-settings .sec-tabs a { flex: 0 0 auto; }
 
     /* 外观组二级导航(《41》§4):这四项在手机上一行放得下,等宽平分 —— 先前是左挤、右边空一大块(2026-10-16 作者报) */
-    .page-appearance .sec-tabs, .page-menus .sec-tabs, .page-widgets .sec-tabs { margin-top: 22px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
-    .page-appearance .sec-tabs::-webkit-scrollbar, .page-menus .sec-tabs::-webkit-scrollbar, .page-widgets .sec-tabs::-webkit-scrollbar { display: none; }
-    .page-appearance .sec-tabs a, .page-menus .sec-tabs a, .page-widgets .sec-tabs a,
+    .page-appearance .sec-tabs, .page-menus .sec-tabs { margin-top: 22px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+    .page-appearance .sec-tabs::-webkit-scrollbar, .page-menus .sec-tabs::-webkit-scrollbar { display: none; }
+    .page-appearance .sec-tabs a, .page-menus .sec-tabs a,
 .page-tools .sec-tabs a, .page-import-export .sec-tabs a, .page-health .sec-tabs a,
 .page-logs .sec-tabs a, .page-users .sec-tabs a, .page-roles .sec-tabs a { flex: 1 1 0; padding: 10px 4px; text-align: center; white-space: nowrap; }
     .page-settings .form { max-width: none; padding-bottom: 0; }

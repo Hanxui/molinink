@@ -25,8 +25,6 @@ use Molin\Router\Router;
 use Molin\Security\Csrf;
 use Molin\Site\Seo;
 use Molin\User\Auth;
-use Molin\Widget\Layout;
-use Molin\Widget\Registry;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
 use Twig\Loader\ArrayLoader;
@@ -59,8 +57,6 @@ final class Renderer
     public const TWIG_FUNCTIONS = [
         'path', 'asset', 'image', 'media_url', '__', '_e', 'avatar', 'can',
         'format_date', 'format_number', 'theme_setting', 'inline_style', 'archive_tree', 'post_meta',
-        // 2026-10-16 增:挂件区(《108》§11-5),主题用 `{% for w in widget_area('sidebar') %}` 取块
-        'widget_area',
         // 2026-10-23 增:`<html lang>` 跟随界面语言(zh-Hans / zh-Hant / en),模板不再写死
         'html_lang',
     ];
@@ -98,25 +94,13 @@ final class Renderer
 
     private Environment $twig;
 
-    /**
-     * 当次渲染的模板变量与路由上下文:挂件取数口要知道"现在画的是哪一篇"。
-     * 单进程单次渲染,渲染前落、渲染后不再用 —— 只服务 widget_area()。
-     *
-     * @var array<string, mixed>
-     */
-    private array $vars = [];
-
     /** @var array<string, string|int> */
     private array $context = [];
-
-    private bool $postLoaded = false;
 
     /** 这一趟渲染的页型与状态码:SEO 要据此决定"能不能给 canonical / 要不要 noindex" */
     private string $kind = '';
 
     private int $status = 200;
-
-    private ?Post $postCache = null;
 
     /**
      * 本渲染器解析过的主题资源:模板里传的路径 => 真实路径(解析不出来记 null)。
@@ -148,7 +132,6 @@ final class Renderer
      * @param ?HookBus $hooks 钩子总线;未注入时用进程内的那一份(HookBus::instance())
      * @param (Closure(int): ?array<string, mixed>)|null $mediaLookup 按附件 id 取图片数据,由组装层注入
      * @param (Closure(int|list<int>): array<string, string>)|null $metaLookup 取自定义字段(postmeta):传 id 取一篇,传 id 列表投递本页待取清单,由组装层注入
-     * @param (Closure(int): ?Post)|null $postLookup 按文章 id 取 Post 本体,挂件(文章目录)靠它,由组装层注入
      */
     public function __construct(
         private readonly Theme $theme,
@@ -159,8 +142,7 @@ final class Renderer
         private readonly ?Closure $archiveTree = null,
         ?HookBus $hooks = null,
         private readonly ?Closure $mediaLookup = null,
-        private readonly ?Closure $metaLookup = null,
-        private readonly ?Closure $postLookup = null
+        private readonly ?Closure $metaLookup = null
     ) {
         $this->hooks = $hooks ?? HookBus::instance();
 
@@ -288,10 +270,6 @@ final class Renderer
             return is_array($data) ? (string) ($data['url'] ?? '') : '';
         }));
 
-        // 挂件区(《108》§11-5):排布读 option `theme_widgets`,取数走挂件注册表。
-        // body 包成 Markup,主题里 `{{ w.body }}` 直接出(主题模板禁 |raw,见《14》§3.5)。
-        $this->twig->addFunction(new TwigFunction('widget_area', fn (string $area): array => $this->widgetArea($area)));
-
         // 《14》§5.1 / 《141》§9:主题静态资源的根相对路径 + 自动版本号(防缓存)。
         // 版本号取资源文件自身的修改时间:文件一改即变,比"跟程序版本走"更准,发版忘了升号也不会留旧缓存。
         $this->twig->addFunction(new TwigFunction('asset', function (string $path): string {
@@ -393,15 +371,6 @@ final class Renderer
 
             return $memo[$postId];
         };
-    }
-
-    /**
-     * 单篇数据源(《108》):挂件要"当前这一篇"的正文(文章目录靠它),而单篇模板变量里的
-     * `post` 是渲染好的正文串、不是 Post 本体 —— 按路由上下文里的 id 现取。
-     */
-    public static function postProvider(PostRepository $posts): Closure
-    {
-        return static fn (int $id): ?Post => $id > 0 ? $posts->find($id) : null;
     }
 
     /**
@@ -568,19 +537,16 @@ final class Renderer
     }
 
     /**
-     * 记住当次模板变量与上下文 —— widget_area() 的取数口要读它;每次都重置单篇缓存。
+     * 记住当次模板变量与上下文:SEO 判 noindex 要读 context;每次渲染把页型与状态码重置一遍。
      *
      * @param array<string, mixed>      $vars
      * @param array<string, string|int> $context
      */
     private function begin(array $vars, array $context, string $kind = '', int $status = 200): void
     {
-        $this->vars = $vars;
         $this->context = $context;
         $this->kind = $kind;
         $this->status = $status;
-        $this->postLoaded = false;
-        $this->postCache = null;
         $this->primeMeta($vars);
     }
 
@@ -620,121 +586,6 @@ final class Renderer
         }
 
         ($this->metaLookup)(array_keys($ids));
-    }
-
-    /**
-     * 挂件区:option `theme_widgets` 里该区的排布,换成可交给模板的块列表。
-     *
-     * 主题没调这个函数就没有任何副作用;option 缺失 / JSON 坏掉按**默认骨架**处理,不抛错。
-     * 注册表里没有的 type(插件停用、主题换过)静默跳过 —— 少一个挂件,不该把整页打挂。
-     * **取数口给空的块也不出**:首页没有文章时的「文章目录」、还没人评论时的「最新评论」,
-     * 留在页面上就是个空标题,不如不摆(2026-10-16 线上看到过这两个空壳)。
-     *
-     * @return list<array{key: string, title: string, body: Markup}>
-     */
-    private function widgetArea(string $area): array
-    {
-        $rows = $this->widgetRows($area);
-
-        if ($rows === []) {
-            return [];
-        }
-
-        $registry = Registry::instance()->all();
-        $ctx = ['post' => $this->currentPost()];
-        $blocks = [];
-
-        foreach ($rows as $row) {
-            $type = (string) ($row['type'] ?? '');
-            $entry = $registry[$type] ?? null;
-
-            if ($entry === null) {
-                continue;
-            }
-
-            $title = trim((string) ($row['title'] ?? ''));
-            $body = $entry['body'];
-            $html = $body === null ? '' : trim((string) $body($ctx));
-
-            if ($html === '') {
-                continue;
-            }
-
-            $blocks[] = [
-                'key' => $type,
-                'title' => $title === '' ? $entry['name'] : $title,
-                'body' => new Markup($html, 'UTF-8'),
-            ];
-        }
-
-        return $blocks;
-    }
-
-    /**
-     * option `theme_widgets` 里该区的挂件行。
-     * 从没配过(或 option 坏了)走**默认骨架** —— 与后台挂件屏看到的默认排布同源(见 `Molin\Widget\Layout`);
-     * 配过就以存的为准:该区存成空就是空,option 里没有这个区也算空。
-     *
-     * @return list<array<string, mixed>>
-     */
-    private function widgetRows(string $area): array
-    {
-        $raw = $this->options->get('theme_widgets', '');
-
-        if (!is_string($raw) || trim($raw) === '') {
-            return Layout::defaultRows($area);
-        }
-
-        $decoded = json_decode($raw, true);
-
-        if (!is_array($decoded) || !is_array($decoded['areas'] ?? null)) {
-            return Layout::defaultRows($area);
-        }
-
-        foreach ($decoded['areas'] as $group) {
-            if (!is_array($group) || (string) ($group['id'] ?? '') !== $area) {
-                continue;
-            }
-
-            $rows = [];
-
-            foreach ((array) ($group['widgets'] ?? []) as $row) {
-                if (is_array($row)) {
-                    /** @var array<string, mixed> $row */
-                    $rows[] = $row;
-                }
-            }
-
-            return $rows;
-        }
-
-        return [];
-    }
-
-    /**
-     * 当前正在渲染的那一篇。模板变量里的 `post` 单篇时是渲染好的正文串,
-     * 所以先认 Post 本体,再按路由上下文里的 id 现取(一次渲染里只取一遍)。
-     */
-    private function currentPost(): ?Post
-    {
-        $post = $this->vars['post'] ?? null;
-
-        if ($post instanceof Post) {
-            return $post;
-        }
-
-        if ($this->postLoaded) {
-            return $this->postCache;
-        }
-
-        $this->postLoaded = true;
-        $id = (int) ($this->context['id'] ?? 0);
-
-        if ($id > 0 && $this->postLookup !== null) {
-            $this->postCache = ($this->postLookup)($id);
-        }
-
-        return $this->postCache;
     }
 
     /**
@@ -974,9 +825,6 @@ final class Renderer
             // 钩子输出在后,一起交给主题原样放出去。
             'head_output' => new Markup($this->iconLinks() . $this->feedLink($name) . $this->seoHead($vars) . $this->capture('theme/head/render'), 'UTF-8'),
             'footer_output' => new Markup($this->capture('theme/footer/render'), 'UTF-8'),
-            // 后台存过挂件排布没有(2026-10-17):没存过时 widget_area() 给的是"默认骨架",
-            // 主题据此决定要不要画那块 —— 不画,默认装完的站外观一点不变;存过(哪怕存成空)就按存的来。
-            'widgets_configured' => trim((string) $this->options->get('theme_widgets', '')) !== '',
         ];
 
         return array_merge($globals, $vars);

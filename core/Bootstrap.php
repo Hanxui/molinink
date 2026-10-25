@@ -30,7 +30,6 @@ use Molin\Admin\UpdateController;
 use Molin\Admin\UserEditController;
 use Molin\Admin\View as AdminView;
 use Molin\Admin\WebAuth;
-use Molin\Admin\WidgetController;
 use Molin\Api\ApiController;
 use Molin\Backup\Backup;
 use Molin\Backup\DownloadTokens;
@@ -90,8 +89,6 @@ use Molin\User\RememberTokens;
 use Molin\User\Session;
 use Molin\User\SessionStore;
 use Molin\User\UserRepository;
-use Molin\Widget\Builtin;
-use Molin\Widget\Registry;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -234,9 +231,7 @@ final class Bootstrap
             // 主题设置里的 image 字段存附件 id,模板 image(id) 要有一条取图通道
             Renderer::mediaProvider($c->get(MediaRepository::class), $c->get(Store::class)),
             // 模板 post_meta(文章 id, 键) 的数据源(《34》§4)
-            Renderer::metaProvider($c->get(MetaStore::class)),
-            // 挂件的"当前这一篇"(《108》):模板变量里的 post 是正文串,文章目录要 Post 本体
-            Renderer::postProvider($c->get(PostRepository::class))
+            Renderer::metaProvider($c->get(MetaStore::class))
         ));
         $container->set(ThemeSettings::class, static function (Container $c): ThemeSettings {
             $settings = new ThemeSettings(
@@ -329,17 +324,6 @@ final class Bootstrap
         $container->set(CommentRepository::class, static fn (Container $c): CommentRepository => new CommentRepository($c->get(Database::class)));
 
         // 站内通知的存取与写入实现由插件经 social/services/collect 注入,内核不再注册实现类
-
-        // 挂件注册表(《108》§11-5):内置五个每请求登记一次,排在主题渲染之前;
-        // 插件与主题随后经 register_widget() 往上加 —— 渲染时 widget_area() 读的就是这一份。
-        $container->instance(Registry::class, Registry::instance());
-        Builtin::register(
-            Registry::instance(),
-            $container->get(Router::class),
-            $container->get(TermAssigner::class),
-            $container->get(CommentRepository::class),
-            $container->get(PostRepository::class)
-        );
 
         // 状态迁移唯一门(mark 批准/垃圾/回收):后台屏与接口层共用,钩子只在这里触发一次
         $container->set(Moderator::class, static fn (Container $c): Moderator => new Moderator($c->get(CommentRepository::class)));
@@ -447,7 +431,6 @@ final class Bootstrap
             $c->get(RolesController::class),
             $c->get(RevisionController::class),
             $c->get(MenuController::class),
-            $c->get(WidgetController::class),
             $c->get(ImportExportController::class),
             $c->get(UpdateController::class),
             $c->get(TermAssigner::class)
@@ -535,18 +518,13 @@ final class Bootstrap
             $c->get(Router::class),
             $c->get(Authorizer::class)
         ));
-        // 菜单编辑器(《107》)/ 挂件(《108》):属「外观」组,配置写进 Options;门控 theme.switch
+        // 菜单编辑器(《107》):属「外观」组,配置写进 Options;门控 theme.switch
         $container->set(MenuController::class, static fn (Container $c): MenuController => new MenuController(
             $c->get(AdminView::class),
             $c->get(Options::class),
             $c->get(Router::class),
             $c->get(PostRepository::class),
             $c->get(TermAssigner::class)
-        ));
-        $container->set(WidgetController::class, static fn (Container $c): WidgetController => new WidgetController(
-            $c->get(AdminView::class),
-            $c->get(Options::class),
-            $c->get(Router::class)
         ));
         // 导入与导出(《110》):属「工具」组;走白名单表结构,不做任意 SQL;门控 setting.manage
         $container->set(ImportExportController::class, static fn (Container $c): ImportExportController => new ImportExportController(

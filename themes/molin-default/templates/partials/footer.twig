@@ -2,22 +2,6 @@
 {# 页脚双版权槽位:左=网站版权(站长可改),右=程序版权(内核输出,不得删改,常显不可关闭)(《13》第 11.2 节)。
    页脚导航取菜单位置 footer,后台菜单编辑器配了才出。 #}
 <footer class="site-footer">
-    {# 挂件页脚区(《108》):只有后台真存过排布才画(没存过时内核会给"默认骨架",
-       画出来等于替所有老站改了样子);存过就按存的来,排成空也就整块不出。
-       2026-10-17 接上:此前内核有 widget_area(),主题一次都没调。 #}
-    {% if widgets_configured|default(false) %}
-        {% set fw = widget_area('footer') %}
-        {% if fw is not empty %}
-            <div class="footer-widgets">
-                {% for w in fw %}
-                    <section class="fw">
-                        <h2 class="fw-t">{{ w.title }}</h2>
-                        <div class="fw-b">{{ w.body }}</div>
-                    </section>
-                {% endfor %}
-            </div>
-        {% endif %}
-    {% endif %}
     {% if menus.footer is not empty %}
         <nav class="footer-nav">
             {% for item in menus.footer %}

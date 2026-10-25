@@ -21,7 +21,6 @@ use Molin\User\Avatar;
 use Molin\User\Capabilities;
 use Molin\User\Roles;
 use Molin\User\User;
-use Molin\Widget\Registry as WidgetRegistry;
 
 /**
  * 钩子族全局函数 —— 面向插件作者的稳定 API,签名即契约(《11》第 4 节)。
@@ -160,18 +159,6 @@ function register_post_meta(string $type, string $key, array $meta): void
 function register_post_field(string $type, string $key, array $ui): void
 {
     FieldRegistry::instance()->registerField($type, $key, $ui);
-}
-
-/**
- * 挂件登记(《108》§11-5):主题与插件在启动期交出自己的挂件。
- * key 用小写字母/数字/下划线/短横,同名第一次赢;body 吃上下文、吐一小段 HTML。
- * 后台左栏「可用挂件」与前台 `widget_area()` 助手读的都是这一份登记表。
- *
- * @param callable|null $body
- */
-function register_widget(string $key, string $name, string $desc = '', ?callable $body = null): void
-{
-    WidgetRegistry::instance()->register($key, $name, $desc, $body);
 }
 
 /**

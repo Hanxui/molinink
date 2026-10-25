@@ -11,8 +11,7 @@
     "supports": {
         "blocks": false,
         "darkmode": false,
-        "menus": ["primary", "footer"],
-        "widgets": ["footer"]
+        "menus": ["primary", "footer"]
     },
     "settings": {
         "colors": {

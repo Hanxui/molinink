@@ -181,9 +181,7 @@ final class FrontContext
             null,
             // 预览态与前台同一条取图通道,否则预览别的主题时图全空
             Renderer::mediaProvider($this->container->get(MediaRepository::class), $this->container->get(Store::class)),
-            Renderer::metaProvider($this->container->get(MetaStore::class)),
-            // 挂件的"当前这一篇"(《108》):预览态与前台同一条取数通道,否则预览时文章目录空着
-            Renderer::postProvider($this->container->get(PostRepository::class))
+            Renderer::metaProvider($this->container->get(MetaStore::class))
         );
     }
 }

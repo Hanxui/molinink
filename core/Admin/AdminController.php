@@ -80,7 +80,6 @@ final class AdminController
         private readonly RolesController $rolesScreen,
         private readonly RevisionController $revisionScreen,
         private readonly MenuController $menuScreen,
-        private readonly WidgetController $widgetScreen,
         private readonly ImportExportController $importExportScreen,
         private readonly UpdateController $updateScreen,
         private readonly TermAssigner $terms
@@ -228,11 +227,6 @@ final class AdminController
         // 菜单编辑器(《107》):属「外观」组,侧栏当前项借 appearance 的位(《107》§1)
         if ($root === 'menus') {
             return $this->menuScreen->handle($request, $path, $user, $this->menu('appearance'));
-        }
-
-        // 挂件(《108》):属「外观」组,侧栏当前项借 appearance 的位(《108》§1)
-        if ($root === 'widgets') {
-            return $this->widgetScreen->handle($request, $path, $user, $this->menu('appearance'));
         }
 
         // 导入与导出(《110》):属「工具」组,侧栏当前项借 tools 的位(《110》§1)

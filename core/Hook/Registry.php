@@ -142,8 +142,8 @@ final class Registry
      * @var list<string>
      */
     public const NOT_YET_WIRED = [
-        // 侧栏挂件收集:取数与拼块都在 Theme\Renderer::widgetArea()(第三批的活儿,本批禁改)。
-        // 挂到 Widget\Layout 只能盖住"从没配过排布"的那一支,存过排布的站直接绕过 —— 接了也是半条,不接。
+        // 侧栏挂件收集:挂件子系统 2026-10-25 已整块删除(默认主题只画了一个页脚位,
+        // 界面上另一半永远不渲染),这条 filter 名暂时留档、不接线;将来若重做主题侧栏再议。
         'theme/sidebar/collect',
         // 媒体渲染:`image()` 的 <img> 拼装只在 Theme\Renderer 里(第三批),本批禁改;
         // MediaRepository::imageData() 产出的是数据数组而不是 HTML,挂在那里名不副实。

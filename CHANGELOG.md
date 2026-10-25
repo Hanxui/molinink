@@ -2,6 +2,20 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.1.12] - 2026-10-25
+
+### 删除
+
+- **挂件（Widgets）子系统整块移除**，共约 1000 行：
+  - 内核 `core/Widget/`（`Builtin` 268 + `Registry` 71 + `Layout` 44）、`core/Admin/WidgetController.php`（456）、`admin/templates/widgets.twig`（134）一并删除，`core/Widget/` 目录不留。
+  - 后台：`pages.php` 的 `widgets` 页、`AdminController` 的 `$widgetScreen` 与方法、`Bootstrap` 的控制器绑定与注册表实例化、`appearance-nav.twig` 里「挂件」那一栏（外观组二级导航由四项变三项）。
+  - 前台：`Renderer` 的 `widget_area()` Twig 函数、`widgetArea() / widgetRows() / postProvider()` 与注入的 `$postLookup`、模板全局变量 `widgets_configured`；`helpers.php` 的 `register_widget()`；`FrontContext` 里的配套注入。
+  - 默认主题：`footer.twig` 的页脚挂件区、`theme-style.twig` 的 `.footer-widgets` 样式、`theme.json` 的 `"widgets": ["footer"]` 声明。
+  - 后台样式与脚本：`.page-widgets` / `.savebar-widgets` 全段 CSS（约 5.8 KB），`admin.js` 里 212 行的拖动排序脚本；中英文翻译里 4 条挂件专用文案。
+  - 起因：默认主题只声明了一个页脚位，「侧边栏」区永远不渲染 —— 界面上有一半是排了看不见的；内置五种（目录 / 最新评论 / 分类 / 标签云 / 搜索框）也都是几行模板能出的东西。页脚要放什么，用主题设置的文本字段即可。
+  - 迁移：老站的 option `theme_widgets` 留着不动（不再被读），前台不会因此报错；`theme/sidebar/collect` 这条 filter 名保留在 `Hook\Registry` 的「尚未接线」表里留档。
+- `Kernel::VERSION` → `0.1.12`。
+
 ## [0.1.11] - 2026-10-25
 
 ### 改进
