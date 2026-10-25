@@ -79,7 +79,8 @@ final class Registry
         'plugin/upgrade/before'     => 'action',
         'plugin/upgrade/after'      => 'action',
 
-        // media 域(4)
+        // media 域(5):`media/upload/replace` 随图片压缩插件落地(0.2.0)
+        'media/upload/replace'      => 'filter',
         'media/upload/before'       => 'filter',
         'media/upload/after'        => 'action',
         'media/delete/after'        => 'action',

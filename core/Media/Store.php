@@ -19,7 +19,7 @@ use Molin\Exception\ConfigException;
  * 三条硬规矩:
  * ① **永不使用原始文件名** —— 落盘名 = `主干-时间戳-随机8位.扩展`,人看得懂又不会被覆盖/猜到;
  * ② 按 年/月 分目录,单目录不堆山;
- * ③ 一切都在 `storage/uploads/` 里,这个目录不对外直接暴露(约定),
+ * ③ 一切都在 `storage/uploads/` 里,这个目录不对外直接暴露(铁律 21),
  *    对外 URL 走 `/uploads/...` 别名(部署侧配置见《27》第 9 节的 Nginx 片段)。
  */
 final class Store
@@ -117,7 +117,13 @@ final class Store
 
         // CLI 导入与测试夹具:文件已在本地磁盘,没有"上传来源"这一说
         if (!rename($upload->tmpPath, $target)) {
-            throw new ConfigException('移动文件失败:' . $relative);
+            // 临时目录与站点不在同一个卷时 rename 会失败(EXDEV / Windows 跨盘):
+            // 退回复制再删,语义不变 —— 转码口换回来的那份文件也走这条路
+            if (!copy($upload->tmpPath, $target)) {
+                throw new ConfigException('移动文件失败:' . $relative);
+            }
+
+            @unlink($upload->tmpPath);
         }
     }
 

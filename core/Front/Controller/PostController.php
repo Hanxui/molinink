@@ -156,7 +156,9 @@ final class PostController
         // 评论区(《31》§2/§3:两级嵌套;待审只给提交者自己)+ 提交反馈(?comment= / ?comment_error= / ?replyto=)
         $commentVars = ['comments' => [], 'comment_total' => 0];
 
-        if ($post->type === 'post' && $post->comment_status === 'open') {
+        // [朋友圈主题补丁 2026-10-25] 除 post 外，声明了 comments 支持的 CPT（如 moments）也要挂评论区。
+        // 这是内核唯一按 type 写死 post 的判断；主题 molin-moments / 插件 molin-moments-plus 依赖它。
+        if (in_array($post->type, ['post', 'moments'], true) && $post->comment_status === 'open') {
             $viewer = Auth::user();
             $session = Auth::session();
             $mine = $session === null ? [] : array_values(array_map('intval', (array) ($session->data['pending_comments'] ?? [])));

@@ -198,6 +198,18 @@ return [
         'stability' => 'public',
         'doc'       => '校验前改白名单与上限:meta.allowed_ext / meta.max_bytes(《27》第 2 节示例)',
     ],
+    // 2026-10-25 随图片压缩插件落地(0.2.0):校验过、落盘前那唯一一格,让插件换一份字节。
+    'media/upload/replace' => [
+        'type'      => 'filter',
+        'since'     => '0.2',
+        'args'      => [
+            ['name' => 'image', 'type' => 'array'],
+        ],
+        'returns'   => 'array',
+        'stability' => 'public',
+        'doc'       => '校验通过后、落盘前:image.path 为临时文件,插件可原样返回(不换)或给回'
+            . 'path|bytes + extension + mime(+ quality)换一份字节;内核复核后落盘,不合格按原图(《27》第 7.1 节)',
+    ],
     'media/delete/after' => [
         'type'      => 'action',
         'since'     => '1.0',

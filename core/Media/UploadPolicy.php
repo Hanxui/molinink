@@ -41,8 +41,8 @@ final class UploadPolicy
      */
     private const DENIED_BY_DEFAULT = ['svg', 'html', 'htm', 'xhtml', 'php', 'php5', 'phtml', 'phar', 'sh', 'py', 'pl', 'cgi', 'asp', 'aspx', 'jsp', 'htaccess', 'htpasswd'];
 
-    /** 《27》第 3 节:像素上限,防"解压炸弹" */
-    private const MAX_PIXELS = 8000;
+    /** 《27》第 3 节:像素上限,防"解压炸弹"。转码口复核同一把尺子,故对外可见 */
+    public const MAX_PIXELS = 8000;
 
     /**
      * @var list<string> 实际放行的扩展名:默认白名单,或被系统设置「上传类型」覆盖
@@ -227,7 +227,7 @@ final class UploadPolicy
     }
 
     /**
-     * 只认文件内容,不认前端给的 type(《27》第 3 节约定)。
+     * 只认文件内容,不认前端给的 type(《27》第 3 节铁律)。
      */
     private function realMime(string $path): string
     {
