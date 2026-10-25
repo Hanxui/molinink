@@ -16,5 +16,5 @@ namespace Molin;
  */
 final class Kernel
 {
-    public const VERSION = '0.1.8';
+    public const VERSION = '0.1.11';
 }

@@ -2,6 +2,15 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.1.11] - 2026-10-25
+
+### 改进
+
+- 主题设置页的右栏「实时预览」整块撤掉：字段区改成通栏，`theme-settings.twig` 里的预览 `aside`（iframe + 骨架 + 三条说明）、`admin.css` 里 `.pvw / .frame / .pv-lock / .skel` 一套样式与手机端隐藏规则、`admin.js` 里那 149 行的注入脚本（读 `data-pvars`、改 iframe 的 CSS 变量、按 1280×960 等比缩放）、`AppearanceController::previewVars()` 与两个模板变量一并删除。
+  - 起因：它要靠主题在 `theme.json` 里维护 `preview_vars` 才有点用，实际两只主题都没声明，框里永远是「保存前的样子」；每次改字段注变量只是制造「看起来已经生效」的错觉。
+  - 想看效果：保存后开前台，或在「外观」里点该主题的「预览」（那条 `?molin_theme_preview=` 的整页预览还在，没动）。
+- 顺手把 `Kernel::VERSION` 从 `0.1.8` 补到 `0.1.11`：0.1.9 / 0.1.10 出包时忘了改这行，后台页脚显示的版本号一直是旧的。
+
 ## [0.1.10] - 2026-10-25
 
 ### 改进
