@@ -35,9 +35,19 @@ Pretty URLs (Website → Settings → **Rewrite**) — so `/admin` and post URLs
 location / {
     try_files $uri $uri/ /index.php$is_args$args;
 }
+
+# The backend is a routed page: admin/ only holds static assets (css/js/templates)
+# and has no index file. Without these two lines nginx treats it as a directory
+# index and "go to dashboard" answers 403 Forbidden.
+location = /admin {
+    try_files $uri /index.php$is_args$args;
+}
+location = /admin/ {
+    return 301 /admin;
+}
 ```
 
-Without it: the front page works, `/admin` and every post URL return 404.
+Without it: the front page works, `/admin` and every post URL return 404. **With only the first block and without the two `/admin` lines** you get a different symptom: post URLs are fine, but opening the dashboard returns `403 Forbidden` — the root really does contain an `admin/` directory, and nginx tries to serve it as a directory index.
 
 Block `storage/` (Website → Settings → **Config**, inside `server { }`) — backups, logs and remote-backup credentials live there and are downloadable otherwise:
 

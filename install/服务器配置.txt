@@ -26,10 +26,19 @@
 程序只有一个入口 index.php,地址形如 /admin、/blog、/2026/10/hello 在磁盘上并没有对应文件。
 nginx 找不到文件就回 404,于是必须让它"找不到就交给 index.php"。
 
-宝塔:网站 → 设置 → 伪静态,粘贴下面这一行,保存:
+宝塔:网站 → 设置 → 伪静态,粘贴下面这一段,保存:
 
     location / {
         try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    # 后台走程序路由。站点根下真有一个 admin/ 目录(css/js/模板,没有 index 文件),
+    # 只给 location / 的话 nginx 会按目录索引处理 —— 点「进入后台」直接 403 Forbidden。
+    location = /admin {
+        try_files $uri /index.php$is_args$args;
+    }
+    location = /admin/ {
+        return 301 /admin;
     }
 
 自己维护 nginx 的话,放进 server { } 里即可(与原有的 location ~ \.php$ 并存,不冲突)。

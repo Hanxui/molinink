@@ -35,9 +35,18 @@
 location / {
     try_files $uri $uri/ /index.php$is_args$args;
 }
+
+# 后台是程序路由：admin/ 目录里只有静态资源（css/js/模板），没有 index 文件。
+# 少了这两行，nginx 会把它当目录索引，点「进入后台」直接 403 Forbidden。
+location = /admin {
+    try_files $uri /index.php$is_args$args;
+}
+location = /admin/ {
+    return 301 /admin;
+}
 ```
 
-不加这段的表现：首页正常，但 `/admin` 和所有文章页 404。
+不加这段的表现：首页正常，但 `/admin` 和所有文章页 404。**如果只加了第一段、漏掉 `/admin` 那两行**，则是另一种症状：文章页正常，登录后台时 `403 Forbidden`（因为根目录下真有一个 `admin/` 目录，nginx 把它当目录索引了）。
 
 挡住 `storage/`（网站 → 设置 → **配置文件**，粘进 `server { }` 里）——里面是备份包、日志、远端备份凭据，不拦就能被直接下载：
 

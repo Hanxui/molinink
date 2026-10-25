@@ -60,7 +60,18 @@
         try_files $uri $uri/ /index.php$is_args$args;
     }
 
+    # 后台走程序路由。站点根下真有一个 admin/ 目录,里面只有静态资源(css/js/模板),
+    # 没有 index 文件;不单独接管的话 nginx 会按目录索引处理,点「进入后台」直接
+    # 403 Forbidden。这两行就是为它准备的。
+    location = /admin {
+        try_files $uri /index.php$is_args$args;
+    }
+    location = /admin/ {
+        return 301 /admin;
+    }
+
 不加这一段的表现很具体:首页能打开,但 /admin 和所有文章页都是 404。
+如果只粘了第一段、漏掉 /admin 那两行,症状会变成:文章页正常,进后台 403 Forbidden。
 
 3.2 挡住 /storage/ —— 别让人把你的备份下载走
 

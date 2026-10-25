@@ -45,9 +45,18 @@
                 <div class="lab">① 伪静态 · 必加（宝塔：网站 → 设置 → 伪静态）</div>
                 <div class="code" id="snip-rewrite">location / {
     try_files $uri $uri/ /index.php$is_args$args;
+}
+
+# 后台走程序路由：admin/ 目录里只有静态资源，没有 index 文件。
+# 少这两行，nginx 会把它当目录索引，点「进入后台」直接 403 Forbidden。
+location = /admin {
+    try_files $uri /index.php$is_args$args;
+}
+location = /admin/ {
+    return 301 /admin;
 }</div>
                 <div class="snip-act">
-                    <span class="tip">不加这段：首页能开，但 /admin 与所有文章页都是 404</span>
+                    <span class="tip">不加这段：首页能开，但 /admin 与所有文章页都是 404；漏掉 /admin 那两行则是进后台 403</span>
                     <button type="button" class="btn btn-ghost" data-copy="snip-rewrite">复制</button>
                 </div>
             </div>

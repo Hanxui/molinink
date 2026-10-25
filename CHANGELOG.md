@@ -2,6 +2,13 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.1.9] - 2026-10-25
+
+### 修复
+
+- 装了发布包、走完向导后点「进入后台」得到 `403 Forbidden`（nginx）：站点根下确实有一个 `admin/` 目录（只放后台的 css/js/模板，没有 index 文件），文档给的伪静态只有 `location / { try_files $uri $uri/ ... }`，nginx 把 `/admin` 当目录索引处理就 403 了。伪静态片段补上 `location = /admin`（交给入口）与 `location = /admin/`（301 回 `/admin`）两段。
+- 同步修掉这段配置的所有副本：`install/安装说明.txt` 3.1、`install/服务器配置.txt` 一、README（中/英）第 3 步、安装向导最后一屏那段带复制按钮的文本（`install/templates/done.twig`），并各自写明两种症状的差别 —— 整段不加是 `/admin` 与文章页 **404**，只加第一段是进后台 **403**。
+
 ## [0.1.8] - 2026-10-25
 
 ### 修复
