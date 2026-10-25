@@ -4,9 +4,14 @@
 
 <p align="center"><sub>PHP 8.2+ · MySQL 8 · single entry point · write a post right after installing</sub></p>
 
-<p align="center"><a href="https://www.molinink.com">Website</a> · <a href="https://demo.molinink.com">Live demo</a></p>
+<p align="center"><a href="https://github.com/Hanxui/molinink/releases/latest"><strong>Download</strong></a> · <a href="https://www.molinink.com">Website</a> · <a href="https://demo.molinink.com">Live demo</a></p>
 
 <p align="center"><img src=".github/assets/screen-home.png" alt="Front page"></p>
+
+> **Read this first: which package to grab.** Use `molin-x.y.z.zip` from [Releases](https://github.com/Hanxui/molinink/releases/latest) — it bundles `vendor/`, so you unzip it into the site root and go.
+>
+> **Code → Download ZIP** on the repo page gives you the **source archive**: `vendor/` (Composer dependencies) is not committed, so it dies with
+> `require(.../vendor/autoload.php): Failed to open stream`, and it always adds an extra `molinink-main/` folder. If you want the source route anyway, run `composer install --no-dev` in the site root first, then follow the steps below.
 
 ## Install
 
@@ -18,8 +23,9 @@ Written for the BT panel (宝塔); other panels work the same way. About ten min
 BT panel → Website → Add site: enter your domain, pick **PHP 8.2 or newer**, choose MySQL as the database. Note the **database / user / password** it generates — you need them in step 3.
 
 **2. Upload and unzip**
-Website → your site → Files → open the site root (usually `/www/wwwroot/yourdomain`) → upload `molin-<version>.zip` → right-click → extract here.
+Website → your site → Files → open the site root (usually `/www/wwwroot/yourdomain`) → upload `molin-<version>.zip` **from Releases** → right-click → extract here.
 You should see `index.php`, `core/` and `install/` **directly** in the root. If everything landed inside a `molin-x.y.z/` folder, move its contents up to the root.
+**Do not point the panel's "run directory" at that subfolder instead** — the `/uploads/` alias and `/storage/` block are written against the site root, and they stop matching once the root moves.
 
 **3. Paste two snippets**
 
@@ -57,10 +63,10 @@ Open your domain → "Start install": environment check → database credentials
 
 The long version (with a troubleshooting table) ships in `install/安装说明.txt` inside the zip.
 
-Or run it from source:
+Or run it from source (that is the Code → Download ZIP route above; the missing `vendor/` is what step one replaces):
 
 ```bash
-composer install
+composer install --no-dev
 cp config.example.php config.php   # fill in your database
 php -S 127.0.0.1:8000              # or hand it to nginx / apache
 ```

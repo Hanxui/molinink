@@ -4,9 +4,14 @@
 
 <p align="center"><sub>PHP 8.2+ · MySQL 8 · 单入口 · 装完就能发文</sub></p>
 
-<p align="center"><a href="https://www.molinink.com">官网</a> · <a href="https://demo.molinink.com">演示站</a></p>
+<p align="center"><a href="https://github.com/Hanxui/molinink/releases/latest"><strong>下载安装包</strong></a> · <a href="https://www.molinink.com">官网</a> · <a href="https://demo.molinink.com">演示站</a></p>
 
 <p align="center"><img src=".github/assets/screen-home.png" alt="首页"></p>
+
+> **先看这条：包从哪下。** 用 [Releases](https://github.com/Hanxui/molinink/releases/latest) 里的 `molin-x.y.z.zip` —— 它自带 `vendor/`，解压到站点根就能装。
+>
+> 仓库页的 **Code → Download ZIP** 下的是**源码包**：仓库不提交 `vendor/`（依赖由 Composer 管），直接打开会报
+> `require(.../vendor/autoload.php): Failed to open stream`，而且还会多套一层 `molinink-main/` 目录。非要用源码包，就在站点根先跑一次 `composer install --no-dev`，再按下面的步骤走。
 
 ## 装起来
 
@@ -18,8 +23,9 @@
 宝塔 → 网站 → 添加站点：填域名，PHP 版本选 **8.2 或更高**，数据库选 MySQL。记下它给的**库名 / 用户名 / 密码**，第 3 步要用。
 
 **2. 上传并解压**
-网站 → 点站点名 → 文件 → 进入站点根目录（一般 `/www/wwwroot/你的域名`）→ 上传 `molin-<版本>.zip` → 右键解压到当前目录。
+网站 → 点站点名 → 文件 → 进入站点根目录（一般 `/www/wwwroot/你的域名`）→ 上传 Releases 里的 `molin-<版本>.zip` → 右键解压到当前目录。
 根目录下要**直接**看到 `index.php`、`core/`、`install/`。如果多出一层 `molin-x.y.z/` 文件夹，进去全选、剪切到根目录。
+**别改用面板的「运行目录」指到那层子目录** —— `/uploads/` 别名、`/storage/` 拦截这些规则都是按站点根写的，指偏了会跟着失效。
 
 **3. 粘两段配置**
 
@@ -57,10 +63,10 @@ location ^~ /storage/ {
 
 详细版（含报错对照表）在压缩包里的 `install/安装说明.txt`。
 
-不想用成品包也可以从源码跑：
+不想用成品包也可以从源码跑（就是上面说的 Code → Download ZIP 那条路，缺的 `vendor/` 靠下面第一条命令补）：
 
 ```bash
-composer install
+composer install --no-dev
 cp config.example.php config.php   # 填数据库
 php -S 127.0.0.1:8000              # 或交给 nginx / apache
 ```

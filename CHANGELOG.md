@@ -2,6 +2,17 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.1.8] - 2026-10-25
+
+### 修复
+
+- 从仓库下源码包（Code → Download ZIP）打开站点时，不再抛 `require(.../vendor/autoload.php): Failed to open stream` 的裸 Fatal：`index.php` 在拿 autoload 之前先判断文件在不在，缺了就回一页中文说明 —— 换 Releases 里自带 `vendor/` 的包，或在站点根 `composer install --no-dev`。样式与「站点还没装好」页同一套内联样式（此时 Twig 与任何外链都用不上）。
+### 改进
+
+- README（中/英）顶部加下载入口与「包从哪下」提示：用 Releases 里的 `molin-x.y.z.zip`；Code → Download ZIP 是源码包，不含 `vendor/` 且必然多套一层 `molinink-main/` 目录。
+- README 与 `install/安装说明.txt` 补一条宝塔踩坑：解压多出一层目录时要**拍平**，别改用面板「运行目录」指到子目录 —— `/uploads/` 别名与 `/storage/` 拦截都按站点根写，运行目录一偏移就一起失效（图片 404、备份又能被直接下载）。
+- `install/安装说明.txt` 新增「第零步：安装包从哪下」，故障对照表补 `vendor` 缺失一条；源码跑法统一成 `composer install --no-dev`。
+
 ## [0.1.7] - 2026-10-25
 
 ### 改进

@@ -41,6 +41,52 @@ define('MOLIN_ROOT', __DIR__);
 // 契约版本随内核发布,与产品版本各自演进(《00》第 1 节、《56》第 1 节)
 define('MOLIN_CONTRACT', '1.0');
 
+/*
+ * 缺 vendor/ 是「下错包」的典型症状:GitHub 仓库页 Code → Download ZIP 只打仓库内容,
+ * vendor/ 在 .gitignore 里跟着走不了,一路跑到 require 就冒一条 include_path 的 Fatal,
+ * 用户看不出该干什么。这里提前拦一道,直接把下一步说清楚(发布包自带 vendor,源码包要 composer install)。
+ * 样式同样内联:这时 autoload 还没进来,Twig 与任何外链都用不上(《118》§0 同一条道理)。
+ */
+if (!is_file(MOLIN_ROOT . '/vendor/autoload.php')) {
+    http_response_code(500);
+    header('Content-Type: text/html; charset=utf-8');
+    echo <<<'HTML'
+<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>缺少 vendor/ · 墨林</title>
+<style>
+ body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;color:#1B1C1E;
+      font:16px/1.7 "Noto Serif SC","Songti SC",Georgia,serif}
+ .card{max-width:640px;padding:40px 36px;background:#fff;border:1px solid #E5E3DE;border-radius:6px}
+ h1{margin:0 0 12px;font-size:26px;font-weight:400}
+ p{margin:0 0 14px;color:#3A3A38}
+ ol{margin:0 0 18px;padding-left:1.2em;color:#3A3A38}
+ code{font-family:Consolas,monospace;background:#F3F2EE;padding:1px 5px;border-radius:3px;font-size:14px}
+ pre{margin:0 0 14px;padding:12px 14px;background:#F3F2EE;border-radius:4px;overflow-x:auto;
+     font-family:Consolas,monospace;font-size:13px;color:#1B1C1E}
+ .sub{color:#85837E;font-size:13px;margin-top:18px}
+</style></head><body>
+<div class="card">
+  <h1>缺了 vendor/，差一步就能装</h1>
+  <p>当前目录里没有 <code>vendor/autoload.php</code>。程序本身没坏，是从仓库下成了<strong>源码包</strong>——
+     依赖由 Composer 管理，仓库不提交它们。</p>
+  <p>两条路，选一条：</p>
+  <ol>
+    <li><strong>换成发布包（推荐）</strong>：到 Releases 下 <code>molin-x.y.z.zip</code>，它自带 <code>vendor/</code>，
+        解压到站点根即可，不需要 Composer。</li>
+    <li><strong>就在这台服务器上补依赖</strong>：在站点根目录执行
+        <pre>composer install --no-dev</pre>
+        没有全局 composer 的话，用 <code>php composer.phar install --no-dev</code>（PHP 8.2 上跑）。</li>
+  </ol>
+  <p class="sub">已经跑过 <code>composer install</code> 还是这一页？确认命令是在<strong>站点根</strong>执行的
+     —— <code>vendor/</code> 应该和 <code>index.php</code> 并排；再确认 PHP 不低于 8.2。</p>
+</div></body></html>
+HTML;
+
+    return;
+}
+
 /** @var Composer\Autoload\ClassLoader $autoloader */
 $autoloader = require MOLIN_ROOT . '/vendor/autoload.php';
 
