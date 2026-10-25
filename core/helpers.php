@@ -250,7 +250,7 @@ function format_number(int|float $value, int $decimals = 0): string
 }
 
 /**
- * 头像地址(《31》§7):自定义附件 → Gravatar → 本地首字母 SVG。
+ * 头像地址(《31》§7):默认本地首字母 SVG(零外部请求),可切成上传件 / Gravatar / 自定义源。
  * 主题与后台模板同名同源,只给一个邮箱地址就能出图。
  */
 function avatar(string $email, int $size = 48): string

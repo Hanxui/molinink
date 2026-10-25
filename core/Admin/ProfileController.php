@@ -45,8 +45,8 @@ final class ProfileController
         'avatar' => '头像已更新。',
     ];
 
-    /** 头像来源的合法值(《31》§7):自上传 / Gravatar / 自定义模板 / 本地首字母 */
-    private const AVATAR_SOURCES = ['gravatar', 'upload', 'custom', 'local'];
+    /** 头像来源的合法值(《31》§7):本地首字母(默认)/ 自上传 / Gravatar / 自定义模板 */
+    private const AVATAR_SOURCES = ['local', 'upload', 'gravatar', 'custom'];
 
     /**
      * `?err=` 的码 → 人话(《84》§4.4)。上传失败一律带回执 ——
@@ -124,7 +124,7 @@ final class ProfileController
         $avatarSourceUrl = trim($request->input('avatar_source_url'));
 
         if (!in_array($avatarSource, self::AVATAR_SOURCES, true)) {
-            $avatarSource = 'gravatar';
+            $avatarSource = 'local';
         }
 
         $overrides = [
@@ -277,7 +277,7 @@ final class ProfileController
     }
 
     /**
-     * 头像来源:用户级 meta 优先,未设置回退站点 option(老安装兼容);脏数据按 gravatar。
+     * 头像来源:用户级 meta 优先,未设置回退站点 option(老安装兼容);脏数据按 local(默认档)。
      *
      * @param array<string, string> $meta
      */
@@ -286,10 +286,10 @@ final class ProfileController
         $source = (string) ($meta['avatar_source'] ?? '');
 
         if ($source === '') {
-            $source = (string) ($this->options->get('avatar_source', 'gravatar') ?? 'gravatar');
+            $source = (string) ($this->options->get('avatar_source', 'local') ?? 'local');
         }
 
-        return in_array($source, self::AVATAR_SOURCES, true) ? $source : 'gravatar';
+        return in_array($source, self::AVATAR_SOURCES, true) ? $source : 'local';
     }
 
     /**

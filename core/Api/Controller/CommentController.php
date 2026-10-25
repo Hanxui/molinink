@@ -150,7 +150,7 @@ final class CommentController extends ApiSupport
     }
 
     /**
-     * 评论作者头像:登录用户读 usermeta.avatar(media.id) 派生;游客回退 email Gravatar;
+     * 评论作者头像:登录用户读 usermeta.avatar(media.id) 派生;游客按头像源解析(默认本地首字母);
      * 都没有则 null(App 端回退昵称首字符)。
      *
      * @param array<string, mixed> $row

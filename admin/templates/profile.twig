@@ -64,19 +64,19 @@
                     <label>{{ __('头像来源') }}</label>
                     <div class="ctrl">
                         <select name="avatar_source" data-avatar-source>
-                            <option value="gravatar"{{ values.avatar_source == 'gravatar' ? ' selected' : '' }}>{{ __('Gravatar（按邮箱哈希）') }}</option>
+                            <option value="local"{{ values.avatar_source == 'local' ? ' selected' : '' }}>{{ __('本地首字母头像（默认，零外部请求）') }}</option>
                             <option value="upload"{{ values.avatar_source == 'upload' ? ' selected' : '' }}>{{ __('自己上传头像') }}</option>
+                            <option value="gravatar"{{ values.avatar_source == 'gravatar' ? ' selected' : '' }}>{{ __('Gravatar（按邮箱哈希，需能连上 gravatar.com）') }}</option>
                             <option value="custom"{{ values.avatar_source == 'custom' ? ' selected' : '' }}>{{ __('自定义头像源') }}</option>
-                            <option value="local"{{ values.avatar_source == 'local' ? ' selected' : '' }}>{{ __('本地首字母头像') }}</option>
                         </select>
-                        <div class="hint">{{ __('选「自己上传头像」且传过图才用上传的；其余来源一律不看上传件。') }}</div>
+                        <div class="hint">{{ __('默认用本地首字母，不请求任何外部地址。选「自己上传头像」且传过图才用上传的；其余来源一律不看上传件。') }}</div>
                     </div>
                 </div>
                 <div class="field" data-avatar-custom{{ values.avatar_source != 'custom' ? ' hidden' : '' }}>
                     <label>{{ __('头像源地址') }}</label>
                     <div class="ctrl">
                         <input type="text" name="avatar_source_url" value="{{ values.avatar_source_url }}" placeholder="https://cdn.example.com/avatar/{hash}">
-                        <div class="hint">{{ __('用 {hash} 占位邮箱哈希（md5 小写）；留空自动回落 Gravatar。') }}</div>
+                        <div class="hint">{{ __('用 {hash} 占位邮箱哈希（md5 小写）；留空自动回落本地首字母头像。') }}</div>
                     </div>
                 </div>
             </div>

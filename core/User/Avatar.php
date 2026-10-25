@@ -26,6 +26,10 @@ use Molin\Option\Options;
  * custom 的模板同样用户级优先、站点兜底。旧 usermeta.gravatar(值为 '0' 表示当年主动关过)
  * 仍读取以向后兼容,直接落本地字母。
  *
+ * 默认档是 `local`(本地首字母,data URI,零外部请求):Gravatar 在国内常年连不上或要等
+ * 好几秒,而头像是每页都要出的图,挂在外部域名上等于给首屏加一个不可控的等待。
+ * 想用 Gravatar 的站自己把头像源改成 gravatar 即可,不受默认值影响。
+ *
  * 主题与后台同走 `avatar(email, size)`(`core/helpers.php`),一个邮箱地址就能出图。
  */
 final class Avatar
@@ -144,7 +148,7 @@ final class Avatar
 
     /**
      * 头像源:用户级 usermeta.avatar_source 优先,未设置回退站点 option(旧数据兼容);
-     * 值不在合法集合里(脏数据)按 gravatar 处理。
+     * 值不在合法集合里(脏数据)按 local 处理。
      *
      * @param array<string, string> $meta
      */
@@ -153,10 +157,10 @@ final class Avatar
         $source = (string) ($meta['avatar_source'] ?? '');
 
         if ($source === '') {
-            $source = (string) ($this->options?->get('avatar_source', 'gravatar') ?? 'gravatar');
+            $source = (string) ($this->options?->get('avatar_source', 'local') ?? 'local');
         }
 
-        return in_array($source, ['gravatar', 'custom', 'local', 'upload'], true) ? $source : 'gravatar';
+        return in_array($source, ['gravatar', 'custom', 'local', 'upload'], true) ? $source : 'local';
     }
 
     /**
