@@ -14,7 +14,7 @@
 
 ### 删除
 
-- **主题设置页的「实时预览」右栏第二次撤掉**（0.1.11 撤过一次，0.2.4 随开发版同步又带回来了，这次在开发版里也删干净，两边一致）：字段区改为**通栏单列**。
+- **主题设置页的「实时预览」右栏第二次撤掉**（0.1.11 撤过一次，0.2.4 又带回来了，这次彻底删干净）：字段区改为**通栏单列**。
   - `admin/templates/theme-settings.twig` 的 `aside.pvw` 整块（预览框 + 骨架 + 三条说明）；
   - `core/Admin/AppearanceController.php` 的 `preview_url` / `preview_vars` 两个模板变量与 `previewVars()` 方法——后台不再读主题 `theme.json` 里的 `preview_vars`；
   - `admin/assets/admin.css` 的 `.pvw / .frame / .pv-lock / .skel` 一套样式与手机端隐藏规则；`admin/assets/admin.js` 里 149 行的注入脚本；
@@ -25,18 +25,18 @@
 
 ### 删除
 
-- **挂件（Widgets）子系统在开发树里同步清掉**：`core/Widget/`（3 个文件）、`core/Admin/WidgetController.php`、`admin/templates/widgets.twig`，后台「外观 → 挂件」页与二级导航的第四栏（外观组由四项变三项）、模板助手 `widget_area()` 与 `register_widget()`、模板全局变量 `widgets_configured`，以及默认主题的页脚挂件区、`.footer-widgets` 样式、`theme.json` 的 `supports.widgets`。
-  - 这次是让开发树与已发布的 0.1.12 对齐（那份是在仓库工作树上直接删的，开发树一直还带着），所以本版不新增「删了什么」的行为，只是两边重新变成同一份代码。
+- **挂件（Widgets）子系统整块删掉**：`core/Widget/`（3 个文件）、`core/Admin/WidgetController.php`、`admin/templates/widgets.twig`，后台「外观 → 挂件」页与二级导航的第四栏（外观组由四项变三项）、模板助手 `widget_area()` 与 `register_widget()`、模板全局变量 `widgets_configured`，以及默认主题的页脚挂件区、`.footer-widgets` 样式、`theme.json` 的 `supports.widgets`。
+  - 本版不新增「删了什么」的行为，只是把之前发布的两份代码重新对齐成同一份。
 
 ### 改进
 
-- **头像默认走本地首字母**（`Avatar` 与个人资料页同一口径）：Gravatar 在国内常年连不上或要等好几秒，而头像是每页都要出的图。想用 Gravatar 的站在个人资料里把头像源改成 gravatar 即可，不受默认值影响。
+- **头像默认走本地首字母**（`Avatar` 与个人资料页同一套逻辑）：Gravatar 在国内常年连不上或要等好几秒，而头像是每页都要出的图。想用 Gravatar 的站在个人资料里把头像源改成 gravatar 即可，不受默认值影响。
 - **仓库源码包缺 `vendor/` 时给一张说明页**（不再是一条 `include_path` 的 Fatal）：`index.php` 提前拦一道，直接写清「换成 Releases 里的包，或在站点根跑 `composer install --no-dev`」。
 - **安装向导与两份安装文档补 `/admin` 伪静态片段**：站点根下真有一个 `admin/` 目录（只有静态资源、没有 index 文件），只给 `location /` 的话 nginx 会按目录索引处理，进后台直接 403。向导的环境页与完成页、`install/安装说明.txt`、`install/服务器配置.txt` 一并补上，并把「只粘第一段」的症状写清楚。
 
 ### 说明
 
-- 版本号跳到 `0.2.4`：0.2.1–0.2.3 这三版此前只存在于开发树，随本版一并进入仓库；条目按版本分开写在下面，方便对照各自发了什么。
+- 版本号跳到 `0.2.4`：0.2.1–0.2.3 这几版没有单独发布，改动并入本版；条目按版本分开写在下面，方便对照各自发了什么。
 
 ## [0.2.3] - 2026-10-27
 
@@ -115,7 +115,7 @@
 ### 修复
 
 - 装了发布包、走完向导后点「进入后台」得到 `403 Forbidden`（nginx）：站点根下确实有一个 `admin/` 目录（只放后台的 css/js/模板，没有 index 文件），文档给的伪静态只有 `location / { try_files $uri $uri/ ... }`，nginx 把 `/admin` 当目录索引处理就 403 了。伪静态片段补上 `location = /admin`（交给入口）与 `location = /admin/`（301 回 `/admin`）两段。
-- 同步修掉这段配置的所有副本：`install/安装说明.txt` 3.1、`install/服务器配置.txt` 一、README（中/英）第 3 步、安装向导最后一屏那段带复制按钮的文本（`install/templates/done.twig`）、安装向导环境页的「伪静态配置示例」（`install/templates/env.twig`），并各自写明两种症状的差别 —— 整段不加是 `/admin` 与文章页 **404**，只加第一段是进后台 **403**。
+- 一并修掉这段配置的所有副本：`install/安装说明.txt` 3.1、`install/服务器配置.txt` 一、README（中/英）第 3 步、安装向导最后一屏那段带复制按钮的文本（`install/templates/done.twig`）、安装向导环境页的「伪静态配置示例」（`install/templates/env.twig`），并各自写明两种症状的差别 —— 整段不加是 `/admin` 与文章页 **404**，只加第一段是进后台 **403**。
 
 ## [0.1.8] - 2026-10-25
 
@@ -177,7 +177,7 @@
 ### 改进
 
 - 安装包里的 `composer.json` 不再携带开发依赖与测试脚本。
-- 安装说明的 PHP 扩展清单与实际检查口径对齐。
+- 安装说明的 PHP 扩展清单与实际检查保持一致。
 
 ## [0.1.1] - 2026-10-23
 
