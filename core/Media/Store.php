@@ -19,7 +19,7 @@ use Molin\Exception\ConfigException;
  * 三条硬规矩:
  * ① **永不使用原始文件名** —— 落盘名 = `主干-时间戳-随机8位.扩展`,人看得懂又不会被覆盖/猜到;
  * ② 按 年/月 分目录,单目录不堆山;
- * ③ 一切都在 `storage/uploads/` 里,这个目录不对外直接暴露(铁律 21),
+ * ③ 一切都在 `storage/uploads/` 里,这个目录不对外直接暴露(约定),
  *    对外 URL 走 `/uploads/...` 别名(部署侧配置见《27》第 9 节的 Nginx 片段)。
  */
 final class Store

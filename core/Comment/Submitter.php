@@ -116,7 +116,10 @@ final class Submitter
     {
         $post = $this->posts->find(max(0, (int) $request->input('post_id')));
 
-        if ($post === null || !in_array($post->type, ['post', 'page'], true) || $post->status !== 'publish') {
+        // [朋友圈主题补丁 2026-10-25] 白名单补 moments:CPT 的评论在评论表里与文章同构(post_id 指 CPT 条目),
+        // 拒绝它的只有这一行 —— 少了它,详情页/发布器发评论一律回「找不到这篇文章」。
+        // 与 Front\Controller\PostController 里那处 moments 判定必须同步改,否则评论区开着却发不出去。
+        if ($post === null || !in_array($post->type, ['post', 'page', 'moments'], true) || $post->status !== 'publish') {
             throw new ValidationException('找不到这篇文章', ['post_id' => ['文章不存在或未发布']]);
         }
 

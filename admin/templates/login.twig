@@ -15,6 +15,8 @@
 
     <form method="post" action="{{ path('login') }}">
         <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
+        {# 未登录时被挡下的站内地址(下载中心等入口带上来的),登录后按它回原页;空值 = 照旧回后台首页 #}
+        <input type="hidden" name="redirect_to" value="{{ redirect_to|default('') }}">
 
         <div class="fld">
             <label for="i">{{ __('用户名或邮箱') }}</label>

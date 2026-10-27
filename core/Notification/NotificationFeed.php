@@ -119,7 +119,11 @@ final class NotificationFeed
 
     private function excerpt(string $html): string
     {
-        $text = trim((string) preg_replace('/\s+/u', ' ', strip_tags($html)));
+        $text = trim((string) preg_replace(
+            '/\s+/u',
+            ' ',
+            html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
 
         return mb_strlen($text) > 70 ? mb_substr($text, 0, 70) . '...' : $text;
     }

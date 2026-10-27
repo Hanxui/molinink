@@ -258,7 +258,7 @@ final class Uploader
             return null;
         }
 
-        // 与上传校验同一条铁律:不信声明,只认 finfo 读出来的真 MIME
+        // 与上传校验同一条约定:不信声明,只认 finfo 读出来的真 MIME
         $real = (new \finfo(FILEINFO_MIME_TYPE))->file($path) ?: '';
 
         if ($real !== $mime && !($real === 'image/pjpeg' && $mime === 'image/jpeg')) {

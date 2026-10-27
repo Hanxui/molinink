@@ -537,7 +537,7 @@ final class Renderer
     }
 
     /**
-     * 记住当次模板变量与上下文:SEO 判 noindex 要读 context;每次渲染把页型与状态码重置一遍。
+     * 记住当次路由上下文;每次都重置单篇缓存。
      *
      * @param array<string, mixed>      $vars
      * @param array<string, string|int> $context

@@ -71,7 +71,7 @@ final class ProfileController extends ApiSupport
     public function profile(User $user): array
     {
         // 头像优先读 usermeta.avatar(存的是 media.id,《21》§5);拿到并确认为图片才用,
-        // 否则按头像源解析(默认本地首字母,零外部请求)。
+        // 否则回退到旧的 email 派生逻辑(默认/ Gravatar)。
         $avatarUrl = null;
         $avatarMeta = (string) ($this->users->meta($user->id)['avatar'] ?? '');
 

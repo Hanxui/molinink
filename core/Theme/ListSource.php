@@ -458,6 +458,9 @@ final class ListSource
 
             $items[] = [
                 'id' => $post->id,
+                // [朋友圈主题补丁 2026-10-25] 列表项带上内容类型：主题要按 type 分别渲染
+                // 朋友圈式条目（moments）与普通文章行。纯增量，老主题不看这个键，零影响。
+                'type' => $post->type,
                 'num' => str_pad((string) $seq, 2, '0', STR_PAD_LEFT),
                 'url' => $this->router->relative($post->url),
                 'title' => $post->title,
@@ -705,8 +708,11 @@ final class ListSource
         $excerpt = trim((string) $post->excerpt);
 
         if ($excerpt === '') {
-            // 与 Feed::summary 同一套取法:原始正文去标签收白,再截字
-            $excerpt = self::clip((string) preg_replace('/\s+/u', ' ', strip_tags((string) $body)));
+            // 与 Feed::summary 同一套取法:原始正文去标签收白,再截字。
+            // 正文里的 `&quot;` 这类实体必须先还原成字面量,否则模板自动转义会把 & 再转一次,
+            // 列表上就会露出 `&amp;quot;` 这块原文
+            $plain = html_entity_decode(strip_tags((string) $body), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $excerpt = self::clip((string) preg_replace('/\s+/u', ' ', $plain));
         }
 
         return ['excerpt' => $excerpt, 'excerpt_html' => false];

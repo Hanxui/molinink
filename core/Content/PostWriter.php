@@ -551,9 +551,13 @@ final class PostWriter
      */
     private static function deriveExcerpt(string $content): string
     {
-        // 块级收尾先换成空格,免得两段文字粘成一句
+        // 块级收尾先换成空格,免得两段文字粘成一句;实体还原成人读的字面量再存
         $spaced = (string) preg_replace('#</(?:p|div|li|h[1-6]|blockquote|tr)>|<br\s*/?>#i', ' ', $content);
-        $text = trim((string) preg_replace('/\s+/u', ' ', strip_tags($spaced)));
+        $text = trim((string) preg_replace(
+            '/\s+/u',
+            ' ',
+            html_entity_decode(strip_tags($spaced), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
 
         return mb_strlen($text) > 120 ? mb_substr($text, 0, 120) . '…' : $text;
     }

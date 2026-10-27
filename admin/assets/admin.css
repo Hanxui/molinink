@@ -1493,15 +1493,17 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 /*
  * ── 独立壳:登录 / 注册 / 找回 / 邮箱验证四页(《121》§1–§5、《122》§1–§5)──
- * 与上面的后台侧栏壳无关:无侧栏、无顶栏,整页 100vh 不滚动,只一张卡片 + 底部双版权条。
- * 数值逐字抄 assets/ui/后台登录-定稿-2026-09-30.html 与 后台注册-定稿-2026-09-30.html。
+ * 与上面的后台侧栏壳无关:无侧栏、无顶栏,整页铺满一屏(内容超高时整页滚动),只一张卡片 + 底部双版权条。
+ * 数值抄 assets/ui/后台登录-定稿-2026-09-30.html 与 后台注册-定稿-2026-09-30.html;唯一例外是列的位置:
+ * 定稿源件给 .auth 挂了 margin-right:140px,列中心因此比页面中心左偏 70px;2026-10-25 起取消,整列居中。
  */
 .auth-body { height: 100%; }
-.auth-body .stage { height: 100vh; display: flex; flex-direction: column; }
+/* 100dvh 兜住手机浏览器地址栏收起/展开时视口高度的跳变(不支持的浏览器仍用上面的 100vh) */
+.auth-body .stage { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
 .auth-body .mid { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; padding: 64px 22px 0; }
 
-/* 单栏:列中心 = 页面中心左移 70px */
-.auth { width: 396px; margin-right: 140px; }
+/* 单栏:整列水平居中于页面 */
+.auth { width: 396px; }
 
 .auth-body .mark { font-family: var(--font-serif); font-size: 30px; line-height: 1; letter-spacing: .02em; color: var(--ink); }
 .auth-body .mark small { display: block; margin-top: 9px; font-family: var(--font-sans); font-size: 10px; letter-spacing: .34em; color: var(--ink-mute); }
@@ -1868,7 +1870,7 @@ a.btn { text-align: center; text-decoration: none; }
 
     /* 独立壳移动态(《121》§5.1、《122》§5.1):列回到页面正中,字号按基准降一档 */
     .auth-body .mid { padding: 14px 22px 0; }
-    .auth-body .auth { width: 100%; max-width: 340px; margin-right: 0; }
+    .auth-body .auth { width: 100%; max-width: 340px; }
     .auth-body .mark { font-size: 24px; }
     .auth-body .mark small { margin-top: 8px; font-size: 9px; letter-spacing: .32em; }
     .auth-body .card { margin-top: 20px; padding: 20px 18px 18px; }
@@ -2079,7 +2081,7 @@ a.btn { text-align: center; text-decoration: none; }
 .theme-settings .ctx { margin-top: 10px; font-size: 12.5px; letter-spacing: .02em; color: var(--muted); }
 .theme-settings .ctx b { color: var(--ink); font-weight: 400; }
 .theme-settings .head .btns { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
-.theme-settings .split { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 36px; align-items: start; }
+.theme-settings .split { margin-top: 32px; display: grid; grid-template-columns: minmax(0, 1fr) 396px; gap: 36px; align-items: start; }
 
 /* 分组(可折叠) */
 .theme-settings .grp { border-top: 1px solid var(--rule); }
@@ -2183,8 +2185,31 @@ a.btn { text-align: center; text-decoration: none; }
     padding: 0; border: 0; opacity: 0; cursor: pointer;
 }
 
-/* 右栏「实时预览」已在 2026-10-25 整块撤掉(字段区通栏,见上方 .theme-settings .split);
-   原 .pvw / .frame / .pv-lock / .skel 一套样式与手机端的隐藏规则一并删除,别再往回加 */
+/* 右栏实时预览 */
+.theme-settings .pvw { position: sticky; top: 0; }
+.theme-settings .pvw-h { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .06em; color: var(--ink); }
+.theme-settings .pvw-h .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: 0 0 auto; }
+.theme-settings .frame { margin-top: 12px; border: 1px solid var(--rule); border-radius: 8px; background: #fff; padding: 20px; aspect-ratio: 4/3; position: relative; overflow: hidden; }
+/* 真预览(#R62):iframe 载前台预览态,骨架就地当遮罩 —— 载完由 JS 加 .ok 隐去;
+   无 JS 时骨架常驻,等同旧静态态,不会露出没脚本可用的空 iframe。
+   基准尺寸写死 1280×960(桌面版渲染,等比缩放交给 JS),否则 iframe 会按框宽自动落到主题的
+   移动断点里,页头搜索/分享/账户这类只在桌面出现的开关怎么改都看不出变化;
+   预览只读:pointer-events:none —— 不然手机上滑动滚的是 iframe 里的小站、点按也被它拦下 */
+.theme-settings .frame iframe { position: absolute; top: 0; left: 0; width: 1280px; height: 960px; transform-origin: 0 0; border: 0; background: #fff; pointer-events: none; }
+/* 预览只读提示:右下角一行小字,避开预览中央 */
+.theme-settings .pv-lock { position: absolute; right: 12px; bottom: 12px; z-index: 2; font-size: 12px; letter-spacing: .02em; color: var(--muted); pointer-events: none; }
+.theme-settings .frame .skel { position: relative; z-index: 1; height: 100%; transition: opacity .25s ease; }
+.theme-settings .frame.ok .skel { opacity: 0; pointer-events: none; }
+.theme-settings .skel { display: flex; flex-direction: column; gap: 9px; }
+.theme-settings .skel i { display: block; height: 9px; border-radius: 2px; background: #F1EFEA; }
+.theme-settings .skel i.b { height: 74px; border-radius: 4px; }
+.theme-settings .skel i.w60 { width: 58%; }
+.theme-settings .skel i.w92 { width: 92%; }
+.theme-settings .skel i.w74 { width: 74%; }
+.theme-settings .skel i.w40 { width: 38%; }
+.theme-settings .pvw-n { margin-top: 14px; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.theme-settings .pvw-n li { position: relative; padding-left: 13px; font-size: 12px; line-height: 1.7; color: var(--muted); }
+.theme-settings .pvw-n li::before { content: ""; position: absolute; left: 0; top: 9px; width: 4px; height: 4px; border-radius: 50%; background: #C9C6BF; }
 
 /* ── 底部保存栏(《76》§5.7、《91》§5.6):flex 占位,不随内容滚 ── */
 .savebar { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 40px; background: var(--paper); border-top: 1px solid var(--rule); box-shadow: 0 -1px 0 rgba(27, 28, 30, .02); }
@@ -2317,8 +2342,8 @@ a.btn { text-align: center; text-decoration: none; }
     .page-comments .tr .body .acts button.danger { color: var(--accent); }
     .page-comments .tr .body .acts details textarea { min-height: 72px; margin-top: 9px; }
 
-    /* 主题设置移动态(后台主题设置-移动端-定稿-2026-09-30):字段单列、导入导出并排通栏、保存栏仍固定底部。
-       原「手机不出预览」那几条随预览一起撤了(2026-10-25) */
+    /* 主题设置移动态(后台主题设置-移动端-定稿-2026-09-30):手机不出预览(iframe 既吞滑动/点按,
+       也是台桌面机才看得清的图)、字段单列、导入导出并排通栏、保存栏仍固定底部 */
     .theme-settings .ctx { margin-top: 8px; font-size: 11.5px; }
     .theme-settings .head .btns { margin-top: 16px; display: flex; gap: 9px; }
     .theme-settings .head .btns form { display: contents; }
@@ -2327,7 +2352,16 @@ a.btn { text-align: center; text-decoration: none; }
        主题设置的分组列表在手机上只剩一条窄列；这里必须显式拉满 */
     .theme-settings .split { margin-top: 0; display: flex; flex-direction: column; align-items: stretch; gap: 0; }
     .theme-settings .cfg { width: 100%; }
+    .theme-settings .pvw { display: none; order: -1; position: static; margin-top: 22px; padding-bottom: 20px; border-bottom: 1px solid var(--rule); }
     .theme-settings .gbody { padding-bottom: 0; }
+    .theme-settings .pvw-h { font-size: 12.5px; letter-spacing: .05em; }
+    .theme-settings .frame { margin-top: 11px; padding: 16px; }
+    .theme-settings .skel { gap: 8px; }
+    .theme-settings .skel i { height: 8px; }
+    .theme-settings .skel i.b { height: 64px; }
+    .theme-settings .pvw-n { margin-top: 12px; gap: 6px; }
+    .theme-settings .pvw-n li { padding-left: 12px; font-size: 11px; line-height: 1.65; }
+    .theme-settings .pvw-n li::before { top: 8px; }
     .theme-settings .gh { gap: 10px; padding: 15px 0; }
     .theme-settings .gh .gt { font-size: 17px; }
     .theme-settings .gh .gc { font-size: 11px; letter-spacing: .02em; }
@@ -2361,6 +2395,7 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar .btns { gap: 9px; }
     .savebar .rsc { width: min(300px, calc(100vw - 36px)); }
 }
+
 
 /* ── 个人资料(《84》,基准 后台个人资料-定稿-2026-09-30)── */
 .page-profile .form { max-width: 780px; padding-bottom: 12px; }
@@ -3304,14 +3339,6 @@ a.btn { text-align: center; text-decoration: none; }
 
 /* 左栏某一组还没有内容时的替代文案 */
 .page-menus .pempty { padding: 6px 0 2px; font-size: 12px; letter-spacing: .03em; color: var(--muted); }
-
-/* 桌面显示桌面结构,移动结构不着色 */
-
-/* ── 移动端 ── */
-@media (max-width: 768px) {
-
-    /* 保存栏只留时分(《108》§6) */
-}
 
 /* ── 后台导入与导出(《110》§1–§11;基准 后台导入与导出-定稿-2026-09-30 / 移动端)──
    工具组下一屏,左右两栏:左「导出」右「导入」。数值逐条取自两份源件,

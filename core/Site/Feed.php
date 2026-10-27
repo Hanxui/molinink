@@ -157,7 +157,11 @@ final class Feed
             return $excerpt;
         }
 
-        $plain = trim((string) preg_replace('/\s+/u', ' ', strip_tags((string) $post->content)));
+        $plain = trim((string) preg_replace(
+            '/\s+/u',
+            ' ',
+            html_entity_decode(strip_tags((string) $post->content), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
 
         return mb_strlen($plain) > 160 ? mb_substr($plain, 0, 160) . '…' : $plain;
     }

@@ -355,7 +355,12 @@ final class Searcher
      */
     private static function clip(string $text): string
     {
-        $text = trim((string) preg_replace('/\s+/u', ' ', strip_tags($text)));
+        // 实体先还原再收白:交给模板时它还会转义一次,不还原就会漏出 `&amp;quot;`
+        $text = trim((string) preg_replace(
+            '/\s+/u',
+            ' ',
+            html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ));
 
         if ($text === '' || mb_strlen($text, 'UTF-8') <= 200) {
             return $text;

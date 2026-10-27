@@ -326,7 +326,11 @@ final class Dashboard
 
     private function excerpt(string $content): string
     {
-        $text = trim(preg_replace('/\s+/u', ' ', strip_tags($content)) ?? '');
+        $text = trim(preg_replace(
+            '/\s+/u',
+            ' ',
+            html_entity_decode(strip_tags($content), ENT_QUOTES | ENT_HTML5, 'UTF-8')
+        ) ?? '');
 
         if (function_exists('mb_substr') && mb_strlen($text) > 60) {
             return mb_substr($text, 0, 60) . '…';

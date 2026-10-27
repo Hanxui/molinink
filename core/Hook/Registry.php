@@ -80,8 +80,8 @@ final class Registry
         'plugin/upgrade/after'      => 'action',
 
         // media 域(5):`media/upload/replace` 随图片压缩插件落地(0.2.0)
-        'media/upload/replace'      => 'filter',
         'media/upload/before'       => 'filter',
+        'media/upload/replace'      => 'filter',
         'media/upload/after'        => 'action',
         'media/delete/after'        => 'action',
         'media/render/after'        => 'filter',
@@ -143,7 +143,7 @@ final class Registry
      * @var list<string>
      */
     public const NOT_YET_WIRED = [
-        // 侧栏挂件收集:挂件子系统 2026-10-25 已整块删除(默认主题只画了一个页脚位,
+        // 侧栏挂件收集:挂件子系统 2026-10-27 已整块删除(默认主题只画了一个页脚位,
         // 界面上另一半永远不渲染),这条 filter 名暂时留档、不接线;将来若重做主题侧栏再议。
         'theme/sidebar/collect',
         // 媒体渲染:`image()` 的 <img> 拼装只在 Theme\Renderer 里(第三批),本批禁改;

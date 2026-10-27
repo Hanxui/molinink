@@ -227,7 +227,7 @@ final class UploadPolicy
     }
 
     /**
-     * 只认文件内容,不认前端给的 type(《27》第 3 节铁律)。
+     * 只认文件内容,不认前端给的 type(《27》第 3 节约定)。
      */
     private function realMime(string $path): string
     {

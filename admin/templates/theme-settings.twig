@@ -1,10 +1,8 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  主题设置(《91》,基准 后台主题设置-定稿-2026-09-30):字段 + 底部保存栏。
+  主题设置(《91》,基准 后台主题设置-定稿-2026-09-30):左字段 / 右预览 / 底部保存栏。
   字段全集来自主题 theme.json 的 settings 声明(《36》),本模板不写死任何字段。
-  2026-10-25:右栏「实时预览」iframe 整块撤掉(维护两只主题的 preview_vars、还要 JS 注入
-  变量才看得出来,实际没人靠它调色;想看效果直接点外观页的「预览」开前台)。
 #}
 {% extends "layout.twig" %}
 
@@ -26,7 +24,7 @@
         <div class="tx">
             <div class="eyebrow">{{ __('外观') }}</div>
             <h1>{{ __('主题设置') }}</h1>
-            <p class="lede">{{ __('字段由主题的 theme.json 声明，后台自动渲染，点保存才落库。想看效果：保存后开前台，或在「外观」里点该主题的「预览」。') }}</p>
+            <p class="lede">{{ __('字段由主题的 theme.json 声明，后台自动渲染。左边改，右边即时看，点保存才落库。') }}</p>
             <div class="ctx">{{ __('正在配置：') }}<b>{{ theme_title }}</b>　{{ __('版本') }} {{ theme_version }}</div>
         </div>
         <div class="btns">
@@ -171,6 +169,24 @@
                     </section>
                 {% endfor %}
             </div>
+
+            <aside class="pvw">
+                <div class="pvw-h"><span class="pip"></span>{{ __('实时预览') }}</div>
+                {# 真预览(《91》§7,第 62 轮):iframe 载前台预览态,字段改动由 JS 注 CSS 变量;载完前/无 JS 时骨架当遮罩。
+                   data-pvars = 主题在 theme.json 里声明的「字段路径 → CSS 变量」,前端不认识任何具体字段 #}
+                <div class="frame" id="pvw-box">
+                    <iframe id="pvw-frame" src="{{ preview_url }}" title="{{ __('实时预览') }}" data-pvars="{{ preview_vars|default({})|json_encode|e('html_attr') }}"></iframe>
+                    <div class="skel">
+                        <i class="w60"></i><i class="b"></i><i class="w92"></i><i class="w74"></i><i class="w40"></i>
+                    </div>
+                    <div class="pv-lock">{{ __('预览不可操作 · 保存后到前台查看') }}</div>
+                </div>
+                <ul class="pvw-n">
+                    <li>{{ __('预览是一个 iframe，改动以 CSS 变量注入，即时生效。') }}</li>
+                    <li>{{ __('预览不落库：刷新后台不会保留，点「保存」才写进 themes.settings。') }}</li>
+                    <li>{{ __('校验未过的字段不进预览，保留上一次的值。') }}</li>
+                </ul>
+            </aside>
         </div>
     </form>
 {% endblock %}

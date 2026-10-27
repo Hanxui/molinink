@@ -45,7 +45,7 @@ final class ProfileController
         'avatar' => '头像已更新。',
     ];
 
-    /** 头像来源的合法值(《31》§7):本地首字母(默认)/ 自上传 / Gravatar / 自定义模板 */
+    /** 头像来源的合法值(《31》§7):本地首字母(默认) / 自上传 / Gravatar / 自定义模板 */
     private const AVATAR_SOURCES = ['local', 'upload', 'gravatar', 'custom'];
 
     /**
@@ -277,7 +277,7 @@ final class ProfileController
     }
 
     /**
-     * 头像来源:用户级 meta 优先,未设置回退站点 option(老安装兼容);脏数据按 local(默认档)。
+     * 头像来源:用户级 meta 优先,未设置回退站点 option(老安装兼容);脏数据按 local。
      *
      * @param array<string, string> $meta
      */

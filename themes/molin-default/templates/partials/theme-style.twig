@@ -20,7 +20,6 @@
   }
   body { font-family: var(--font-body); font-size: var(--font-size); }
   .page { max-width: var(--content-width); }
-  {# 页脚挂件区那套 `.footer-widgets` 样式随挂件功能一起删了(2026-10-25) #}
   {# 自定义 CSS 原样输出(代码字段仅管理员可配,《36》§9);断掉 `</`,防样式块被提前闭合 #}
   {{ theme_setting('code.css')|replace({'</': '<\\/'})|raw }}
 </style>

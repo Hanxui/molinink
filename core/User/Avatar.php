@@ -26,9 +26,8 @@ use Molin\Option\Options;
  * custom 的模板同样用户级优先、站点兜底。旧 usermeta.gravatar(值为 '0' 表示当年主动关过)
  * 仍读取以向后兼容,直接落本地字母。
  *
- * 默认档是 `local`(本地首字母,data URI,零外部请求):Gravatar 在国内常年连不上或要等
- * 好几秒,而头像是每页都要出的图,挂在外部域名上等于给首屏加一个不可控的等待。
- * 想用 Gravatar 的站自己把头像源改成 gravatar 即可,不受默认值影响。
+ * 默认档是 `local`:Gravatar 在国内常年连不上或要等好几秒,而头像是每页都要出的图,
+ * 挂在外部域名上等于给首屏加一个不可控的等待。想用 Gravatar 的站把头像源改成 gravatar 即可。
  *
  * 主题与后台同走 `avatar(email, size)`(`core/helpers.php`),一个邮箱地址就能出图。
  */

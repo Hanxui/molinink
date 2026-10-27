@@ -56,13 +56,21 @@ final class WebAuth
             // 会话是怎么没的,后台那边只带一个 ?expired=1 过来(《121》§6.3 的载体未冻结,§11 第 6 条)
             $expired = $request->input('expired') === '1';
 
-            return $this->with($this->loginPage(['notice' => $expired ? __(self::EXPIRED) : '']), $cookie, $request);
+            // 下载中心这类入口未登录时把回跳地址带在登录链接上,而这一屏以前只认表单字段 POST 上来,
+            // GET 带来的地址压根到不了表单 —— 登录完一律掉回后台首页。校验过的值回填进表单才接得上。
+            $back = $this->returnPath($this->backPath($request));
+
+            return $this->with(
+                $this->loginPage(['notice' => $expired ? __(self::EXPIRED) : '', 'redirect_to' => $back ?? '']),
+                $cookie,
+                $request
+            );
         }
 
         $identity = $request->input('identity');
         // 前台登录弹窗会带这一个隐藏字段：登录成功/失败都回原页面（原版 WP 的 redirect_to 行为）；
         // 后台登录不带，行为保持原样（成功去 /admin，失败渲染登录屏）
-        $back = $this->returnPath($request->input('redirect_to', ''));
+        $back = $this->returnPath($this->backPath($request));
 
         if (!Csrf::check($session, $request->input(Csrf::FIELD))) {
             if ($back !== null) {
@@ -103,14 +111,27 @@ final class WebAuth
     }
 
     /**
+     * 回跳地址的规范名是 redirect_to;线上在用的主题与插件还传着老参数名 redirect,一并认。
+     * 两个名字都只是"候选值",安不安全一律由 returnPath() 裁决。
+     */
+    private function backPath(Request $request): string
+    {
+        $path = $request->input('redirect_to', '');
+
+        return $path !== '' ? $path : $request->input('redirect', '');
+    }
+
+    /**
      * 只接受站内绝对路径：拒绝 //evil.com、http(s)://、带换行的值，避免登录后被带去外站。
+     * 反斜杠一并拒:`/\evil.com` 被浏览器按 `//evil.com` 归一化,是同一类外跳。
      */
     private function returnPath(string $path): ?string
     {
         $path = trim($path);
 
         if ($path === '' || $path[0] !== '/' || str_starts_with($path, '//')
-            || str_contains($path, '://') || str_contains($path, "\n") || str_contains($path, "\r")) {
+            || str_contains($path, '\\') || str_contains($path, '://')
+            || str_contains($path, "\n") || str_contains($path, "\r")) {
             return null;
         }
 
@@ -291,6 +312,8 @@ final class WebAuth
             'notice' => '',
             'identity' => '',
             'locked' => false,
+            // 回跳地址的载体:模板里那个隐藏字段,空串 = 不带(登录后照旧回 /admin)
+            'redirect_to' => '',
             // 三个数字都跟着配置走,不写死(《121》§10);天数现在取自令牌寿命,不再是会话上限
             'remember_days' => intdiv(RememberTokens::TTL, 86400),
             'lock_minutes' => (int) round(LoginThrottle::LOCK_SECONDS / 60),
