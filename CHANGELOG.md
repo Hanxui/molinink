@@ -2,6 +2,17 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.2.5] - 2026-10-27
+
+### 删除
+
+- **主题设置页的「实时预览」右栏第二次撤掉**（0.1.11 撤过一次，0.2.4 随开发版同步又带回来了，这次在开发版里也删干净，两边一致）：字段区改为**通栏单列**。
+  - `admin/templates/theme-settings.twig` 的 `aside.pvw` 整块（预览框 + 骨架 + 三条说明）；
+  - `core/Admin/AppearanceController.php` 的 `preview_url` / `preview_vars` 两个模板变量与 `previewVars()` 方法——后台不再读主题 `theme.json` 里的 `preview_vars`；
+  - `admin/assets/admin.css` 的 `.pvw / .frame / .pv-lock / .skel` 一套样式与手机端隐藏规则；`admin/assets/admin.js` 里 149 行的注入脚本；
+  - 中英文各 3 条只服务预览框的文案。
+  - 原因：预览要在主题里维护 `preview_vars`、还要 JS 注入 CSS 变量才看得出效果，实际没人靠它调色。想看效果：保存后开前台，或在「外观」里点该主题的「预览」——那个按钮不受影响。
+
 ## [0.2.4] - 2026-10-27
 
 ### 删除

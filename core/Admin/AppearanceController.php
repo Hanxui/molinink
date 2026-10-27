@@ -459,11 +459,7 @@ final class AppearanceController
             'groups' => $groups,
             'settings_action' => $this->url('appearance/settings/save'),
             'settings_url' => $this->url('appearance/settings') . '?theme=' . rawurlencode($theme->slug()),
-            // 预览框载的是相对地址:iframe 与后台永远同源,JS 才够得着 contentDocument(第 62 轮)
-            'preview_url' => '/?molin_theme_preview=' . rawurlencode($theme->slug()),
             'reset_action' => $this->url('appearance/settings/reset'),
-            // 预览 iframe 的「字段 → CSS 变量」通道:主题在 theme.json 里声明,前端只负责套用
-            'preview_vars' => $this->previewVars($theme),
             'import_action' => $this->url('appearance/settings/import'),
             'export_url' => $this->url('appearance/settings/export') . '?theme=' . rawurlencode($theme->slug()),
             'notice' => $noticeError === '' ? match ($done) {
@@ -890,26 +886,6 @@ final class AppearanceController
         $stamp = strtotime($updated . ' UTC');
 
         return __('今天 %s', 'molin', date('H:i', $stamp === false ? time() : $stamp));
-    }
-
-    /**
-     * 主题清单里的 `preview_vars`(字段路径 → CSS 变量):预览 iframe 靠它把没保存的改动实时套上。
-     * Theme 只公开 title/version/supports 这类窄口子,没有清单读取法,这里与 themes() 同一读法再读一次。
-     *
-     * @return array<string, mixed>
-     */
-    private function previewVars(Theme $theme): array
-    {
-        $file = $this->trimRoot($this->themesRoot) . '/' . $theme->slug() . '/theme.json';
-
-        if (!is_file($file)) {
-            return [];
-        }
-
-        $manifest = json_decode((string) file_get_contents($file), true);
-        $vars = is_array($manifest) ? ($manifest['preview_vars'] ?? []) : [];
-
-        return is_array($vars) ? $vars : [];
     }
 
     /**
