@@ -283,6 +283,8 @@ final class Uploader
     /**
      * 把钩子给的替换件搬到内核自己的临时文件里(落盘那步只认"我们的临时文件")。
      * 支持两种给法:`bytes`(直接给内容)与 `path`(给已落盘的临时件,复制过来,不动物件本身)。
+     *
+     * @param array<string, mixed> $filtered
      */
     private function materializeReplacement(array $filtered, int $maxBytes): ?string
     {
