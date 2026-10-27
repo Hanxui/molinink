@@ -21,7 +21,7 @@ use Molin\Router\Router;
 use Molin\User\User;
 
 /**
- * 词条端点(《25》§3.2):分类树 / 标签云 / 某分类下的文章。
+ * 词条端点:分类树 / 标签云 / 某分类下的文章。
  */
 final class TermController extends ApiSupport
 {
@@ -60,7 +60,7 @@ final class TermController extends ApiSupport
     }
 
     /**
-     * `GET /api/v1/categories` 与 `/api/v1/categories/{id}/posts`(《25》§3.2)。
+     * `GET /api/v1/categories` 与 `/api/v1/categories/{id}/posts`。
      * 两条端点首段相同,只按首段分派会把 `/categories/7/posts` 当成分类列表静默吐回 —— 必须看尾段。
      *
      * @param list<string> $segments

@@ -9,9 +9,9 @@
 declare(strict_types=1);
 
 /*
- * 安装向导入口(《42-安装向导》第 1、7 节)。
+ * 安装向导入口。
  *
- * 全站只有一个入口 `index.php`(约定),这一处例外由《42》第 7 节明文要求:
+ * 全站只有一个入口 `index.php`(约定),这一处例外由既有规范明文要求:
  * 装之前没有 config.php、没有数据表、没有主题,内核起不来,只能给安装留一扇单独的门,
  * 并且**装完必须删掉这扇门** —— 写了 install/lock 之后,这里只输出"拒绝"。
  *
@@ -31,7 +31,7 @@ $root = dirname(__DIR__);
 
 // 与 index.php 同一组全局常量:内核里 HookMap / Logger 都读它们(装到"生成钩子索引"
 // 或写审计那一步就会 Undefined constant 失败,真跑踩过两次)。
-// 安装页是公开页面,APP_DEBUG 恒为 false —— 不把堆栈吐给浏览器(《42》第 8 节)。
+// 安装页是公开页面,APP_DEBUG 恒为 false —— 不把堆栈吐给浏览器。
 define('MOLIN_ROOT', $root);
 define('MOLIN_CONTRACT', '1.0');
 define('APP_DEBUG', false);
@@ -49,7 +49,7 @@ require $root . '/vendor/autoload.php';
 $https = ($_SERVER['HTTPS'] ?? '') !== '' && strtolower((string) $_SERVER['HTTPS']) !== 'off';
 $installer = new Installer($root, $_SERVER);
 
-// 装完(或被装过一半留下 lock)再来访问:只给拒绝页,不给任何"再装一次"的按钮(《42》第 7、10 节)
+// 装完(或被装过一半留下 lock)再来访问:只给拒绝页,不给任何"再装一次"的按钮
 if ($installer->isLocked()) {
     WizardState::collectGarbage($root);
 
@@ -66,9 +66,9 @@ if ($installer->isLocked()) {
 }
 
 /**
- * 状态用一枚随机 id 的 HttpOnly cookie 认。内核不许用 PHP 原生 session(《61》第 2 节),
+ * 状态用一枚随机 id 的 HttpOnly cookie 认。内核不许用 PHP 原生 session,
  * 所以分步状态落在 storage 下的临时文件里:不对外、0600、两小时过期;装成功即删,
- * 写到一半失败时留两小时,给失败屏的「重新写入」直接重跑(《125》§13.2)。
+ * 写到一半失败时留两小时,给失败屏的「重新写入」直接重跑。
  */
 $cookie = 'molin_install';
 $given = isset($_COOKIE[$cookie]) ? (string) $_COOKIE[$cookie] : null;
@@ -84,7 +84,7 @@ try {
     $body = (new Wizard($installer, $root, $_SERVER))
         ->handle(strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET')), (int) ($_GET['step'] ?? 1), $_POST, $state);
 } catch (Throwable $e) {
-    // 只给能照着做的一句话,堆栈进日志(《42》第 8 节)
+    // 只给能照着做的一句话,堆栈进日志
     error_log('墨林安装向导:' . $e->getMessage() . "\n" . $e->getTraceAsString());
     $body = '<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8"><title>装不下去</title></head><body>'
         . '<h1>装不下去</h1><p>' . htmlspecialchars($e->getMessage(), ENT_QUOTES, 'UTF-8') . '</p></body></html>';

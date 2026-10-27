@@ -21,7 +21,7 @@ use Molin\Security\Password;
 final class PostRepository
 {
     /**
-     * 取文章时必须列明字段(《57》第 5 节:禁 SELECT *、content 单独查)。
+     * 取文章时必须列明字段(禁 SELECT *、content 单独查)。
      * password 列永不外取 —— 那是私密正文的口令哈希,前台与列表都不该碰。
      */
     public const COLUMNS = ['id', 'type', 'status', 'title', 'slug', 'author_id', 'excerpt', 'published_at', 'created_at', 'updated_at', 'thumbnail_id', 'comment_status', 'comment_count', 'view_count'];
@@ -70,7 +70,7 @@ final class PostRepository
     }
 
     /**
-     * 记一次浏览(《13》§6.3 的 items.views)。口径由作者 2026-10-14 定:前端单篇每请求一次 `+1`,不做去重。
+     * 记一次浏览(既有规范的 items.views)。口径由作者 2026-10-14 定:前端单篇每请求一次 `+1`,不做去重。
      *
      * 交给 SQL 自增,不读改写 —— 并发下两条请求各自 +1,不会互相盖掉。
      * 刻意不播任何钩子:浏览量不是内容变更,不该把页面缓存冲掉。
@@ -103,7 +103,7 @@ final class PostRepository
     }
 
     /**
-     * 单篇读取前给插件改条件的机会(《11》§7.1:`content/fetch/before` = 查询前,改条件)。
+     * 单篇读取前给插件改条件的机会(`content/fetch/before` = 查询前,改条件)。
      *
      * 单个 Post 上没有"条件"可谈,所以入参就是这次读取的条件数组:
      * find() 收 {id: int, with_trashed: bool},findBySlug() 收 {slug: string, type: string};
@@ -121,7 +121,7 @@ final class PostRepository
     }
 
     /**
-     * 查出后给插件改结果集的机会(《11》§7.1:`content/fetch/after` = 查出后,改结果集)。
+     * 查出后给插件改结果集的机会(`content/fetch/after` = 查出后,改结果集)。
      * 返回 Post 才算数,其它一律按"不改"处理(含 null:想藏就显式返回 null)。
      */
     private function afterFetch(?Post $post, string $source): ?Post
@@ -151,7 +151,7 @@ final class PostRepository
     }
 
     /**
-     * 按 id 批量取原始正文。列表查询故意不带 content(《57》§5),但自动摘要要从正文取字,
+     * 按 id 批量取原始正文。列表查询故意不带 content,但自动摘要要从正文取字,
      * 于是只给"确实要用的那几行"补一次 IN 查询 —— 一页一次,不逐行往返。
      *
      * @param list<int> $ids
@@ -223,7 +223,7 @@ final class PostRepository
 
     /**
      * 固定链接结构含 %category% 时,取每篇的主分类 slug 供生成地址用。
-     * 用一条关联子查询在同行内取全(《57》§5:不给每行单开一次往返);
+     * 用一条关联子查询在同行内取全(不给每行单开一次往返);
      * 结构不需要分类时整列不取,查询保持轻。
      */
     private function primaryCategoryColumn(): ?string

@@ -14,9 +14,9 @@ use Molin\Exception\ConfigException;
 use Molin\Hook\HookBus;
 
 /**
- * 分类法登记表(《34-内容模型与CPT》第 3 节)。
+ * 分类法登记表。
  *
- * term_taxonomy.taxonomy 同样只受列宽约束(《21》第 4 节),哪些分类法算数由这张表定。
+ * term_taxonomy.taxonomy 同样只受列宽约束,哪些分类法算数由这张表定。
  * 与 PostTypeRegistry 分家:字段与保留名各自一套(这里多 hierarchical、少 has_archive),
  * 合在一起只会让校验互相牵制,分不清哪条规则管哪边。
  */
@@ -25,10 +25,10 @@ final class TaxonomyRegistry
     /** slug 口径与内容类型一致:小写字母开头,只含小写字母、数字、- 与 _ */
     public const SLUG_PATTERN = '#\A[a-z][a-z0-9_-]*\z#';
 
-    /** 与 term_taxonomy.taxonomy 列宽一致(《21》第 4 节) */
+    /** 与 term_taxonomy.taxonomy 列宽一致 */
     public const MAX_SLUG_LENGTH = 32;
 
-    /** 内核写死的内置分类法(《34》第 3.2 节),插件不得占用 */
+    /** 内核写死的内置分类法,插件不得占用 */
     public const RESERVED = ['category', 'post_tag'];
 
     private static ?self $instance = null;
@@ -54,7 +54,7 @@ final class TaxonomyRegistry
     }
 
     /**
-     * 登记一个分类法(《34》第 3.1 节)。第二个参数与 WP 同款:它绑定的内容类型。
+     * 登记一个分类法。第二个参数与 WP 同款:它绑定的内容类型。
      *
      * @param list<string> $objectTypes 绑定的内容类型;两侧都可声明绑定(类型侧 taxonomies / 这里 object_types)
      * @param array<string, mixed> $args 只取本批最小集:label / public / hierarchical
@@ -114,7 +114,7 @@ final class TaxonomyRegistry
     }
 
     /**
-     * 该分类法绑定的内容类型(《34》第 3.1 节第二参数),即分类法 → 类型的绑定。
+     * 该分类法绑定的内容类型(既有规范二参数),即分类法 → 类型的绑定。
      *
      * @return list<string>
      */

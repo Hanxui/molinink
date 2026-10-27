@@ -9,8 +9,8 @@
 declare(strict_types=1);
 
 /*
- * 唯一入口(约定:所有请求走这里)。启动顺序依《52-自动加载与命名空间》第 8 节、
- * 请求生命周期依《23-路由规范》第 2 节;服务装配在 Molin\Bootstrap(与 CLI 共用)。
+ * 唯一入口(约定:所有请求走这里)。启动顺序依既有规范
+ * 请求生命周期依既有规范;服务装配在 Molin\Bootstrap(与 CLI 共用)。
  * 前台路由见 Molin\Front\FrontRoutes,登录 / 后台 / 接口路由在本文件尾部接线。
  */
 
@@ -38,14 +38,14 @@ use Molin\User\UserRepository;
 
 define('MOLIN_ROOT', __DIR__);
 
-// 契约版本随内核发布,与产品版本各自演进(《00》第 1 节、《56》第 1 节)
+// 契约版本随内核发布,与产品版本各自演进
 define('MOLIN_CONTRACT', '1.0');
 
 /*
  * 缺 vendor/ 是「下错包」的典型症状:GitHub 仓库页 Code → Download ZIP 只打仓库内容,
  * vendor/ 在 .gitignore 里跟着走不了,一路跑到 require 就冒一条 include_path 的 Fatal,
  * 用户看不出该干什么。这里提前拦一道,直接把下一步说清楚(发布包自带 vendor,源码包要 composer install)。
- * 样式同样内联:这时 autoload 还没进来,Twig 与任何外链都用不上(《118》§0 同一条道理)。
+ * 样式同样内联:这时 autoload 还没进来,Twig 与任何外链都用不上(既有规范同一条道理)。
  */
 if (!is_file(MOLIN_ROOT . '/vendor/autoload.php')) {
     http_response_code(500);
@@ -92,7 +92,7 @@ $autoloader = require MOLIN_ROOT . '/vendor/autoload.php';
 
 if (!Bootstrap::isConfigured(MOLIN_ROOT)) {
     // 第一次打开站点(还没装):别只回一行纯文本 —— 一个陌生用户不该靠猜才知道下一步是 /install/。
-    // 样式内联、不引外部资源:这时容器还没起来,任何外链都可能二次失败(《118》§0 同一条道理)。
+    // 样式内联、不引外部资源:这时容器还没起来,任何外链都可能二次失败(既有规范同一条道理)。
     http_response_code(503);
     header('Content-Type: text/html; charset=utf-8');
     echo <<<'HTML'
@@ -128,7 +128,7 @@ HTML;
 }
 
 /*
- * 整页缓存快速通道(《24》§7 第 3 层)的装配前落点:无本站 cookie 的 GET 直接读盘吐 HTML,
+ * 整页缓存快速通道(既有规范层)的装配前落点:无本站 cookie 的 GET 直接读盘吐 HTML,
  * 省掉的是 Bootstrap::start() 那一整段 —— autoload、容器、插件 boot、几十条路由注册和七次 SELECT。
  *
  * 判据全部是"不用问内核就能答"的:方法、cookie、维护标志、排除前缀、缓存文件。
@@ -221,7 +221,7 @@ $frontRoutes->register($container->get(Router::class));
 $options = $front->options();
 $router = $container->get(Router::class);
 
-// 登录 / 注册 / 登出(《41》:这些页面永远不挡维护模式,也不进整页缓存)
+// 登录 / 注册 / 登出(这些页面永远不挡维护模式,也不进整页缓存)
 $webAuth = $container->get(WebAuth::class);
 $admin = $container->get(AdminController::class);
 
@@ -243,13 +243,13 @@ $router->add('admin', 'ALL', '/admin', $adminPage);
 $router->add('admin', 'ALL', '/admin/', $adminPage);
 $router->add('admin', 'ALL', '/admin/{path:.+}', $adminPage);
 
-// REST(《25》):读端点 + 写端点齐;会话/cookie 走的写请求过 CSRF 令牌,API Key 直连
+// REST:读端点 + 写端点齐;会话/cookie 走的写请求过 CSRF 令牌,API Key 直连
 // `/api/v1/` 在 Router 分发前就归一成 `/api/v1`,别名只挂一条
 $api = $container->get(ApiController::class);
 $apiPage = static fn (Request $request, array $vars = []): Response => $api->handle($request, (string) ($vars['path'] ?? ''));
 // 前台登录弹窗的防跨站令牌:访客默认没有会话,页面里的令牌只能是空串,弹窗一提交必判 stale。
 // 改成"弹窗打开时才来取":建一条访客会话、把令牌发回去,响应里带上会话 cookie。
-// 放在页面上不去建会话是_**有意的**_——匿名 GET 一旦发 Set-Cookie,整页缓存就再也存不下来(《24》§7)。
+// 放在页面上不去建会话是_**有意的**_——匿名 GET 一旦发 Set-Cookie,整页缓存就再也存不下来。
 $router->add('session.csrf', 'GET', '/api/v1/csrf-token', static function (Request $request) use ($container): Response {
     $session = Auth::session();
 
@@ -273,7 +273,7 @@ $router->add('api', 'ALL', '/api/v1/{path:.+}', $apiPage);
 $plugins = $container->get(Loader::class);
 $plugins->boot();
 
-// 插件自定义路由(《12》§7.2 落地):内核前台路由已全部登记在前,插件只能补在后面;
+// 插件自定义路由(既有规范落地):内核前台路由已全部登记在前,插件只能补在后面;
 // 撞内核的插件在 boot() 里已被拒绝启用,这里再兜一道(冲突则整体跳过并记日志)。
 $plugins->registerRoutes($router);
 
@@ -282,7 +282,7 @@ do_action('system/init');
 // 自定义内容类型(CPT)的前台:类型登记表在 system/init 里填好,本节必须排在其后。
 $frontRoutes->registerPostTypes($router);
 
-// R2(《12》第 4.2 节):插件实际挂的钩子与 plugin.json 声明不一致,开发模式当场炸
+// R2:插件实际挂的钩子与 plugin.json 声明不一致,开发模式当场炸
 $plugins->checkDeclarations();
 
 $request = Request::fromGlobals();
@@ -292,7 +292,7 @@ $request = Request::fromGlobals();
 $auth = $container->get(Auth::class);
 $auth->attach($request->cookie(Auth::COOKIE), $request->cookie(RememberTokens::COOKIE));
 
-// i18n(《33》§4):会话与用户就位后定这一趟的语言。
+// i18n:会话与用户就位后定这一趟的语言。
 // 检测链在 Translator 里(用户设置 → 会话/请求开关 → 站点默认 → 浏览器);?locale= 落进会话留给后面几趟。
 $translator = $container->get(Translator::class);
 $session = Auth::session();
@@ -316,7 +316,7 @@ $translator->setLocale($translator->resolveLocale(
 ));
 
 /*
- * 维护模式(《29》§3 第 4 步):升级替换文件的那几秒,站点是半新半旧的 ——
+ * 维护模式(既有规范步):升级替换文件的那几秒,站点是半新半旧的 ——
  * 与其让访客撞上去,不如给他一个明确的 503。后台、登录、登出永远不挡,
  * 能升级的人也不挡(他正盯着这件事)。生产维护窗口通常只有几秒。
  */
@@ -338,10 +338,10 @@ if ($maintenance->blocks($request->path(), current_user_can('update.core'))) {
 }
 
 /*
- * 页面静态缓存(《24》§7 第 3 层):未登录访客的 GET 命中就直接吐整页 HTML ——
+ * 页面静态缓存(既有规范层):未登录访客的 GET 命中就直接吐整页 HTML ——
  * 不查内容、不渲染,请求里最贵的那两段全省掉。
  *
- * 落点比《24》§7.1 写的"最前面"稍靠后,是有意的:维护模式就在上面 —— 升级窗口那几秒
+ * 落点比既有规范写的"最前面"稍靠后,是有意的:维护模式就在上面 —— 升级窗口那几秒
  * 必须照常回 503,不能被一份旧整页盖过去;顺带也只有装配之后才拿得到站点配置与真实安全头。
  */
 $requestUri = (string) ($_SERVER['REQUEST_URI'] ?? '/');
@@ -406,7 +406,7 @@ if ($front->guestSessionId !== null) {
 $csp = (string) $options->get('csp_policy', '');
 
 /*
- * 页面静态缓存落盘(《24》§7.1):未登录 GET + 200 + text/html 才存(store 自己也会再核一遍)。
+ * 页面静态缓存落盘:未登录 GET + 200 + text/html 才存(store 自己也会再核一遍)。
  *
  * 两条"这一份不能共享"的判断:
  *   ① 这一趟发过 Set-Cookie —— 刚建了会话(口令锁定页那支),页面里的令牌绑着它;

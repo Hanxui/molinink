@@ -27,10 +27,10 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 修订版本比对屏(《113-后台修订版本比对实现规格》§1 属「文章」组,侧栏当前项借 posts 的位)。
+ * 修订版本比对屏(既有规范属「文章」组,侧栏当前项借 posts 的位)。
  *
  * 两块内容并排:左「选中修订」、右「当前版本」。进页靠 `?post=<id>` 认文章,`?rev=<id>` 认左列选中
- * 哪一版;没给 rev 就默认最早那版(与基准图一致)。
+ * 哪一版;没给 rev 就默认最早那版(与设计稿一致)。
  *
  * ── 「当前版本」的取数(§10)──
  * post_revisions 存的是**改之前**的那一版(见 PostWriter::snapshotRevision),所以右列"当前版本"
@@ -63,8 +63,8 @@ final class RevisionController
      */
     public function handle(Request $request, string $path, User $user, array $menu): Response
     {
-        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次(《61》§3.1)。
-        // 口径与 pages.php 的 revisions 条目同源:《113》§10 的 content.write 是《62》插件申报词表
+        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次。
+        // 口径与 pages.php 的 revisions 条目同源:既有规范的 content.write 是既有规范插件申报词表
         // 里的名,不在用户权限登记表,内置角色无从持有 —— 按 §10 意图落到 post.edit.*(2026-10-04 作者定)。
         if (!$user->holds('post.edit.own') && !$user->holds('post.edit.others')) {
             return $this->view->render('forbidden.twig', [
@@ -105,7 +105,7 @@ final class RevisionController
         $revisions = $this->revisions->forPost($postId);
         $count = count($revisions);
 
-        // 左列选中:给了 rev 且属于这篇就用它,否则回落到最早一版(基准图默认)
+        // 左列选中:给了 rev 且属于这篇就用它,否则回落到最早一版(设计稿默认)
         $rev = $request->queryInt('rev', 0);
         $selected = $rev > 0 ? $this->revisions->find($postId, $rev) : null;
         $selected ??= $revisions[0] ?? null;

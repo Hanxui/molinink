@@ -33,8 +33,8 @@ use Throwable;
  * 插件装载器:读启用列表 → 校验清单 → 依赖/环境 → 拓扑排序 → 注册命名空间 → 建懒加载索引。
  *
  * 加载顺序由插件自己声明(order.before / order.after),内核拓扑排序;
- * 出现循环依赖直接报错,不给"随机顺序"留活路(《12》第 5 节、《22》第 6 节)。
- * 启用状态以 {p}plugins.active 为权威、options.active_plugins 为派生启动缓存(《21》第 9 节,2026-09-30 定);
+ * 出现循环依赖直接报错,不给"随机顺序"留活路。
+ * 启用状态以 {p}plugins.active 为权威、options.active_plugins 为派生启动缓存(既有规范2026-09-30 定);
  * 本类目前只读缓存,表侧写入与"先表后缓存"的写序随安装向导那轮接线。
  */
 final class Loader
@@ -80,7 +80,7 @@ final class Loader
             if (!isset($this->available[$name])) {
                 // 启用名单点名的插件不在了(目录被删、清单坏了):跳过这一支,不让整站跟着倒。
                 // 该停下的只有"关系错"(循环依赖 / 缺依赖 / 环境不符),那几条在下面照旧抛 ——
-                // 《22》§6.3 要的是"配错了就说清",不是"一个目录没了全站白屏"。
+                // 既有规范要的是"配错了就说清",不是"一个目录没了全站白屏"。
                 $reason = $this->broken[$name] ?? '插件目录不存在或清单校验未通过';
                 $this->skipped[$name] = $reason;
                 Log::channel('plugin')->warning('plugin.unavailable_skipped', [
@@ -171,7 +171,7 @@ final class Loader
     }
 
     /**
-     * 启用状态以 {p}plugins.active 为权威(《21》第 9 节,2026-09-30 定),
+     * 启用状态以 {p}plugins.active 为权威(既有规范2026-09-30 定),
      * options.active_plugins 只是派生的启动缓存:不一致时按表重建,
      * 表里没有的名字一律丢弃 —— 手工改 option 冒充"已启用"在这一步就断掉。
      *
@@ -225,7 +225,7 @@ final class Loader
     }
 
     /**
-     * 先写表,再派生缓存(写序不可反,《21》第 9 节)。后台插件页与测试都走这条路。
+     * 先写表,再派生缓存(写序不可反,既有规范)。后台插件页与测试都走这条路。
      */
     public function markActive(string $name, bool $active): void
     {
@@ -316,7 +316,7 @@ final class Loader
 
         do_action('plugin/activate/after', $name);
 
-        // 插件启停必须审计(《26》第 7 节)
+        // 插件启停必须审计
         Audit::record('plugin.activate', $name);
 
         return $plugin;
@@ -513,7 +513,7 @@ final class Loader
     }
 
     /**
-     * 物理删除(《85》本轮口径):目录连文件一起清,磁盘与 {p}plugins 注册行都不留。
+     * 物理删除(既有规范本轮口径):目录连文件一起清,磁盘与 {p}plugins 注册行都不留。
      * 名字来自请求,这里只认扫描到的真实插件,目录取清单里的,绝不拿参数拼路径;
      * 启用中的一律拒绝 —— 停在逻辑层的插件不能带着激活态被拔掉。
      */
@@ -534,7 +534,7 @@ final class Loader
             throw new PluginLoadException("插件目录不可写: {$this->pluginsRoot}");
         }
 
-        // 校验都过了、确定要删了才播报:before 的监听此刻还能读到目录与清单(《11》§7.4)
+        // 校验都过了、确定要删了才播报:before 的监听此刻还能读到目录与清单
         do_action('plugin/uninstall/before', $name);
 
         // 回滚要读迁移文件,必须跑在删目录之前;失败就整个中断,目录与注册行都留着还好重试
@@ -659,7 +659,7 @@ final class Loader
     }
 
     /**
-     * 把已启用插件的自定义路由注册进 Router(《12》§7.2、《23》§5)。
+     * 把已启用插件的自定义路由注册进 Router。
      *
      * 必须在 dispatch 之前调用(boot() 之后、@see index.php 分发请求之前)。只认「已启用」这一份
      * 真相:停用即不注册。与内核路径撞车的插件整体跳过 —— 该在 activate() 就被拒,
@@ -708,7 +708,7 @@ final class Loader
     }
 
     /**
-     * 插件自定义路由与内核路径的冲突(《23》§5.1:内核优先)。整条相同,或路径开头与内核保留段重名。
+     * 插件自定义路由与内核路径的冲突(内核优先)。整条相同,或路径开头与内核保留段重名。
      *
      * 内核只保留自己路径开头的**静态段**:`/admin/*` 保留 `admin`,`/api/v1/*` 保留 `api/v1` ——
      * 故 `/api/` 下的插件 webhook 不与之撞车,而 `/api/v1/...` 仍归内核。
@@ -784,7 +784,7 @@ final class Loader
     }
 
     /**
-     * handler 可用性(《12》§14 的后台页控制器同口径):类在、方法在且公开、能无参构造、
+     * handler 可用性(既有规范的后台页控制器同口径):类在、方法在且公开、能无参构造、
      * 形参不多于 2(内核只传 request 与 vars)。任一不过 → 该路由不生效,按 404 办。
      */
     private function handlerUsable(string $class, string $method): bool

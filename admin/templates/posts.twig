@@ -1,7 +1,7 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  文章列表(《78》)。整页不滚动,.content 是唯一滚动区,本页没有保存栏。
+  文章列表。整页不滚动,.content 是唯一滚动区,本页没有保存栏。
   行内操作默认藏着、悬停才浮现(§4.5);移动端整张表降成卡片、操作常显(§5)—— 同一份 DOM,靠 CSS 分屏。
   行首复选框用 form="bulk-form" 挂到批量条那张表单上:勾选在表里、提交在表外,不为此再造一张表单。
 #}
@@ -14,7 +14,7 @@
             <h1>{{ __('文章') }}</h1>
             <p class="lede">{{ __('所有的写作都在这里。草稿可随时续写，已发布的随时能改。') }}</p>
         </div>
-        {# 分类与标签的管理入口(《87》):分类的增删改、标签的一切都在那一屏。
+        {# 分类与标签的管理入口:分类的增删改、标签的一切都在那一屏。
            只给有 category.manage 的人看(没这权的人连链接都不出) #}
         <div class="acts">
             {% if can_manage_categories %}<a class="manage" href="{{ categories_url }}">{{ __('管理分类与标签') }}</a>{% endif %}
@@ -84,13 +84,13 @@
 
         {% for row in rows %}
             <div class="tr{% if quick_id == row.id %} qe{% endif %}" data-rows>
-                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择《%s》', 'molin', row.label) }}"></span>
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择既有规范', 'molin', row.label) }}"></span>
                 <div class="ttl">
                     <div class="t">
                         {% if row.edit_url %}<a href="{{ row.edit_url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}
                     </div>
                     <div class="sub"><span>{{ row.sub }}</span></div>
-                    {# 移动端把这一行换成「状态·分类·评论数·日期」(《78》§5),桌面不显示这一件 #}
+                    {# 移动端把这一行换成「状态·分类·评论数·日期」,桌面不显示这一件 #}
                     <div class="mmeta">
                         <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
                         {% if row.categories %}
@@ -187,7 +187,7 @@
     {% if pagination.total > 0 %}
         <div class="pager">
             <div class="info">{{ __('第 %s–%s 篇，共 %s 篇', 'molin', pagination.from, pagination.to, pagination.total) }}</div>
-            {# 不足一页只留说明、不出页码(《86》§4 同一口径) #}
+            {# 不足一页只留说明、不出页码(既有规范同一口径) #}
             {% if pagination.total_pages > 1 %}
                 <div class="pages">
                     {% for link in pagination.links %}

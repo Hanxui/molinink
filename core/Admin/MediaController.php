@@ -29,13 +29,13 @@ use Molin\User\User;
 use Throwable;
 
 /**
- * 媒体库屏(《41》第 7 节、《80-后台媒体库实现规格》)。
+ * 媒体库屏。
  *
- * 三件事:浏览(五页签 + 筛选 + 分页,网格/列表两视图)、上传(《27》第 1 节九步)、
- * 删(《27》第 8.1 节软删 + 《80》第 10.3 节二次确认)。校验全在 UploadPolicy,
- * 落盘全在 Store,这里只按基准图把结果摆出来。
+ * 三件事:浏览(五页签 + 筛选 + 分页,网格/列表两视图)、上传(既有规范九步)、
+ * 删(既有规范软删 + 既有规范二次确认)。校验全在 UploadPolicy,
+ * 落盘全在 Store,这里只按设计稿把结果摆出来。
  *
- * 界面照《80》与两张定稿图逐字实现;所有状态都能不用 JS 走通:
+ * 界面照既有规范与两张设计稿逐字实现;所有状态都能不用 JS 走通:
  * 选中走 `?sel=`,视图走 `?view=`,删除确认走 `?confirm=trash`,页签/筛选/分页都是 GET。
  */
 final class MediaController
@@ -51,14 +51,14 @@ final class MediaController
     /** `?per=` 的上限,拦住把整库一次拉出来的请求 */
     private const PER_MAX = 60;
 
-    /** 页签(《80》第 4.2 节 + 第 12 节):键是查询参数 `tab`,`all` 与 `unref`/`removed` 在 SQL 里另有含义 */
+    /** 页签(既有规范):键是查询参数 `tab`,`all` 与 `unref`/`removed` 在 SQL 里另有含义 */
     private const TABS = ['all' => '全部', 'image' => '图片', 'doc' => '文档', 'av' => '音视频', 'unref' => '未引用', 'removed' => '待清理'];
 
-    /** 排序下拉(《80》第 4.3 节),值对上 MediaRepository::ORDERS 的键 */
+    /** 排序下拉,值对上 MediaRepository::ORDERS 的键 */
     private const ORDERS = ['new' => '最新上传', 'old' => '最早上传', 'name' => '文件名', 'size' => '文件大小'];
 
     /**
-     * 拒收原因文案(《80》第 10.2 节钉死的八条,逐字照抄,逗号也是全角)。
+     * 拒收原因文案(既有规范钉死的八条,逐字照抄,逗号也是全角)。
      * 键来自 UploadPolicy 给 ValidationException 打的 rule;表里没有的规则就用策略原话。
      */
     private const REJECTIONS = [
@@ -134,7 +134,7 @@ final class MediaController
      * 整屏。上传被拒或点了没规格的操作时,也回到这一屏,只是在队列块里说清为什么。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
-     * @param list<array<string, string>> $rows 队列行(《80》第 10.2 节)
+     * @param list<array<string, string>> $rows 队列行
      */
     private function page(Request $request, User $user, array $menu, array $rows = [], int $status = 200): Response
     {
@@ -191,14 +191,14 @@ final class MediaController
             'detail' => $selected === 0 ? null : $this->detail($selected, $user, $view, $query, $page),
             'confirm' => $dialog ? $this->confirmOf($selected, $mode, $view, $query, $page) : null,
             'dialog_open' => $dialog,
-            // 无 JS 保存走整页提交,答谢句由服务端带上(《80》第 6 节)
+            // 无 JS 保存走整页提交,答谢句由服务端带上
             'edited' => $request->input('done') === 'edited',
         ], $menu, $status);
     }
 
     /**
-     * 上传(《27》第 1 节)。一次可以来多个文件:收下的直接进网格,
-     * 拒下的按《80》第 10.2 节排成队列行,原因用那份钉死的文案表。
+     * 上传。一次可以来多个文件:收下的直接进网格,
+     * 拒下的排成队列行,原因用那份钉死的文案表。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
      */
@@ -254,9 +254,9 @@ final class MediaController
     }
 
     /**
-     * 改 alt / 标题 / 说明(《41》第 7 节)。
+     * 改 alt / 标题 / 说明。
      *
-     * 《32》第 3 节的 19 项能力里没有 media.edit,所以门槛用"能上传"——
+     * 既有规范的 19 项能力里没有 media.edit,所以门槛用"能上传"——
      * 但只能改自己传的那些;别人的件要有 setting.manage(管理员)才动得了。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
@@ -271,7 +271,7 @@ final class MediaController
 
         $mine = (int) $record['uploaded_by'] === $user->id;
 
-        // 作者 2026-10-01 定:改文字是"自己改自己的"。《32》§3 没有 media.edit 这项能力,
+        // 作者 2026-10-01 定:改文字是"自己改自己的"。既有规范没有 media.edit 这项能力,
         // 也不增设 —— 管理员要动别人的附件,走内容层,不在媒体库开第二条口子。
         if (!$mine || !$this->can->can($user, 'media.upload')) {
             return $this->forbidden($menu, ['media.upload'], __('改这条媒体的文字'));
@@ -297,7 +297,7 @@ final class MediaController
     }
 
     /**
-     * 移到回收站(《27》第 8.1 节软删,不物理删文件)。
+     * 移到回收站(既有规范软删,不物理删文件)。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
      */
@@ -324,7 +324,7 @@ final class MediaController
     }
 
     /**
-     * 从"待清理"里捞回来(《27》第 8.1 节:软删的意义就是还能反悔)。
+     * 从"待清理"里捞回来(软删的意义就是还能反悔)。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
      */
@@ -350,7 +350,7 @@ final class MediaController
     }
 
     /**
-     * 彻底删除(手动执行清理任务那一刀)。被引用时不动手,理由按《80》§10.2 的队列行讲清。
+     * 彻底删除(手动执行清理任务那一刀)。被引用时不动手,理由的队列行讲清。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
      */
@@ -385,7 +385,7 @@ final class MediaController
     }
 
     /**
-     * 卡片(《80》第 4.5 节)+ 列表行的那几列(第 10.1 节)。
+     * 卡片+ 列表行的那几列(第 10.1 节)。
      * 缩略图有真文件就出真图,没有就留灰描边线稿 —— 线稿在模板里,不在这里。
      *
      * @param array<string, mixed> $item
@@ -422,7 +422,7 @@ final class MediaController
     }
 
     /**
-     * 附件详情栏(《80》第 4.7 节);列表视图的行下展开块(第 10.1 节)用的是同一份数据。
+     * 附件详情栏;列表视图的行下展开块(第 10.1 节)用的是同一份数据。
      *
      * @param array<string, string> $query
      * @return array<string, mixed>|null
@@ -464,7 +464,7 @@ final class MediaController
     }
 
     /**
-     * 二次确认对话框的数据(《80》第 10.3 节 + 品牌规格「模态件」)。
+     * 二次确认对话框的数据(既有规范品牌规格「模态件」)。
      * 两种确认共用同一个模态件,只是标题、正文与主按钮不同。
      *
      * @param array<string, string> $query
@@ -494,7 +494,7 @@ final class MediaController
     }
 
     /**
-     * 「被 N 处引用」+ 那几条链接(《80》第 4.7 节)。
+     * 「被 N 处引用」+ 那几条链接。
      * 内容与头像两路都算:头像那路指向账号编辑页,否则计数里有它、列表里没它,对不上。
      *
      * @return array{count:int, list:list<array{title:string, url:string}>}
@@ -522,7 +522,7 @@ final class MediaController
     }
 
     /**
-     * 无刷新换栏(《80》第 4.7 节):点一张图只回右栏那一块 HTML,前端就地替换、改地址,不整页跳。
+     * 无刷新换栏:点一张图只回右栏那一块 HTML,前端就地替换、改地址,不整页跳。
      * 走已有 `admin` 路由的 path 分支(`media/{id}/detail`),CSRF 与页面能力都再校验一次。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
@@ -637,7 +637,7 @@ final class MediaController
 
         return [
             'page' => $page,
-            // 不足一页就不出分页(《80》第 6 节)
+            // 不足一页就不出分页
             'show' => $pages > 1,
             'info' => __('第 %s–%s 项，共 %s 项', 'molin', ($page - 1) * $perPage + 1, min($total, $page * $perPage), $total),
             'prev' => ['url' => $base . '&page=' . max(1, $page - 1), 'label' => '上一页'],
@@ -688,7 +688,7 @@ final class MediaController
     }
 
     /**
-     * 《27》第 2 节的四类摊成《80》第 4.2 节的三个页签名。
+     * 既有规范的四类摊成既有规范的三个页签名。
      */
     private static function categoryOf(string $mime): string
     {
@@ -700,7 +700,7 @@ final class MediaController
     }
 
     /**
-     * 线稿选哪一张(《80》第 4.5 节:图片/影像/音频/文档四种灰描边示意,不用彩图也不用色块)。
+     * 线稿选哪一张(图片/影像/音频/文档四种灰描边示意,不用彩图也不用色块)。
      */
     private static function artOf(string $mime): string
     {
@@ -720,7 +720,7 @@ final class MediaController
     }
 
     /**
-     * 与基准图同一口径:KB 不带小数,MB 留一位(《80》第 4.4/4.5 节)。
+     * 与设计稿同一口径:KB 不带小数,MB 留一位(既有规范/4.5 节)。
      */
     private static function bytes(int $bytes): string
     {
@@ -770,7 +770,7 @@ final class MediaController
     }
 
     /**
-     * 单文件上限(《27》第 3 节读 `max_upload_mb`,没配就按策略默认的 10MB)。
+     * 单文件上限(既有规范读 `max_upload_mb`,没配就按策略默认的 10MB)。
      */
     private function maxUploadMb(): int
     {
@@ -790,7 +790,7 @@ final class MediaController
     }
 
     /**
-     * 「移除」那一钮要把人带回没有队列的这一页(《80》第 10.2 节:移除只清队列项,
+     * 「移除」那一钮要把人带回没有队列的这一页(移除只清队列项,
      * 被拒的文件本来就没入库,没有"半成品"可清)。
      *
      * @param list<array<string, string>> $rows
@@ -862,7 +862,7 @@ final class MediaController
     }
 
     /**
-     * 能不能把这条附件移进回收站(《32》第 3 节):
+     * 能不能把这条附件移进回收站:
      * 自己的件走 `media.delete.own` + 归属判定,别人的件要 `media.delete.others`(管理员与编辑)。
      * 改文字没这么宽 —— 那里只有"自己改自己的"。
      */

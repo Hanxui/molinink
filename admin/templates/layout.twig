@@ -1,8 +1,8 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  后台外壳(《41》第 3 节 + 《76》《80》同一套数值)。
-  结构、类名、内边距都照 assets/ui/后台*-定稿-*.html 搬:整页不滚动,.content 是唯一滚动区。
+  后台外壳(既有规范同一套数值)。
+  结构、类名、内边距都照设计稿搬:整页不滚动,.content 是唯一滚动区。
   窄屏(<768px)时同一份侧栏变成抽屉,不复制第二份导航 —— 见 admin.css 的移动端段。
 #}
 <!doctype html>
@@ -11,7 +11,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{% block title %}{{ page_title|default(__('后台')) }} · {{ site_name }}{% endblock %}</title>
-    {# 站点图标(《品牌视觉规格》§6 定稿):与前台同一套根相对地址 #}
+    {# 站点图标(既有规范设计稿):与前台同一套根相对地址 #}
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icon/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icon/apple-touch-icon.png">
@@ -26,7 +26,7 @@
             <a class="brand" href="{{ site_url }}">{{ site_name }}<small>MolinInk</small></a>
             <nav class="side-nav" aria-label="{{ __('后台菜单') }}">
                 {% for item in menu %}
-                    {# data-icon = 类型的 menu_icon(《34》§2.2);图标能力未落地时它只是个属性,侧栏照旧画圆点 #}
+                    {# data-icon = 类型的 menu_icon;图标能力未落地时它只是个属性,侧栏照旧画圆点 #}
                     <a href="{{ item.path }}"{% if item.active %} class="active"{% endif %}{% if item.icon is defined and item.icon %} data-icon="{{ item.icon }}"{% endif %}>
                         <span class="dot"></span><span class="label">{{ item.title }}</span>
                         {% if item.badge is defined and item.badge %}<span class="badge">{{ item.badge }}</span>{% endif %}
@@ -53,7 +53,7 @@
             <div class="right">
                 <a class="visit" href="{{ site_url }}">{{ __('查看站点') }} ↗</a>
                 {% if current_user %}
-                    {# 头像进个人资料(《84》§8);退出登录挪到侧栏底部,顶栏这一格不再是退出入口 #}
+                    {# 头像进个人资料;退出登录挪到侧栏底部,顶栏这一格不再是退出入口 #}
                     <a class="user" href="{{ path('admin', {path: 'profile'}) }}" title="{{ __('个人资料') }}">
                         <span class="avatar"><img src="{{ avatar(current_user.email, 52) }}" alt=""></span>
                         <span class="uname">{{ current_user.display_name }}</span>
@@ -63,10 +63,10 @@
             </div>
         </header>
 
-        {# 编辑页的两条提示带要通栏、不吃内容滚动条,所以开一个口子给子模板(《79》§10.3) #}
+        {# 编辑页的两条提示带要通栏、不吃内容滚动条,所以开一个口子给子模板 #}
         {% block bands %}{% endblock %}
 
-        {# install/ 还在就常驻一条提醒(《42》§7;缺的是"删掉才干净"这件事的可见性) #}
+        {# install/ 还在就常驻一条提醒(既有规范;缺的是"删掉才干净"这件事的可见性) #}
         {% if install_dir_present|default(false) %}
             <div class="admin-warn" role="status">
                 <span class="k">{{ __('安全提醒') }}</span>
@@ -83,17 +83,17 @@
             <div class="scrollbar"><div class="thumb"></div></div>
         </div>
 
-        {# 固定底部的保存栏(《76》§5.7、《91》§5.6):不随内容滚动,整页仍不滚 #}
+        {# 固定底部的保存栏:不随内容滚动,整页仍不滚 #}
         {% block savebar %}{% endblock %}
     </div>
 </div>
 
-{# 一个遮罩两用:窄屏当抽屉背景,二次确认时当对话框的底(《80》§5、§10.3) #}
+{# 一个遮罩两用:窄屏当抽屉背景,二次确认时当对话框的底(既有规范) #}
 <div class="scrim{% if dialog_open|default(false) %} open{% endif %}">
     {% block dialog %}{% endblock %}
 </div>
 
-{# 全站唯一的一处消息提示(《76》):右下角浮窗。页面把 notice / error 交给这里统一显,
+{# 全站唯一的一处消息提示:右下角浮窗。页面把 notice / error 交给这里统一显,
    不再各页自己往内容区顶上塞一行字(那样得先滑到顶部才看得见)。 #}
 {% set toast_ok = (notice is defined and notice) ? notice : '' %}
 {% set toast_err = (error is defined and error) ? error : ((notice_error is defined and notice_error) ? notice_error : '') %}

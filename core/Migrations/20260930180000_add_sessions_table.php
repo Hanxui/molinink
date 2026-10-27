@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * 会话表(《21-数据模型》第 10 节 ⭕)。第 10 轮做登录才需要它,所以建表走迁移,
- * 与首次安装、内核升级同一条路(《29》第 6 节)。
+ * 会话表(既有规范⭕)。做登录才需要它,所以建表走迁移,
+ * 与首次安装、内核升级同一条路。
  */
 final class AddSessionsTable20260930180000 extends AbstractMigration
 {

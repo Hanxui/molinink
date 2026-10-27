@@ -29,8 +29,8 @@ use Twig\TwigFunction;
  * 后台视图渲染(模板在 `admin/templates/`)。
  *
  * 后台不走主题:换一套前台皮肤不该把管理界面弄坏,而且主题模板里本来就不许写业务(约定)。
- * 但受限模板引擎的规矩与《14》一致 —— 自动转义常开、禁 sandbox 之外的逃逸、开发期 strict_variables 全开。
- * 样式在 `admin/assets/admin.css`,数值逐字取自 `assets/ui/` 的定稿图与《70-界面》各份规格。
+ * 但受限模板引擎的规矩与既有规范一致 —— 自动转义常开、禁 sandbox 之外的逃逸、开发期 strict_variables 全开。
+ * 样式在 `admin/assets/admin.css`,数值逐字取自 `设计稿的设计稿与既有规范各份规格。
  */
 final class View
 {
@@ -51,17 +51,17 @@ final class View
         // 后台的 path() 给站内相对路径(与 Router::path 同口径);前台主题的 path() 才是绝对地址
         $this->twig->addFunction(new TwigFunction('path', static fn (string $name, array $params = []): string => $router->path($name, $params)));
 
-        // i18n(《33》§3、《14》§5.4):后台模板与前台同一套函数,签名同 PHP 侧
+        // i18n:后台模板与前台同一套函数,签名同 PHP 侧
         $this->twig->addFunction(new TwigFunction('__', static fn (string $text, string $domain = 'molin', mixed ...$args): string => __($text, $domain, ...$args)));
         $this->twig->addFunction(new TwigFunction('_e', static fn (string $text, string $domain = 'molin', mixed ...$args): Markup => new Markup(Translator::instance()->escape($text, $domain, ...$args), 'UTF-8')));
         $this->twig->addFunction(new TwigFunction('format_date', static fn (mixed $value, string $style = 'long'): string => format_date($value, $style)));
         $this->twig->addFunction(new TwigFunction('format_number', static fn (int|float $value, int $decimals = 0): string => format_number($value, $decimals)));
         $this->twig->addFunction(new TwigFunction('avatar', static fn (string $email, int $size = 48): string => avatar($email, $size)));
 
-        // 覆盖内置 |date:库里时间存的是 UTC,模板直接 date() 会整体偏几小时(《21》)
+        // 覆盖内置 |date:库里时间存的是 UTC,模板直接 date 会整体偏几小时
         $this->twig->addFilter(new TwigFilter('date', static fn (mixed $value, string $format = 'F j, Y H:i', ?string $timezone = null): string => site_datetime($value, $timezone)->format($format)));
 
-        // 提示与报错里的十六进制值等代码片段裹 <code>(《91》§3 字体表)。先转义再包裹,主题写不了注入
+        // 提示与报错里的十六进制值等代码片段裹 <code>(既有规范字体表)。先转义再包裹,主题写不了注入
         $this->twig->addFilter(new TwigFilter('codes', static function (mixed $text): Markup {
             $out = htmlspecialchars((string) $text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $out = (string) preg_replace(
@@ -79,7 +79,7 @@ final class View
     }
 
     /**
-     * 插件视图(《12》§3 views/):注册成 @plugin-{name} 命名空间,模板里写 @plugin-shop/orders.twig。
+     * 插件视图(既有规范views/):注册成 @plugin-{name} 命名空间,模板里写 @plugin-shop/orders.twig。
      * 只按目录注册 —— 命名空间之外的文件名取不到,插件读不到 admin/templates 里的东西。
      */
     public function addPluginViews(string $name, string $dir): void
@@ -92,7 +92,7 @@ final class View
     }
 
     /**
-     * 后台内部一律用站内相对路径(《23》第 1 节第 4 条:URL 由路由名生成,不许拼字符串)。
+     * 后台内部一律用站内相对路径(既有规范条:URL 由路由名生成,不许拼字符串)。
      *
      * 不用 generate() 的绝对地址:后台的链接与跳转跟着当前站点跑就够了,
      * site_url 写错时也不会把人指到别处去。
@@ -124,12 +124,12 @@ final class View
                 (int) @filemtime(MOLIN_ROOT . '/admin/assets/admin.css')
             ),
             'current_user' => Auth::user(),
-            // 「install/ 还没删」的常驻提醒(《42》§7、界面缺口 C11):此前文档写着会有、代码里一直没有
+            // 「install/ 还没删」的常驻提醒(既有规范界面缺口 C11):此前文档写着会有、代码里一直没有
             'install_dir_present' => is_dir(MOLIN_ROOT . '/install'),
             'menu' => $menu,
             'csrf_token' => Auth::csrfToken(),
             'csrf_field' => Csrf::FIELD,
-            // <html lang> 跟着这一趟的语言跑(《33》§8)
+            // <html lang> 跟着这一趟的语言跑
             'html_lang' => Translator::instance()->htmlLang(),
             'js_strings' => $this->jsStrings(),
         ] + $vars;
@@ -138,7 +138,7 @@ final class View
     }
 
     /**
-     * 只渲染一小块(上传队列的一行)。XHR 上传要的就是这种片段:文案仍由服务端按《80》
+     * 只渲染一小块(上传队列的一行)。XHR 上传要的就是这种片段:文案仍由服务端
      * 第 10.2 节那张表出,前端不自己拼句子。
      *
      * @param array<string, mixed> $vars

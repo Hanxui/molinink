@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 站点体检(《58》第 1 节)。运维第一眼要看的东西都在这里。
+ * 站点体检。运维第一眼要看的东西都在这里。
  */
 final class SiteInfo extends BaseCommand
 {

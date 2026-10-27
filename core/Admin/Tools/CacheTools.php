@@ -33,11 +33,11 @@ use RuntimeException;
 use Throwable;
 
 /**
- * 工具页与缓存(《35》《109》§12):备份/恢复/远端凭据的写动作、下载令牌,以及缓存状态与清理。
+ * 工具页与缓存:备份/恢复/远端凭据的写动作、下载令牌,以及缓存状态与清理。
  */
 final class CacheTools
 {
-    /** 工具页动作回来的反馈(《109》§6) */
+    /** 工具页动作回来的反馈 */
     private const TOOL_NOTICES = [
         'created' => '备份已创建。',
         'create_failed' => '备份没有建起来:写盘或数据库导出出了岔子,详情见运行日志。',
@@ -72,7 +72,7 @@ final class CacheTools
     }
 
     /**
-     * 远端凭据「测试连接」(《109》§12):拿对话框里的当前值探一次真写入,结果回 JSON 给按钮。
+     * 远端凭据「测试连接」:拿对话框里的当前值探一次真写入,结果回 JSON 给按钮。
      *
      * 门与写动作同一套:会话 + CSRF(能力门在进页那一步已按 tools 页登记校验过)。
      * 探到"写入被拒"不是 HTTP 错误 —— 请求本身跑通了,结论在 ok 里,所以一律 200。
@@ -101,7 +101,7 @@ final class CacheTools
     }
 
     /**
-     * 工具页的写动作(《35》§4:创建备份)。名字过 Backup::delete 的正则,穿越进不来。
+     * 工具页的写动作(创建备份)。名字过 Backup::delete 的正则,穿越进不来。
      */
     public function toolsAction(Request $request, string $path): Response
     {
@@ -115,7 +115,7 @@ final class CacheTools
 
         if ($path === 'tools/backups/create') {
             $password = $request->input('password');
-            // 备份是长任务:进度落一份 JSON,前端另开一条请求轮 tools/progress(《35》§5)
+            // 备份是长任务:进度落一份 JSON,前端另开一条请求轮 tools/progress
             $progress = $this->progress;
             $progress->begin('backup');
 
@@ -200,7 +200,7 @@ final class CacheTools
                 $progress->finish(true, __('恢复完成'));
                 $done = 'restored';
             } catch (Throwable $e) {
-                // 恢复失败时《35》§5 的"恢复前自动备份"已在 —— 回工具页,不至于更糟
+                // 恢复失败时既有规范的"恢复前自动备份"已在 —— 回工具页,不至于更糟
                 Audit::record('backup.restore', $name, false, $request, 'user:' . (string) Auth::id());
                 $progress->finish(false, $e->getMessage());
                 // Cipher 的"解密失败"前缀在这处分流:密码错与包损坏对操作者是同一句提醒
@@ -220,7 +220,7 @@ final class CacheTools
     }
 
     /**
-     * 下载两步走(《35》§11:一次性、限时、不暴露真实路径):
+     * 下载两步走(一次性、限时、不暴露真实路径):
      * 工具页 `?download=名字` 签发令牌 → `tools/backups/fetch/{token}` 取件,用过即焚。
      */
     public function toolsDownload(Request $request, string $path): ?Response
@@ -267,7 +267,7 @@ final class CacheTools
         }
 
         $deleted = $this->purger->purge();
-        // 数据缓存与页面缓存一并清(《24》§6.2;《76》§12.4):「清理缓存」是同一件事,不再各清各的
+        // 数据缓存与页面缓存一并清(既有规范;既有规范):「清理缓存」是同一件事,不再各清各的
         CacheManager::instance()->flushAll();
         $pages = $this->pageCache()->purge();
         Audit::record('cache.clear', 'files:' . $deleted . ',pages:' . $pages);
@@ -276,7 +276,7 @@ final class CacheTools
     }
 
     /**
-     * 「缓存」分组要的真状态(《76》§12.4;数据源《24》§4/§9)。
+     * 「缓存」分组要的真状态(既有规范;数据源既有规范/§9)。
      *
      * 生效后端取 CacheManager 的**实际**后端(配置写 yac/redis 而扩展缺失或适配器未落地时,
      * fromConfig 已如实降级为 file,这里显示的就是 file);未接装配线时 managed=false,
@@ -306,7 +306,7 @@ final class CacheTools
         ];
     }
 
-    /** 页面静态缓存(《24》§7);目录与 Bootstrap 同一套换根口径(MOLIN_STATE_ROOT 优先) */
+    /** 页面静态缓存;目录与 Bootstrap 同一套换根口径(MOLIN_STATE_ROOT 优先) */
     private function pageCache(): PageCache
     {
         return new PageCache($this->cacheRoot() . '/storage/cache/pages');

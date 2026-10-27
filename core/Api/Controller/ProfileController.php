@@ -24,7 +24,7 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 站点与当前用户的端点(《25》§3.2、§3.3):健康检查、站点信息、搜索、我的资料。
+ * 站点与当前用户的端点(既有规范):健康检查、站点信息、搜索、我的资料。
  */
 final class ProfileController extends ApiSupport
 {
@@ -64,13 +64,13 @@ final class ProfileController extends ApiSupport
 
     /**
      * 当前用户的自述资料。`site_name` / `avatar_url` 是 App 资料页直接要用的字段
-     * (《40》第 3 节),所以在 `/me` 与登录响应里都带上。
+     * ,所以在 `/me` 与登录响应里都带上。
      *
      * @return array<string, mixed>
      */
     public function profile(User $user): array
     {
-        // 头像优先读 usermeta.avatar(存的是 media.id,《21》§5);拿到并确认为图片才用,
+        // 头像优先读 usermeta.avatar(存的是 media.id,既有规范);拿到并确认为图片才用,
         // 否则回退到旧的 email 派生逻辑(默认/ Gravatar)。
         $avatarUrl = null;
         $avatarMeta = (string) ($this->users->meta($user->id)['avatar'] ?? '');
@@ -129,7 +129,7 @@ final class ProfileController extends ApiSupport
 
     /**
      * `PUT /api/v1/me` —— 改自己的资料。当前只开放头像:`avatar_url` 是刚上传的媒体地址,
-     * 这里把它还原成 media.id 记进 `usermeta.avatar`(《21》§5 的口径:存 id 不存 URL)。
+     * 这里把它还原成 media.id 记进 `usermeta.avatar`(既有规范的口径:存 id 不存 URL)。
      */
     public function updateProfile(Request $request, ?User $user, bool $viaSession): Response
     {

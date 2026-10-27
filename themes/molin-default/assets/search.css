@@ -1,5 +1,5 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   搜索结果页样式(《28》;源件:搜索结果-定稿 / 移动端-定稿 / 无结果-2026-09-30)。
+   搜索结果页样式(既有规范;源件:搜索结果-设计稿 / 移动端-设计稿 / 设计稿)。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
 
 .head{margin-top:78px;}
@@ -35,7 +35,7 @@ mark{background:transparent;color:var(--accent);
 .dt-short{display:none;}
 .excerpt{margin-top:14px;font-size:16px;line-height:1.85;color:var(--muted);max-width:820px;}
 
-/* 无结果态(《104》§4.1,数值照源件 搜索结果-无结果-2026-09-30) */
+/* 无结果态(既有规范数值照源件设计稿) */
 .empty{margin-top:56px;}
 .empty .msg{font-size:var(--font-size);line-height:1.9;color:var(--muted);letter-spacing:.01em;}
 .suggest{margin-top:60px;padding-top:24px;border-top:1px solid var(--rule);}

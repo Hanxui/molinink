@@ -13,7 +13,7 @@ namespace Molin\Media;
 use Molin\Logger\Audit;
 
 /**
- * 删除媒体(《27-媒体库规范》第 8.1 节)。
+ * 删除媒体。
  *
  * **不立即物理删。** 附件虽然占一行 posts,但它不走内容的状态机(状态是 inherit、可见性随父),
  * 删除归媒体库自己管:这里只打"待清理"标记(`posts.deleted_at`),
@@ -43,7 +43,7 @@ final class Remover
 
         Audit::record('media.trash', 'media:' . $id . ' post:' . $record['post_id'], true, null, 'user:' . $userId);
 
-        // 《27》第 8.2 节钉了这一个钩子,参数就是这条 media
+        // 既有规范钉了这一个钩子,参数就是这条 media
         do_action('media/delete/after', $record);
 
         return $record;
@@ -66,7 +66,7 @@ final class Remover
     }
 
     /**
-     * 彻底删除:文件 + 衍生档 + 两行账一起清(《27》第 8.1 节清理动作的手动版)。
+     * 彻底删除:文件 + 衍生档 + 两行账一起清(既有规范清理动作的手动版)。
      *
      * 还有引用就不动手 —— 文档的口径是"确认无引用后移除文件与记录",
      * 手动点也不该把文章里正在用的图挖掉。
@@ -102,7 +102,7 @@ final class Remover
     }
 
     /**
-     * 被引用处数(《41》第 7 节:删除时先提示"被 N 处引用",别让人点了才知道)。
+     * 被引用处数(删除时先提示"被 N 处引用",别让人点了才知道)。
      */
     public function references(int $id): int
     {

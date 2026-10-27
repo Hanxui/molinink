@@ -13,9 +13,9 @@ namespace Molin\Content;
 use Molin\Database\Database;
 
 /**
- * 文章自定义字段(《21》第 3 节 postmeta、《34》第 4 节)。
+ * 文章自定义字段(既有规范postmeta、既有规范)。
  *
- * 《57》第 5 节的红线:列表页要批量取 meta,不许一篇查一次。
+ * 既有规范的红线:列表页要批量取 meta,不许一篇查一次。
  * 所以这里的主入口是 all()/many(),get() 只给单篇用。
  */
 final class MetaStore
@@ -37,7 +37,7 @@ final class MetaStore
         $out = [];
 
         foreach ($rows as $row) {
-            // 同键可多行(《21》第 3 节没有唯一键),这里取最后写入的那条,与 set() 的"整键替换"一致
+            // 同键可多行(既有规范没有唯一键),这里取最后写入的那条,与 set 的"整键替换"一致
             $out[(string) $row['meta_key']] = (string) ($row['meta_value'] ?? '');
         }
 
@@ -91,7 +91,7 @@ final class MetaStore
     }
 
     /**
-     * 整键替换:结构型值按《34》第 4 节存成 JSON 字符串。
+     * 整键替换:结构型值存成 JSON 字符串。
      */
     public function set(int $postId, string $key, mixed $value): void
     {

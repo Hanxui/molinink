@@ -13,7 +13,7 @@ namespace Molin\Theme;
 use Molin\Exception\ThemeException;
 
 /**
- * 主题:只管长相。清单、模板目录、父主题链、设置默认值(《13-主题目录约定》)。
+ * 主题:只管长相。清单、模板目录、父主题链、设置默认值。
  */
 final class Theme
 {
@@ -34,7 +34,7 @@ final class Theme
     }
 
     /**
-     * 读取主题清单并沿 parent 链装载(《13》第 10 节校验 1/2/4)。
+     * 读取主题清单并沿 parent 链装载(既有规范校验 1/2/4)。
      *
      * @param list<string> $visited 环检测用
      */
@@ -97,7 +97,7 @@ final class Theme
     }
 
     /**
-     * 模板搜索路径:子主题在前,父主题在后(《13》第 4 节解析顺序)。
+     * 模板搜索路径:子主题在前,父主题在后(既有规范解析顺序)。
      *
      * @return list<string>
      */
@@ -253,7 +253,7 @@ final class Theme
     }
 
     /**
-     * 主题声明的设置原样(《36-主题配置器》第 1 节;父链合并与内核兜底在 ThemeSettings)。
+     * 主题声明的设置原样(既有规范;父链合并与内核兜底在 ThemeSettings)。
      *
      * @return array<string, mixed>
      */
@@ -265,7 +265,7 @@ final class Theme
     }
 
     /**
-     * 主题设置默认值(《13》第 5.2 节:主题必须声明默认值;结构权威定义见《36》)。
+     * 主题设置默认值(主题必须声明默认值;结构权威定义)。
      *
      * @return array<string, mixed>
      */

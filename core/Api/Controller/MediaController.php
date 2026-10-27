@@ -25,7 +25,7 @@ use Molin\User\Authorizer;
 use Molin\User\User;
 
 /**
- * 媒体端点(《25》§3.5):媒体库网格、上传、入待清理。
+ * 媒体端点:媒体库网格、上传、入待清理。
  */
 final class MediaController extends ApiSupport
 {

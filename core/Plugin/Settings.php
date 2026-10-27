@@ -14,7 +14,7 @@ use Molin\Exception\MolinException;
 use Molin\Option\Options;
 
 /**
- * 插件自己的配置读写(《12》§14)。
+ * 插件自己的配置读写。
  *
  * 落在 `options` 表,键名统一前缀 `plugin.{插件名}.` —— 与站点设置同库不同名:插件碰不到
  * `site_url` 这类站内核设置,反过来也不会被别的插件覆盖。一律 `autoload = 0`,插件配置

@@ -51,7 +51,7 @@ final class Exporter
         $scope = in_array($request->input('scope'), ['post', 'page'], true) ? $request->input('scope') : 'all';
         $format = $request->input('format') === 'xml' ? 'xml' : 'json';
         $withComments = $request->input('comments') === '1';
-        // 含媒体本轮只登记引用、不打包(tar.gz 打包规格未定:《110》§11 未列此项;《35》§6 只点了「含媒体打包 tar.gz」,未给包内清单),故不改变落盘格式
+        // 含媒体本轮只登记引用、不打包(tar.gz 打包规格未定:既有规范未列此项;既有规范只点了「含媒体打包 tar.gz」,未给包内清单),故不改变落盘格式
         $withMedia = $request->input('media') === 'with';
 
         $data = $this->collect($scope, $withComments, $withMedia);
@@ -139,7 +139,7 @@ final class Exporter
             $params
         );
 
-        // 每篇的归类一次取回(《35》§6 的 post 条目挂的是 slug):posts ↔ term_relationships
+        // 每篇的归类一次取回(既有规范的 post 条目挂的是 slug):posts ↔ term_relationships
         // ↔ term_taxonomy ↔ terms,按 post_id 在内存里分组。逐篇各查一次 = 几千次查询,导不起。
         $links = $this->db->select(
             'SELECT r.post_id AS post_id, tt.taxonomy AS taxonomy, t.slug AS slug'
@@ -251,7 +251,7 @@ final class Exporter
     }
 
     /**
-     * XML 参考 WXR 思路的极简版(《110》§7):一层条目 + 字段子节点,便于旧程序读。
+     * XML 参考 WXR 思路的极简版:一层条目 + 字段子节点,便于旧程序读。
      * 标量列表(如每篇的 categories / tags)写法为 `<字段名><item>值</item>…</字段名>`,
      * 与 section 内条目复用同一个 `<item>` 记号;空列表落成 `<字段名/>`。嵌套对象不在这里写。
      *

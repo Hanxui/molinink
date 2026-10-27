@@ -15,10 +15,10 @@ use Molin\Exception\DatabaseException;
 use Molin\Support\Str;
 
 /**
- * 迁移执行器 —— 建表的唯一来源(约定:禁 schema.sql,首次安装与升级同一条路,见《42》第 5 节)。
+ * 迁移执行器 —— 建表的唯一来源(约定:禁 schema.sql,首次安装与升级同一条路,)。
  *
- * 版本记在 options.db_version(《21-数据模型》第 7、12 节)。
- * 迁移文件名 `{timestamp}_{name}.php` 由《29》第 6 节规定,类名取 Studly(name)+timestamp;
+ * 版本记在 options.db_version。
+ * 迁移文件名 `{timestamp}_{name}.php` 由既有规范规定,类名取 Studly(name)+timestamp;
  * 该目录靠 composer classmap 载入,不走 PSR-4 的"文件名==类名"。
  */
 final class Migrator
@@ -52,7 +52,7 @@ final class Migrator
 
     /**
      * 当前结构版本;空串 = 空库,一个迁移都没跑。
-     * 首次安装时 options 表还不存在(《42》第 5 节:建表就是从空库跑迁移),所以先探表再读值。
+     * 首次安装时 options 表还不存在(建表就是从空库跑迁移),所以先探表再读值。
      */
     public function version(): string
     {
@@ -105,7 +105,7 @@ final class Migrator
     }
 
     /**
-     * 倒序回滚(《29》第 6 节:必须支持回滚)。
+     * 倒序回滚(必须支持回滚)。
      *
      * @return list<string> 本次回滚的迁移
      */

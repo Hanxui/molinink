@@ -16,7 +16,7 @@ use Molin\Theme\ListSource;
 use Molin\Theme\Renderer;
 
 /**
- * 列表片段端点(《23-路由规范》第 4 节 `list.fragment`):只吐列表项 + 分页,不含整页骨架。
+ * 列表片段端点(既有规范`list.fragment`):只吐列表项 + 分页,不含整页骨架。
  *
  * 取数与组项全走 ListSource —— 与整页渲染同一套 PostQuery / Searcher 与同一张卡片 partial,
  * 不复制查询,也不手拼 HTML。公开只读(GET、免会话、免 CSRF),与内核其余前台路由同一条口径。
@@ -28,7 +28,7 @@ use Molin\Theme\Renderer;
  * - route:`home` 的翻页走哪组路由(缺省 `home`;全站文章页给 `home.archive`),只认这两条
  *
  * 响应:200 = HTML 片段(text/html);缺参 / 非法页 → 400,资源不存在(词条 / 类型 / 作者 / 越界)→ 404,
- * 均为 text/plain 的明确中文原因(与《25》错误形状同一段位:参数类 4xx、资源类 4xx)。
+ * 均为 text/plain 的明确中文原因(与既有规范错误形状同一段位:参数类 4xx、资源类 4xx)。
  */
 final class ListFragmentController
 {

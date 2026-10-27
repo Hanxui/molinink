@@ -24,7 +24,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /**
- * 恢复备份(《35》§5)。恢复前自动给当前状态留一份(命令行与网页同一条链)。
+ * 恢复备份。恢复前自动给当前状态留一份(命令行与网页同一条链)。
  * 加密包需要解密密码:交互式提示,脚本走环境变量 MOLIN_BACKUP_PASSWORD。
  */
 final class BackupRestore extends BaseCommand
@@ -60,7 +60,7 @@ final class BackupRestore extends BaseCommand
             $path = $backup->path($name);
             $password = null;
 
-            // 加密包先要密码(《35》§4 ⑥):交互式提示,脚本走环境变量
+            // 加密包先要密码(既有规范⑥):交互式提示,脚本走环境变量
             if ($path !== null && Cipher::isEncryptedFile($path)) {
                 $password = $this->askSecret($input, $output, '解密密码', 'MOLIN_BACKUP_PASSWORD');
 

@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 建表与升级都走这一条路(《29》第 6 节;约定:禁 schema.sql,首次安装与升级同一条路)。
+ * 建表与升级都走这一条路(既有规范;约定:禁 schema.sql,首次安装与升级同一条路)。
  */
 final class DbMigrate extends BaseCommand
 {

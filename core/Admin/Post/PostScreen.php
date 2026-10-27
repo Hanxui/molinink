@@ -32,7 +32,7 @@ abstract class PostScreen
 {
     use AdminGuards;
 
-    /** 状态中文名(《34》第 5 节) */
+    /** 状态中文名 */
     protected const LABELS = [
         StatusMachine::DRAFT => '草稿',
         StatusMachine::PENDING => '待审',
@@ -120,7 +120,7 @@ abstract class PostScreen
 
     /**
      * 权限能力前缀:内置类型走内核既有的 post.* 一族;CPT 取它的 capability_type
-     * (《34》§2.2),前缀拼出来的能力没登记就回落 post.*(《62》为准:不新造能力名)。
+     * ,前缀拼出来的能力没登记就回落 post.*(既有规范为准:不新造能力名)。
      */
     private function capabilityPrefix(): string
     {
@@ -142,7 +142,7 @@ abstract class PostScreen
     }
 
     /**
-     * 进这一栏的最低门槛:六个动作能力任取其一(《41》第 4 节)。
+     * 进这一栏的最低门槛:六个动作能力任取其一。
      *
      * @return list<string>
      */
@@ -168,7 +168,7 @@ abstract class PostScreen
     }
 
     /**
-     * 编辑器支持项(《34》§2.2 supports)。内置两型按现有形态给齐,CPT 照登记表。
+     * 编辑器支持项(既有规范supports)。内置两型按现有形态给齐,CPT 照登记表。
      *
      * @return list<string>
      */
@@ -187,7 +187,7 @@ abstract class PostScreen
     }
 
     /**
-     * 无标题内容的行标识(《34》§2.2:supports 里没有 title 的类型,如「说说」)。
+     * 无标题内容的行标识(supports 里没有 title 的类型,如「说说」)。
      *
      * 标题 → 摘要 → 正文纯文本 → 「（无标题 #id）」逐级回落:列表与编辑屏页头永远有一个认得出的名字,
      * 不出现空行。
@@ -301,7 +301,7 @@ abstract class PostScreen
     }
 
     /**
-     * 后台子路径一律由路由名生成站内相对路径(《23》第 1 节第 4 条:不许拼字符串)。
+     * 后台子路径一律由路由名生成站内相对路径(既有规范条:不许拼字符串)。
      */
     protected function url(string $sub): string
     {
@@ -311,7 +311,7 @@ abstract class PostScreen
         $query = $position === false ? '' : substr($sub, $position);
 
         // 文章屏挂在 /admin/posts;页面屏与 CPT 屏共用同一套动作,只换首段
-        // (《86》§1「同壳」;CPT 用类型名自己那段)
+        // (既有规范「同壳」;CPT 用类型名自己那段)
         $root = $this->screenRoot();
 
         if ($root !== 'posts' && str_starts_with($path, 'posts')) {

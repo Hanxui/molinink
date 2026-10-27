@@ -14,12 +14,12 @@ use Molin\Content\Post;
 use Molin\Option\Options;
 
 /**
- * 站点地图(《23》§4:`/sitemap.xml`)。
+ * 站点地图(`/sitemap.xml`)。
  *
  * 收什么(2026-10-04 自定,记录在案):首页 + 已发布文章 + 已发布独立页面 + 归档页。
  * 归档页 = 分类 / 标签 / 作者,口径是"只收有已发布内容的归档"(哪些算有内容由调用方过滤后传进来);
  * 作者只收真出过内容的人(UserRepository::authorsWithPublishedPosts)。
- * 附件页仍不收 —— 《117》§11 第 11 条"附件是否进 sitemap"仍挂账,先不收。
+ * 附件页仍不收 —— 既有规范条"附件是否进 sitemap"仍挂账,先不收。
  * 单次上限 200 条(PostQuery 的天花板),更大的站分页收录留待后续。
  */
 final class Sitemap

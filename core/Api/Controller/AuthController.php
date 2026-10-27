@@ -21,7 +21,7 @@ use Molin\User\Auth;
 use Molin\User\User;
 
 /**
- * App 令牌端点(《25》§3.3):账号口令换令牌、refresh 轮换、登出撤销。
+ * App 令牌端点:账号口令换令牌、refresh 轮换、登出撤销。
  */
 final class AuthController extends ApiSupport
 {
@@ -36,7 +36,7 @@ final class AuthController extends ApiSupport
     }
 
     /**
-     * POST /api/v1/auth/login —— 账号口令换一对令牌(《25》§3.3)。
+     * POST /api/v1/auth/login —— 账号口令换一对令牌。
      *
      * 只看凭据,不落会话 cookie:限速、防枚举、失败钩子全在 Auth::verifyCredentials 里,
      * 与后台登录同一套安全行为。口令不记日志、不回显。
@@ -75,7 +75,7 @@ final class AuthController extends ApiSupport
     }
 
     /**
-     * POST /api/v1/auth/refresh —— 用 refresh 换新的一对(《25》§3.3)。
+     * POST /api/v1/auth/refresh —— 用 refresh 换新的一对。
      * 令牌在请求体里,不走 Authorization(过期的 access 不该挡住刷新)。
      */
     public function authRefresh(Request $request): Response

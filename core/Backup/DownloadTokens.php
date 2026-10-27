@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Backup;
 
 /**
- * 备份下载的一次性限时令牌(《35》§11:下载链接一次性、限时;不得暴露真实路径)。
+ * 备份下载的一次性限时令牌(下载链接一次性、限时;不得暴露真实路径)。
  *
  * 与 LoginThrottle / RateLimiter 同款落脚地:本地文件、读-改-写。
  * 文件里只存令牌的哈希 —— 就算 storage 被看光,也复现不出可用链接。

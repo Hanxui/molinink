@@ -15,7 +15,7 @@ use Molin\Option\Options;
 use Throwable;
 
 /**
- * 上传九步(《27-媒体库规范》第 1 节):
+ * 上传九步:
  * 接收 → 基础校验 → 内容检测 → 重命名 → 隔离存储 → 生成多尺寸 → 写 media + posts → 触发钩子 → 返回。
  *
  * 校验全在 `UploadPolicy`(不信前端),落盘全在 `Store`(名字服务端生成、目录按年/月),
@@ -38,7 +38,7 @@ final class Uploader
     {
         $meta = $this->policyMeta();
 
-        // ②③ 校验前先给插件改白名单/上限的机会(《27》第 2 节的 media/upload/before)
+        // ②③ 校验前先给插件改白名单/上限的机会(既有规范的 media/upload/before)
         $filtered = apply_filters('media/upload/before', $meta);
         $meta = is_array($filtered) ? $filtered : $meta;
 
@@ -52,7 +52,7 @@ final class Uploader
 
         $checked = $policy->assert($upload);
 
-        // ②½ 转码口(《27》第 7.1 节):校验过了、还没命名落盘。插件可以换一份字节(转 WebP / 压一压),
+        // ②½ 转码口:校验过了、还没命名落盘。插件可以换一份字节(转 WebP / 压一压),
         // 内核按同一套尺子复核;任何一步不对就当没换,原图照旧落盘 —— 上传不因插件失败。
         $replaced = $this->replacedImage($upload, $checked, (int) ($meta['max_bytes'] ?? Upload::MAX_BYTES));
 
@@ -68,7 +68,7 @@ final class Uploader
 
         $absolute = $this->store->absolutePath($relative);
 
-        // ⑥ 多尺寸:只对图片做;没有图片库就跳过,原图仍可用(《27》第 5.1 节)
+        // ⑥ 多尺寸:只对图片做;没有图片库就跳过,原图仍可用
         $width = $replaced['width'] ?? (int) $checked['width'];
         $height = $replaced['height'] ?? (int) $checked['height'];
         $sizes = [];
@@ -109,7 +109,7 @@ final class Uploader
         $record['sizes_urls'] = $this->urlsOf($record);
 
         // ⑧⑨ 落盘与入库都完成了才播报:插件拿到的是带 url / sizes_urls 的完整附件数组
-        // (《11》§7.5 media/upload/after;参数形状按本条返回的 media 记录,与 media/delete/after 同一口径)
+        // (既有规范media/upload/after;参数形状按本条返回的 media 记录,与 media/delete/after 同一口径)
         do_action('media/upload/after', $record);
 
         Log::channel('app')->info('media.uploaded', [
@@ -123,7 +123,7 @@ final class Uploader
     }
 
     /**
-     * 尺寸档生成(《27》第 5、6、7 节)。
+     * 尺寸档生成。
      *
      * 每一档都是重画过的副本:GD 输出天生不含 EXIF,手机照片里的 GPS 与设备信息
      * 因此不会跟着公开文件出去(第 6 节的隐私口径)。原始 master 只留在 storage 里。
@@ -175,7 +175,7 @@ final class Uploader
     }
 
     /**
-     * 编码质量:JPEG / WebP 读设置(`jpeg_quality` / `webp_quality`,`《27》第 7 节`),
+     * 编码质量:JPEG / WebP 读设置(`jpeg_quality` / `webp_quality`,`既有规范`),
      * 越界夹回 40..100;设置缺失/非法或其它格式退回 GdDriver 的既定值(png/gif 无损,质量无意义)。
      *
      * `$override` 来自转码口:这一张的字节既然是插件给的,衍生档也按插件那档质量出,
@@ -202,7 +202,7 @@ final class Uploader
     }
 
     /**
-     * 转码口(《27》第 7.1 节,`media/upload/replace`)。
+     * 转码口(既有规范`media/upload/replace`)。
      *
      * 钩子给回来的东西一律当"不可信输入"复核:扩展名必须是内核认识的**图片**格式、
      * 真 MIME 与扩展名对得上、`getimagesize` 解得开、像素与字节不越界。
@@ -386,7 +386,7 @@ final class Uploader
     /**
      * 白名单按「系统设置 > 上传类型」走:管理员配一份空格分隔的扩展名。
      * 默认表内项走 UploadPolicy 的严格 MIME;表外项交 extraExtensions 追加 ——
-     * 但 DENIED_BY_DEFAULT(svg/html/php…) 仍是硬拒,安全闸不变(《27》第 3 节)。
+     * 但 DENIED_BY_DEFAULT(svg/html/php…) 仍是硬拒,安全闸不变。
      *
      * @return list<string>
      */

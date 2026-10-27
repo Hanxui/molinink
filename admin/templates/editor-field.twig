@@ -1,11 +1,11 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  单个注册字段的行(《34A-字段注册与编辑器控件规范》§4 控件映射 / §5 落位 / §7 转义 / §8 只读)。
+  单个注册字段的行(既有规范控件映射 / §5 落位 / §7 转义 / §8 只读)。
   只被 editor.twig 复用:顶层字段的值一律走 meta_key[]/meta_value[] 成对通道
   (PostsController::pairs() 那一条写入口);group / repeater 整组以 JSON 存单条 postmeta,
   子控件只带 data-subkey,由 admin.js 汇总序列化。
-  readonly 字段不出提交键 —— 《34A》§8:只读字段不得被表单覆盖。
+  readonly 字段不出提交键 —— 只读字段不得被表单覆盖。
 #}
 {% import "editor-control.twig" as w %}
 <div class="fld fld-{{ field.control }}">
@@ -41,7 +41,7 @@
             {% endif %}
         </div>
     {% elseif field.control == 'image' %}
-        {# 图片字段:值是媒体库附件 id(《34A》§4);带预览与清除,「从媒体库选择」复用编辑页那个选择器 #}
+        {# 图片字段:值是媒体库附件 id;带预览与清除,「从媒体库选择」复用编辑页那个选择器 #}
         <input type="hidden" name="meta_key[]" value="{{ field.key }}">
         <label class="k" for="cf-{{ field.id }}">{{ field.label }}</label>
         <div class="ctrl imgf">

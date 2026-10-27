@@ -33,21 +33,21 @@ use Molin\User\Auth;
 use Molin\User\User;
 
 /**
- * 后台内核更新(《93-后台更新实现规格》)。
+ * 后台内核更新。
  *
  * 三态:可更新(清单里有更新版本)/ 当前最新(清单里没有)/ 体检未过(八项里有一项 ✗)。
  * 进页 `update`(GET);扣扳机 `update/run`(POST,带 CSRF)。
  * 哪条通道在「设置 → 更新」里选(2026-10-11 作者定:本页不再放第二处切换器),
  * 本页只读它、并据此拉清单与显示通道名。
  *
- * 更新清单取自带签名的更新源(《29》§13、§14):两条通道各一个源,超出官方源地址一律拒绝。
- * 九步链(《29》§3 第 3–9 步)在 `Molin\Update\Installer` 里,这里只负责装配依赖与报回执;
+ * 更新清单取自带签名的更新源(既有规范):两条通道各一个源,超出官方源地址一律拒绝。
+ * 九步链(既有规范–9 步)在 `Molin\Update\Installer` 里,这里只负责装配依赖与报回执;
  * `update/progress` 是给前端那根进度条轮询用的(JSON),不是给浏览器直接看的页。
- * 门控能力名 `update.core`(《32》,已登记);本屏不新增能力名。
+ * 门控能力名 `update.core`(既有规范已登记);本屏不新增能力名。
  */
 final class UpdateController
 {
-    /** 两条通道(《93》§6.1;2026-10-10 作者定:去掉预发版) —— 一通道一源,值只用来查表与写库 */
+    /** 两条通道(既有规范;2026-10-10 作者定:去掉预发版) —— 一通道一源,值只用来查表与写库 */
     private const CHANNELS = [
         'stable' => ['label' => '正式版'],
         'dev' => ['label' => '开发版'],
@@ -56,14 +56,14 @@ final class UpdateController
     /** 自定义源地址(私有部署)。留空就用内置的官方源 */
     private const OPT_SOURCE = 'update_source';
 
-    /** 新内核要求的最低 PHP(《29》§9 第 1 项) */
+    /** 新内核要求的最低 PHP(既有规范项) */
     private const MIN_PHP = '8.2.0';
 
-    /** 体检第 2 项要求的扩展(《29》§9、《51》) */
+    /** 体检第 2 项要求的扩展 */
     private const REQUIRED_EXT = ['pdo_mysql', 'mbstring', 'openssl', 'fileinfo'];
 
     /**
-     * 九步名称与说明(《29》§3,《93》§6.3)。
+     * 九步名称与说明。
      * 2026-10-13 作者定:第 ③ 步不再强制 —— 更新页默认不勾「升级前先做一次备份」,
      * 所以名称与说明跟着改口径(改前是「强制备份 / DB 全量 + 全部文件」)。
      */
@@ -85,7 +85,7 @@ final class UpdateController
         private readonly View $view,
         private readonly Options $options,
         private readonly Router $router,
-        // 体检八项是升级域自己的运行时探测(《93》§6.2),不复用健康屏本地化后的行;
+        // 体检八项是升级域自己的运行时探测,不复用健康屏本地化后的行;
         // Health 按外壳契约注入,读模型接入后在此取用(§12.5)
         private readonly Health $health,
         ?Feed $feed = null,
@@ -100,7 +100,7 @@ final class UpdateController
      */
     public function handle(Request $request, string $path, User $user, array $menu): Response
     {
-        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次(《61》§3.1)
+        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次
         if (!$user->holds('update.core')) {
             return $this->view->render('forbidden.twig', [
                 'page_title' => __('程序更新'),
@@ -116,7 +116,7 @@ final class UpdateController
             return $this->run($request, $menu);
         }
 
-        // 长任务在一条请求里跑完,浏览器另开一条来问"到哪了"(《35》§5 那一套)
+        // 长任务在一条请求里跑完,浏览器另开一条来问"到哪了"(既有规范那一套)
         if ($path === 'update/progress' && !$request->isPost()) {
             return $this->progressJson();
         }
@@ -180,7 +180,7 @@ final class UpdateController
     }
 
     /**
-     * 扣扳机:令牌不对一律回本页,不动手(《26》§7:写操作带 CSRF 并记审计)。
+     * 扣扳机:令牌不对一律回本页,不动手(写操作带 CSRF 并记审计)。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */
@@ -203,7 +203,7 @@ final class UpdateController
     }
 
     /**
-     * 真动手:把清单交给执行链(《29》§3 第 3–9 步)。走完/退回原地都在执行链里发生。
+     * 真动手:把清单交给执行链(既有规范–9 步)。走完/退回原地都在执行链里发生。
      */
     private function upgrade(Request $request): Response
     {
@@ -359,7 +359,7 @@ final class UpdateController
     }
 
     /**
-     * 可用新版本:清单里的版本比当前高才算「可更新」(《93》§8)。
+     * 可用新版本:清单里的版本比当前高才算「可更新」。
      *
      * @param array{ok:bool, reason:string, from_cache:bool, attempted:bool, source:string, url:string, checked_at:int, manifest:array<string,mixed>} $feed
      * @return array{version:string, channel:string, label:string, date:string, notes:string}|null
@@ -370,7 +370,7 @@ final class UpdateController
     }
 
     /**
-     * 当前版本卡的三行(《93》§5.1 / §6.1)。
+     * 当前版本卡的三行(既有规范/ §6.1)。
      *
      * **不摆更新源地址** —— 那是内部接线,站长不需要知道,界面上也不该出现。
      * 「可用新版本」只说结果:有新版就报版本号,没有就说「暂无更新」,取不到清单就说「暂时无法检查」;
@@ -404,7 +404,7 @@ final class UpdateController
     }
 
     /**
-     * 前置体检八项(《93》§6.2 的七项 + 2026-10-11 线上事故补的"程序目录属主")。
+     * 前置体检八项(既有规范的七项 + 2026-10-11 线上事故补的"程序目录属主")。
      * 第 1、2、7 项按运行时实测;第 3–6 项本轮由假数据改为真测:
      * 磁盘(disk_free_space + 全站体积)、待执行迁移(Migrator)、插件契约(plugin.json contract vs MOLIN_CONTRACT)、
      * 最近备份(storage/backups 最新一份)。任一项拿不到真数据就显示「无法评测」并中止 —— 不写死 ok。
@@ -566,7 +566,7 @@ final class UpdateController
 
     /**
      * 插件契约:对每个已启用插件跑 Manifest::load(它内部就按 MOLIN_CONTRACT 校验 contract)。
-     * load 抛异常即该插件不兼容,列出来给用户看(《29》§9 第 5 项)。清单读不全按「无法评测」中止。
+     * load 抛异常即该插件不兼容,列出来给用户看(既有规范项)。清单读不全按「无法评测」中止。
      *
      * @return array{ok:bool, name:string, value:string, fix:string}
      */
@@ -705,7 +705,7 @@ final class UpdateController
     }
 
     /**
-     * 提示条(《93》§5.4 / §6.2 / §6.5):体检未过转「已中止」,否则是「失败自动回滚」。
+     * 提示条(既有规范/ §6.2 / §6.5):体检未过转「已中止」,否则是「失败自动回滚」。
      *
      * @return array{prefix:string, before:string, strong:string, after:string}
      */
@@ -731,8 +731,8 @@ final class UpdateController
     }
 
     /**
-     * 进度区头与按钮(《93》§5.6 / §6.3 / §6.5)。
-     * 升级任务状态未接线(《93》§11「九步进度 | 服务端任务」),无进度即「尚未开始」。
+     * 进度区头与按钮(既有规范/ §6.3 / §6.5)。
+     * 升级任务状态未接线(既有规范「九步进度 | 服务端任务」),无进度即「尚未开始」。
      *
      * @param array{version:string, channel:string, label:string}|null $available
      * @param array{job:string, phase:string, done:int, total:int, percent:int, label:string, ok:bool|null, running:bool, message:string, ts:int} $state 本次渲染取到的作业状态
@@ -782,7 +782,7 @@ final class UpdateController
     }
 
     /**
-     * 进度槽位里的当下状态(《93》§5.6)。
+     * 进度槽位里的当下状态。
      *
      * @return array{job:string, phase:string, done:int, total:int, percent:int, label:string, ok:bool|null, running:bool, message:string, ts:int}
      */
@@ -814,7 +814,7 @@ final class UpdateController
     }
 
     /**
-     * 九步(《93》§6.3)。无任务状态时九步全为「待执行」。
+     * 九步。无任务状态时九步全为「待执行」。
      *
      * @return list<array{no:int, name:string, desc:string, state:string, status:string}>
      */
@@ -856,7 +856,7 @@ final class UpdateController
     }
 
     /**
-     * 更新日志(《93》§5.7 / §6.4):凭清单里的 changelog 渲染,没有分条就用 notes 顶一句。
+     * 更新日志(既有规范/ §6.4):凭清单里的 changelog 渲染,没有分条就用 notes 顶一句。
      *
      * @param array<string, mixed> $manifest
      * @param array{version:string, channel:string, label:string, date:string, notes:string}|null $available
@@ -897,10 +897,10 @@ final class UpdateController
     }
 
     /**
-     * 手动回滚(《93》§5.8 / §6.4):清单里的 `previous` 给出上一版(源站保留最近 5 个版本包),
+     * 手动回滚(既有规范/ §6.4):清单里的 `previous` 给出上一版(源站保留最近 5 个版本包),
      * 这里把它**如实摆出来**,但不给一个按下去会动的入口。
      *
-     * 为什么不接成"真能装旧版":《29》§7.2 定了这条边界 —— 九步链第 7 步只**往前**跑迁移,
+     * 为什么不接成"真能装旧版":既有规范定了这条边界 —— 九步链第 7 步只**往前**跑迁移,
      * 没有"把库退回旧结构"的能力。一键回滚旧代码会让站点变成"新库旧代码",比没有这个按钮更糟。
      * 所以这里只报事实(上一版是哪一版),把降级交给"用升级前备份整站还原"这条正路。
      *
@@ -931,7 +931,7 @@ final class UpdateController
     }
 
     /**
-     * 内核契约的展示形(1.0 → 1.x,《93》§5.1 / §6.1)。
+     * 内核契约的展示形(1.0 → 1.x,既有规范/ §6.1)。
      */
     private function contractText(): string
     {
@@ -939,7 +939,7 @@ final class UpdateController
     }
 
     /**
-     * 页内地址:一律回本页(《93》§8:进页即本址)。
+     * 页内地址:一律回本页(进页即本址)。
      */
     private function url(): string
     {

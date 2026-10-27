@@ -1,15 +1,15 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {#
-  后台编辑页(《79-后台编辑页实现规格》)。数值与文案逐字取自
-  assets/ui/后台编辑页-定稿-2026-09-29.html 与其移动端版;右栏六盒顺序固定不可换。
-  页面变体按《86》§6:少「分类/标签/讨论」盒,多「父页面」盒(候选排除自己与后代)。
-  正文区按《41》§6.2 的"富文本"路线:contenteditable 直接排版,交表时同步进同名 textarea。
-  无 JS 时看到的就是 textarea,照样能写能存。落库前由 HtmlSanitizer 过白名单(《37》§9)。
+  后台编辑页。数值与文案逐字取自
+  设计稿与其移动端版;右栏六盒顺序固定不可换。
+  页面变体:少「分类/标签/讨论」盒,多「父页面」盒(候选排除自己与后代)。
+  正文区的"富文本"路线:contenteditable 直接排版,交表时同步进同名 textarea。
+  无 JS 时看到的就是 textarea,照样能写能存。落库前由 HtmlSanitizer 过白名单。
 #}
 {% extends "layout.twig" %}
 
 {% block bands %}
-    {# 两条带默认藏着:自动保存成功后显第一条,有未保存改动又想走时才显第二条(《79》§10.4) #}
+    {# 两条带默认藏着:自动保存成功后显第一条,有未保存改动又想走时才显第二条 #}
     <div class="autosave{% if autosave_text is not empty %} on{% endif %}" id="ed-autosave"><i></i><span>{{ autosave_text }}</span></div>
     <div class="leave" id="ed-leave">
         <span class="lt">{{ __('当前修改尚未保存，离开前请先存草稿。') }}</span>
@@ -30,12 +30,12 @@
                 <a href="{{ list_url }}">{{ list_label }}</a><span class="sep">/</span><span class="cur">{{ is_new ? __('新建') : __('编辑') }}</span>
             </div>
             <div class="saved"><i></i>{{ saved_text }}</div>
-            {# 修订版本比对(《113》)的唯一门:它对文章列表与侧栏都没有入口,只在编辑这篇时才有意义。
+            {# 修订版本比对的唯一门:它对文章列表与侧栏都没有入口,只在编辑这篇时才有意义。
                条数由 PostsController 备好(revisions),0 份时不摆这块空按钮 #}
             {% if not is_new and revisions|default(0) > 0 %}
                 <a class="btn btn-ghost btn-sm" href="{{ path('admin', {path: 'revisions'}) }}?post={{ fields.id }}">{{ __('修订 %s 份', 'molin', revisions) }}</a>
             {% endif %}
-            {# 面板字段(panel 落位)收进右侧抽屉,这里只给入口(《34A》§5) #}
+            {# 面板字段(panel 落位)收进右侧抽屉,这里只给入口 #}
             {% if field_groups.panel %}
                 <button class="btn btn-ghost btn-sm more-cf" type="button" id="ed-fields-tog" aria-controls="ed-fields-drawer" aria-expanded="false">{{ __('更多字段') }}<span class="n">{{ panel_count }}</span></button>
             {% endif %}
@@ -59,7 +59,7 @@
                 {% if show_editor %}
                 <div class="ed">
                     <div class="tbar">
-                        {# 段落样式:点开一层小菜单(《79》§4.6)。原来的 select 只活在前端 execCommand 里,
+                        {# 段落样式:点开一层小菜单。原来的 select 只活在前端 execCommand 里,
                            从不随表提交,所以这里不需要 name,也不留隐藏兼容字段。
                            用 button + 菜单容器(不再用 <details>:它的开合会被 summary 上的样式吞掉),
                            开合由 admin.js 管:切 aria-expanded 与菜单的 hidden。
@@ -99,7 +99,7 @@
                 <div class="wc" id="ed-wc">{{ word_count }}</div>
                 {% endif %}
 
-                {# position = main 的自定义字段:正文下方(《34A》§5「字段很少时的必要字段」) #}
+                {# position = main 的自定义字段:正文下方(既有规范「字段很少时的必要字段」) #}
                 {% if field_groups.main %}
                     <section class="box box-cf-main">
                         <h3>{{ __('字段') }}</h3>
@@ -139,7 +139,7 @@
                                placeholder="{{ post_password_edit ? __('留空保持原口令') : __('设置访问口令') }}"
                                autocomplete="new-password">
                     </div>
-                    {# 时间可点可改(《79》§4.7 第 1 盒);留空 = 发布时取当下 #}
+                    {# 时间可点可改(既有规范盒);留空 = 发布时取当下 #}
                     <div class="prow">
                         <span class="k">{{ __('时间') }}</span>
                         <input class="mini-in" type="datetime-local" name="published_at" value="{{ published_input }}" aria-label="{{ __('发布时间') }}" title="{{ __('留空即发布时按当下时间') }}">
@@ -153,7 +153,7 @@
                     <div class="pub-links">
                         {% if preview_url %}<a href="{{ preview_url }}">{{ __('预览') }}</a>{% endif %}
                         {# 移到回收站是破坏性动作:只能 POST 带令牌走(拿 <a> 去 GET 会被令牌闸挡在列表页)。
-                           .trash-row 是给移动端靠右留的包裹位(《79》§5) #}
+                           .trash-row 是给移动端靠右留的包裹位 #}
                         {% if trash_url %}
                             <form class="trash-row" method="post" action="{{ trash_url }}">
                                 <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
@@ -164,9 +164,9 @@
                 </section>
 
                 {% if show_classic_taxboxes %}
-                {# 分类盒。行尾那颗「×」删的是**整个分类**(全局动作,与《87》管理屏同一个去处),
+                {# 分类盒。行尾那颗「×」删的是**整个分类**(全局动作,与既有规范管理屏同一个去处),
                    所以走 XHR + 站内唯一的模态件做二次确认:删完把这一行收掉,人不用离开没保存的稿子。
-                   两道闸:门控 category.manage,兜底项「未分类」不给「×」—— 与《87》那屏逐条对齐 #}
+                   两道闸:门控 category.manage,兜底项「未分类」不给「×」—— 与既有规范那屏逐条对齐 #}
                 <section class="box" id="box-cats"{% if can_manage_categories %} data-del-url="{{ term_delete_url }}" data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}"{% endif %}>
                     <h3><span>{{ __('分类') }}</span>{% if can_manage_categories %}<a class="manage" href="{{ categories_url }}">{{ __('管理分类与标签') }}</a>{% endif %}</h3>
                     <div class="cats">
@@ -195,7 +195,7 @@
                 </section>
                 {% endif %}
 
-                {# CPT 声明的分类法盒(《34》§2.2 taxonomies):多选;层级型给父子缩进候选 #}
+                {# CPT 声明的分类法盒(既有规范taxonomies):多选;层级型给父子缩进候选 #}
                 {% for box in taxonomy_boxes %}
                 <section class="box">
                     <h3>{{ box.label }}</h3>
@@ -298,7 +298,7 @@
                 </section>
                 {% endif %}
 
-                {# position = side 的自定义字段:右栏独立盒(《34A》§5),按 priority 升序 #}
+                {# position = side 的自定义字段:右栏独立盒,按 priority 升序 #}
                 {% if field_groups.side %}
                 <section class="box box-cf">
                     <h3>{{ __('字段') }}</h3>
@@ -314,7 +314,7 @@
             </aside>
         </div>
 
-        {# position = panel 的自定义字段:低频 / 成组,收进右侧真抽屉(《34A》§5)。
+        {# position = panel 的自定义字段:低频 / 成组,收进右侧真抽屉。
            触发按钮在页头;开合 / Esc / 点遮罩由 admin.js 管。抽屉在表单内,字段照常提交。 #}
         {% if field_groups.panel %}
         <div class="drawer-scrim" id="ed-fields-scrim" hidden></div>
@@ -346,7 +346,7 @@
     })();
     </script>
 
-    {# 移动端固定底部保存栏(《79》§5);桌面端由右栏「发布」盒承担 #}
+    {# 移动端固定底部保存栏;桌面端由右栏「发布」盒承担 #}
     <div class="actionbar">
         <button class="btn btn-ghost" type="submit" form="ed-form" name="intent" value="draft">{{ __('保存草稿') }}</button>
         <button class="btn btn-primary" type="submit" form="ed-form" name="intent" value="publish">{{ __('发布') }}</button>
@@ -406,7 +406,7 @@
                         {# 正文插图(#13):选中的那张把原图地址交出来,由编辑器插进正文 #}
                         <button class="cell" type="button" data-url="{{ item.url }}">{{ cell }}</button>
                     {% elseif picker.mode == 'meta' %}
-                        {# 图片字段(《34A》§4):选中即把附件 id 写回该字段的隐藏输入与预览,不导航 #}
+                        {# 图片字段:选中即把附件 id 写回该字段的隐藏输入与预览,不导航 #}
                         <button class="cell" type="button" data-meta="{{ item.id }}" data-mname="{{ item.name }}" data-mthumb="{{ item.thumb }}">{{ cell }}</button>
                     {% else %}
                         <form method="post" action="{{ picker.set_url }}">

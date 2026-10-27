@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Content;
 
 /**
- * 内容对象。模板可见字段是契约,见《13-主题目录约定》第 6.4 节。
+ * 内容对象。模板可见字段是契约。
  *
  * author(User)、thumbnail(Media|null)、terms(Term[])、meta(array)、blocks(Block[])
  * 依赖用户 / 媒体 / 分类法 / 区块各模块,按"契约只增不改"后续增量补齐;
@@ -31,13 +31,13 @@ final class Post
         public readonly string $updated_at,
         public readonly int $thumbnail_id,
         public readonly string $url,
-        /** 归属判定要用(《32》第 4 节:own 类能力还要验作者) */
+        /** 归属判定要用(own 类能力还要验作者) */
         public readonly int $author_id = 0,
-        /** 编辑页「讨论」盒那一格要读它(《79》§4.7 第 5 盒) */
+        /** 编辑页「讨论」盒那一格要读它(既有规范盒) */
         public readonly string $comment_status = 'open',
-        /** 列表页元信息「N 条评论」(《88》§4);计数由评论模块维护 */
+        /** 列表页元信息「N 条评论」;计数由评论模块维护 */
         public readonly int $comment_count = 0,
-        /** 浏览量(《13》§6.3 列表项的 views);由内核维护,主题只读 */
+        /** 浏览量(既有规范列表项的 views);由内核维护,主题只读 */
         public readonly int $view_count = 0
     ) {
     }
@@ -67,7 +67,7 @@ final class Post
     }
 
     /**
-     * 列表查询故意不取 content / excerpt 这类大字段(《57》第 5 节),
+     * 列表查询故意不取 content / excerpt 这类大字段,
      * 所以这里要接受"键根本不存在",而不是只有 null。
      *
      * @param array<string, mixed> $row

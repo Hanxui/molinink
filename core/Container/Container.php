@@ -14,7 +14,7 @@ use Closure;
 use Psr\Container\ContainerInterface;
 
 /**
- * 极简服务容器(《00-总览》第 5 节:自研极简 + psr/container)。
+ * 极简服务容器(自研极简 + psr/container)。
  * 内核层次浅,不做自动装配、不做注解扫描 —— 需要什么就注册什么。
  */
 final class Container implements ContainerInterface

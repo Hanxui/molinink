@@ -16,7 +16,7 @@ use Molin\Support\Files;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * PSR-16 文件缓存(《24-缓存抽象层规范》3.1:落盘用 `<?php return ...;`,借 OPcache)。
+ * PSR-16 文件缓存(落盘用 `<?php return ...;`,借 OPcache)。
  *
  * 目录由调用方指定为「本适配器独占的命名空间根」;clear() 只删其中的分片目录,
  * 同一个父目录里别的缓存(storage/cache 下的 twig / pages / hookmap / data 状态文件)不进射程。

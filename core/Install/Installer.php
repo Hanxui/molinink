@@ -27,26 +27,26 @@ use Molin\Support\Files;
 use Throwable;
 
 /**
- * 安装引擎(《42-安装向导》第 5 节的七步)。
+ * 安装引擎(既有规范的七步)。
  *
- * 装失败必须回到"没装过"的样子 —— 连 config.php 一起回滚,不留半装状态(《42》第 5 节)。
+ * 装失败必须回到"没装过"的样子 —— 连 config.php 一起回滚,不留半装状态。
  * 建表唯一来源是 core/Migrations/,这里不写任何 DDL(约定)。
  * Web 向导与 `molin install` 共用本类,两条路的装法不许分叉。
  */
 final class Installer
 {
-    /** 《42》第 5 节第 ⑦ 步 */
+    /** 既有规范⑦ 步 */
     private const STORAGE_DIRS = ['cache/data', 'cache/pages', 'cache/twig', 'logs', 'logs/audit', 'uploads', 'backups', 'plugins', 'trash'];
 
     /**
-     * 装完自带的第一篇文章(《42》第 5 节第 ⑤ 步,可关)。像 Typecho / WordPress 那样,
+     * 装完自带的第一篇文章(既有规范⑤ 步,可关)。像 Typecho / WordPress 那样,
      * 让新站一打开就有东西可看 —— 空站的新手常以为装坏了。
      *
      * 不写"Hello world!":中文站里那句看着隔应,也不拿第一篇文章打广告。
      */
     private const WELCOME_TITLE = '欢迎来到你的新站点';
 
-    /** 正文是过白名单的富文本,与后台发文同一条路(《37》第 9 节),所以这里写成 HTML */
+    /** 正文是过白名单的富文本,与后台发文同一条路,所以这里写成 HTML */
     private const WELCOME_BODY = <<<'HTML'
 <p>这是安装时为你创建的第一篇文章，让你一进来就有东西可看。</p>
 <p>它不是什么模板，只是几张便利贴：</p>
@@ -99,7 +99,7 @@ HTML;
 
     /**
      * @param array{database?: array<string, mixed>, site?: array<string, string>, admin?: array<string, string>, debug?: bool, force?: bool, welcome?: bool} $plan
-     * @return list<string> 已完成步骤,供逐步反馈(《42》第 5 节)
+     * @return list<string> 已完成步骤,供逐步反馈
      *
      * @throws InstallFailedException 写到一半失败时抛出;表与 config.php 已回滚,路径与原因在异常上
      */
@@ -150,7 +150,7 @@ HTML;
             ++$completed;
 
             // 从这里开始,库里 {前缀} 表只可能是本次装出来的(前缀撞车已在上面拦下),
-            // 所以中途任何失败都可以把它们清干净 —— 《42》第 5 节"建表失败要回滚已建的表"。
+            // 所以中途任何失败都可以把它们清干净 —— 既有规范"建表失败要回滚已建的表"。
             $migrating = true;
             $migrated = (new Migrator($db, $this->root . '/core/Migrations'))->migrate();
             $applied = count($migrated);
@@ -167,7 +167,7 @@ HTML;
             ++$completed;
 
             // 欢迎文章要挂在管理员名下、又要归到「未分类」,所以排在两者之后;
-            // 键缺席按"要"处理 —— 网页向导的勾选框默认就是勾上的(《42》§4)
+            // 键缺席按"要"处理 —— 网页向导的勾选框默认就是勾上的
             $welcome = (bool) ($plan['welcome'] ?? true);
             $categoryId = $this->createDefaultCategory($db);
             $this->seedWelcomeContent($db, $adminId, $admin, $categoryId, $welcome);
@@ -199,7 +199,7 @@ HTML;
     }
 
     /**
-     * 《42》第 10 节:装完再访问安装页要拒绝;"重装"必须显式授权。
+     * 装完再访问安装页要拒绝;"重装"必须显式授权。
      */
     private function guardAlreadyInstalled(bool $force): void
     {
@@ -213,7 +213,7 @@ HTML;
     }
 
     /**
-     * 《42》第 3 节的"测试连接":装向导的这一步与 install() 走同一个方法,
+     * 既有规范的"测试连接":装向导的这一步与 install 走同一个方法,
      * 两条路的判据不许分叉(能连上、库可建或已存在、前缀不撞别人的表)。
      *
      * @param array<string, mixed>        $database
@@ -229,7 +229,7 @@ HTML;
         }
 
         // 先连服务器、后选库:DSN 里带上还不存在的库名,连接会在建库之前就 1049,
-        // "库不存在时向导会尝试创建"(《42》§3)这条永远走不到 —— 探针必须不带库名
+        // "库不存在时向导会尝试创建"这条永远走不到 —— 探针必须不带库名
         $server = $database;
         unset($server['name']);
         $db = new Database($server);
@@ -313,7 +313,7 @@ HTML;
     }
 
     /**
-     * 《42》第 3 节「权限足够(建表)」的只读探法:读 SHOW GRANTS 原文,看目标库范围里
+     * 既有规范「权限足够(建表)」的只读探法:读 SHOW GRANTS 原文,看目标库范围里
      * 是否带 CREATE / ALTER / INDEX / DROP。第 2 步承诺"不写入任何数据",所以不试建表;
      * 认不出的授权行(角色、PROXY)跳过,一条都对不上就返回空表 —— 呈现层说"未能确认",不猜。
      *
@@ -338,13 +338,11 @@ HTML;
                 continue;
             }
 
-            // SHOW GRANTS 里的库名会把下划线与百分号转义成 `molin\_db`.* —— 还原后再比
-            $scope = strtolower(str_replace(['\\_', '\\%', '`'], ['_', '%', ''], $m[2]));
-            $privileges = strtoupper($m[1]);
-
-            if ($scope !== '*.*' && $scope !== strtolower($name) . '.*') {
+            if (!self::scopeCoversDatabase($m[2], $name)) {
                 continue;
             }
+
+            $privileges = strtoupper($m[1]);
 
             if (str_contains($privileges, 'ALL PRIVILEGES')) {
                 return $needed;
@@ -361,7 +359,59 @@ HTML;
     }
 
     /**
-     * 《42》第 4 节的站点信息校验。公开给装向导在提交前就地报错,规则只有这一份。
+     * 授权行里的库范围是否覆盖目标库。
+     *
+     * SHOW GRANTS 的写法:`*.*`、`` `molin_db`.* ``、`` `molin\_test\_p%`.* `` —— 后者是
+     * 通配授权(共享主机、面板常这么授),`%` 与 `_` 分别当"任意串 / 任意一个字符"用,
+     * 只有反斜杠转义的才是字面值。2026-10-27 装库实测:只认精确库名与 `*.*`,通配授权
+     * 一律报"建表权限不完整",用户明明能建表。
+     */
+    public static function scopeCoversDatabase(string $rawScope, string $dbName): bool
+    {
+        $scope = str_replace(['`', '\\"'], '', $rawScope);
+        $dot = strpos($scope, '.');
+
+        if ($dot === false) {
+            return false;
+        }
+
+        $dbPart = substr($scope, 0, $dot);
+
+        if ($dbPart === '*') {
+            return true;
+        }
+
+        $chars = preg_split('//u', $dbPart, -1, PREG_SPLIT_NO_EMPTY);
+
+        if ($chars === false) {
+            $chars = [];
+        }
+
+        $regex = '';
+
+        for ($i = 0, $n = count($chars); $i < $n; $i++) {
+            $ch = $chars[$i];
+
+            if ($ch === '\\' && $i + 1 < $n) {
+                $regex .= preg_quote($chars[++$i], '/');
+
+                continue;
+            }
+
+            if ($ch === '%') {
+                $regex .= '.*';
+
+                continue;
+            }
+
+            $regex .= $ch === '_' ? '.' : preg_quote($ch, '/');
+        }
+
+        return preg_match('/\A' . $regex . '\z/iu', $dbName) === 1;
+    }
+
+    /**
+     * 既有规范的站点信息校验。公开给装向导在提交前就地报错,规则只有这一份。
      *
      * @param array<string, string> $site
      */
@@ -373,7 +423,7 @@ HTML;
     }
 
     /**
-     * 《42》第 4 节的管理员校验(用户名格式、邮箱、口令长度与强度)。
+     * 既有规范的管理员校验(用户名格式、邮箱、口令长度与强度)。
      * 公开给装向导在提交前就地报错,规则只有这一份 —— 网页与命令行两条路不许各有各的严格度。
      *
      * @param array<string, string> $admin
@@ -392,7 +442,7 @@ HTML;
             $errors['email'] = ['邮箱格式不对'];
         }
 
-        // 《42》第 4 节只写"≥8 位,强度检查":强度定为"字母 + 数字两类以上",不发明更复杂的规则
+        // 既有规范只写"≥8 位,强度检查":强度定为"字母 + 数字两类以上",不发明更复杂的规则
         if (strlen($password) < 8) {
             $errors['password'] = ['至少 8 位'];
         } elseif (preg_match('/[A-Za-z]/', $password) !== 1 || preg_match('/\d/', $password) !== 1) {
@@ -411,11 +461,11 @@ HTML;
      */
     private function seedOptions(Options $options, array $site, array $admin): void
     {
-        // 只种《21》第 7 节列出的内置键;comment_* 等键名待各自模块定稿时再种,不自创
+        // 只种既有规范列出的内置键;comment_* 等键名待各自模块设计稿时再种,不自创
         $options->set('site_name', (string) $site['name']);
         $options->set('site_description', (string) ($site['description'] ?? ''));
         $options->set('site_url', rtrim((string) ($site['url'] ?? ''), '/'));
-        // 搜索引擎可见(《125》§6.3 的开关)。键名照 WordPress 惯例 blog_public(2026-10-03 作者定)
+        // 搜索引擎可见(既有规范的开关)。键名照 WordPress 惯例 blog_public(2026-10-03 作者定)
         //
         // 2026-10-17:缺省值由「不可见」改成「可见」(作者定:个人博客默认要能被搜到)。
         // 注意这里只看"有没有传这个键"—— 网页向导的勾选框本来就预勾着,
@@ -447,7 +497,7 @@ HTML;
             'registered_at' => $now,
         ]);
 
-        // 角色存 usermeta(《32》第 9 节内置 meta)
+        // 角色存 usermeta(既有规范内置 meta)
         $db->insert('usermeta', ['user_id' => $id, 'meta_key' => 'role', 'meta_value' => 'administrator']);
         $db->insert('usermeta', ['user_id' => $id, 'meta_key' => 'session_version', 'meta_value' => '1']);
 
@@ -471,7 +521,7 @@ HTML;
     }
 
     /**
-     * 《42》第 5 节第 ⑤ 步的可关项:装完自带一篇欢迎文章 + 一条署名管理员的示例评论。
+     * 既有规范⑤ 步的可关项:装完自带一篇欢迎文章 + 一条署名管理员的示例评论。
      *
      * 它按"一篇正常文章和一条正常评论"落库 —— 不在库里留任何"这是示例"的记号,
      * 删文章时评论跟着走,与后台手动删一篇没有区别。
@@ -488,7 +538,7 @@ HTML;
             return;
         }
 
-        // 时间按库里的通行口径:published_at / created_at 一律 UTC(《21》《34》)
+        // 时间按库里的通行口径:published_at / created_at 一律 UTC
         $now = gmdate('Y-m-d H:i:s');
 
         $postId = $db->insert('posts', [

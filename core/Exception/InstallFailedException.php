@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 安装写到一半失败(《42》第 5、8 节)。比 ConfigException 多带三样给向导失败屏用:
+ * 安装写到一半失败。比 ConfigException 多带三样给向导失败屏用:
  * 已完成步数、失败原因原文、回滚结果说明。CLI 不关心这些,照旧读 message 即可。
  */
 final class InstallFailedException extends ConfigException

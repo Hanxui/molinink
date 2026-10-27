@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * 站内通知（对齐 ZAXU 原版 `zaxu_notification`）。
+ * 站内通知。
  *
  * 接收人统一是文章作者（原版口径，回复也发给作者）；actor_id = 0 表示游客，
  * 展示时回落「匿名」。voter_key 让游客点赞也能精确撤回自己那条通知。

@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 待译骨架生成(《33》第 6 节):扫描代码里的源文案,产出 `{"源文案": ""}` 的 JSON。
+ * 待译骨架生成:扫描代码里的源文案,产出 `{"源文案": ""}` 的 JSON。
  *
  * --out 指向已存在的语言包时按"并入"处理:已有译文一条不动,只把新扫出来的补成空串 ——
  * 翻译者拿到的永远是最新且不丢旧活的包。

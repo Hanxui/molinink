@@ -11,11 +11,11 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * 内核首批表结构,DDL 逐条来自《21-数据模型》第 2-9 节与《34-内容模型》第 6 节。
+ * 内核首批表结构,DDL 逐条来自既有规范-9 节与既有规范。
  *
- * commentmeta 在《21》第 1 节列为内核必需,但该文只给了 postmeta/usermeta 的 DDL,
+ * commentmeta 在既有规范列为内核必需,但该文只给了 postmeta/usermeta 的 DDL,
  * 此处按同构的 meta 三件套补齐(comment_id + meta_key + meta_value),待文档补定后校正。
- * sessions / cron 两张可选表不在本迁移内(《21》第 10 节标 ⭕,等会话与定时任务落地再加)。
+ * sessions / cron 两张可选表不在本迁移内(既有规范标 ⭕,等会话与定时任务落地再加)。
  */
 final class InitCoreSchema20260929000000 extends AbstractMigration
 {

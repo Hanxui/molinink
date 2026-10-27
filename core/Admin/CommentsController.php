@@ -23,7 +23,7 @@ use Molin\User\Authorizer;
 use Molin\User\User;
 
 /**
- * 后台评论管理屏(《31》§3、§9;版式照 后台评论管理-定稿-2026-09-30)。
+ * 后台评论管理屏(既有规范;版式照设计稿)。
  *
  * 审核动作全部走 POST;仪表盘那两颗快捷动作也归到这里,审核链只有一条。
  */
@@ -137,7 +137,7 @@ final class CommentsController
     }
 
     /**
-     * 列表查询(《31》§2 的状态口径 + §5 的筛选维度)。列表与计数共用同一份 WHERE。
+     * 列表查询(既有规范的状态口径 + §5 的筛选维度)。列表与计数共用同一份 WHERE。
      * @param array{status:string, q:string, post:int, who:string, period:string} $filters
      * @param array{status:string, q:string, post:int, who:string, period:string} $filters
      */
@@ -471,8 +471,8 @@ final class CommentsController
     }
 
     /**
-     * 行内改正文(《82》§6)。回收站里的不给改(那个状态的操作只有恢复与永久删除);
-     * 正文照提交同一条白名单(《31》§11),改完记审计。
+     * 行内改正文。回收站里的不给改(那个状态的操作只有恢复与永久删除);
+     * 正文照提交同一条白名单,改完记审计。
      */
     private function editContent(Request $request, int $id, User $user): bool
     {
@@ -502,8 +502,8 @@ final class CommentsController
     }
 
     /**
-     * 行内回复(《82》§6):以当前后台用户的身份直接发一条已通过的回复,写入 parent_id。
-     * 两级嵌套(《31》§2):回复"回复"时挂回它所在的顶层楼层。
+     * 行内回复:以当前后台用户的身份直接发一条已通过的回复,写入 parent_id。
+     * 两级嵌套:回复"回复"时挂回它所在的顶层楼层。
      */
     private function replyComment(Request $request, int $id, User $user): bool
     {
@@ -538,7 +538,7 @@ final class CommentsController
         $this->comments->recomputeCount((int) $row['post_id']);
         Audit::record('comment.reply', 'comment:' . $commentId . ' parent:' . $parentId, true, $request, 'user:' . $user->id);
 
-        // 新评论入库的对外事件(《31》§4 ⑨):通知、索引交插件
+        // 新评论入库的对外事件(既有规范⑨):通知、索引交插件
         do_action('comment/submit/after', $commentId, (int) $row['post_id']);
 
         return true;
@@ -554,7 +554,7 @@ final class CommentsController
 
     /**
      * 状态转移的唯一入口(仪表盘快捷动作与列表动作都走这里);逻辑在 Moderator,
-     * comment/moderate/before|after 两个钩子(《31》§9)也只在那里触发。
+     * comment/moderate/before|after 两个钩子也只在那里触发。
      */
     public function apply(int $id, string $status, User $user): bool
     {
@@ -565,7 +565,7 @@ final class CommentsController
     {
         $row = $this->comments->find($id);
 
-        // 只有回收站里的能真删(《31》§3),免得手一抖没了后悔药
+        // 只有回收站里的能真删,免得手一抖没了后悔药
         if ($row === null || $row['status'] !== 'trash') {
             return false;
         }

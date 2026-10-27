@@ -13,7 +13,7 @@ namespace Molin\User;
 use Molin\Exception\ConfigException;
 
 /**
- * 内置角色与能力矩阵(《32-用户与权限模型》第 3 节)。
+ * 内置角色与能力矩阵。
  *
  * 矩阵照文档逐格抄录,一格不多一格不少 —— 多给一格就是越权,少给一格后台就会莫名 403。
  * 插件可以 register_role()/grant_capability() 往上添,但不能改写内置角色的既有格子(默认拒绝)。
@@ -26,7 +26,7 @@ final class Roles
     public const CONTRIBUTOR = 'contributor';
     public const SUBSCRIBER = 'subscriber';
 
-    /** 内置五角色的能力集(《32》第 3 节矩阵) */
+    /** 内置五角色的能力集(既有规范矩阵) */
     private const BUILT_IN = [
         self::ADMINISTRATOR => [
             'read', 'post.create', 'post.edit.own', 'post.edit.others', 'post.publish',
@@ -54,7 +54,7 @@ final class Roles
     /** @var array<string, list<string>> */
     private static array $roles = self::BUILT_IN;
 
-    /** @var array<string, string> 角色 => 显示名(界面规格《83》《105》《106》统一用「贡献者」) */
+    /** @var array<string, string> 角色 => 显示名(界面规格既有规范统一用「贡献者」) */
     private static array $labels = [
         self::ADMINISTRATOR => '管理员',
         self::EDITOR => '编辑',

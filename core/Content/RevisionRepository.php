@@ -13,7 +13,7 @@ namespace Molin\Content;
 use Molin\Database\Database;
 
 /**
- * 修订版本仓储(《113-后台修订版本比对实现规格》§10:数据取自 post_revisions)。
+ * 修订版本仓储(数据取自 post_revisions)。
  *
  * 表在首个内核迁移里就已建好(`core/Migrations/20260929000000_init_core_schema.php`),
  * 列:post_id / title / content / author_id / created_at。平日只读 ——
@@ -69,7 +69,7 @@ final class RevisionRepository
     }
 
     /**
-     * 把一条修订写回 posts 并留一条新修订留痕(《113》§11-4 已由作者定为「真恢复」)。
+     * 把一条修订写回 posts 并留一条新修订留痕(既有规范已由作者定为「真恢复」)。
      *
      * 修订存的是「改之前的那一版」(见 PostWriter::snapshotRevision),所以回写前先把当前正文档进
      * post_revisions 当留痕,再覆盖 title / content —— 恢复动作本身也进历史,可再回退。
@@ -99,7 +99,7 @@ final class RevisionRepository
                 [
                     'title' => $title,
                     'content' => $content,
-                    // 渲染缓存随本次改动作废,下次输出重新过一遍钩子(《21》第 2 节,与 PostWriter 同一口径)
+                    // 渲染缓存随本次改动作废,下次输出重新过一遍钩子(既有规范与 PostWriter 同一口径)
                     'content_filtered' => null,
                     'updated_at' => $now,
                 ],

@@ -67,7 +67,7 @@ final class SaveAction extends EditorScreen
         if ($autosave) {
             $wanted = $from;
         } else {
-            // 底部/右栏那两个钮才是意图,状态下拉只是它的投影(《79》§4.7 第 1 盒)
+            // 底部/右栏那两个钮才是意图,状态下拉只是它的投影(既有规范盒)
             $intent = $request->input('intent');
 
             if ($intent === 'draft') {
@@ -76,7 +76,7 @@ final class SaveAction extends EditorScreen
                 $wanted = StatusMachine::PUBLISH;
             }
 
-            // 可见性那一格选「私密」= 状态走 private(《34》§5)
+            // 可见性那一格选「私密」= 状态走 private
             if ($request->input('visibility') === StatusMachine::PRIVATE) {
                 $wanted = StatusMachine::PRIVATE;
             }
@@ -111,13 +111,13 @@ final class SaveAction extends EditorScreen
 
         $note = '';
 
-        // 《32》第 3 节:contributor 有自己的内容但没有 post.publish —— 提交的就是待审,不是发布
+        // contributor 有自己的内容但没有 post.publish —— 提交的就是待审,不是发布
         if (($wanted === StatusMachine::PUBLISH || $wanted === StatusMachine::PRIVATE) && !$this->can->can($user, $this->cap('publish'))) {
             $wanted = StatusMachine::PENDING;
             $note = __('你没有发布权限,这篇已提交待审。');
         }
 
-        // 分类勾选:有 id 的照挂;前台现敲的新名字带 «new:» 头,先建后用(《79》§4.7 第 2 盒)
+        // 分类勾选:有 id 的照挂;前台现敲的新名字带 «new:» 头,先建后用(既有规范盒)
         $categories = [];
 
         foreach ((array) ($request->inputs()['categories'] ?? []) as $value) {
@@ -139,7 +139,7 @@ final class SaveAction extends EditorScreen
             $categories[] = $this->terms->findOrCreate(TermAssigner::CATEGORY, $name);
         }
 
-        // 新建文章且没勾任何分类:按「默认分类」设置兜底(《76》§12 常规组)。页面归父页,不受此设影响
+        // 新建文章且没勾任何分类:按「默认分类」设置兜底(既有规范常规组)。页面归父页,不受此设影响
         if ($this->managedType === 'post' && $post === null && $categories === []) {
             $default = (int) (new Options($this->db))->get('default_category', '0');
 
@@ -158,7 +158,7 @@ final class SaveAction extends EditorScreen
             'excerpt' => $request->input('excerpt'),
             'content' => $request->input('content'),
             'published_at' => $request->input('published_at'),
-            // 讨论开关:内置文章两型照旧;CPT 按 supports 走,不支持就保持原值(《34》§2.2)
+            // 讨论开关:内置文章两型照旧;CPT 按 supports 走,不支持就保持原值
             'comment_status' => $this->commentStatusFor($request, $post),
             'thumbnail_id' => max(0, (int) $request->input('thumbnail_id', (string) ($post === null ? 0 : $post->thumbnail_id))),
             'meta' => $this->pairs($request),
@@ -194,7 +194,7 @@ final class SaveAction extends EditorScreen
             $data['parent_id'] = $parentId;
         }
 
-        // 「序号」层级型内容都有(页面天然是;hierarchical 的 CPT 也靠它排目录,与《34》§2.2
+        // 「序号」层级型内容都有(页面天然是;hierarchical 的 CPT 也靠它排目录,与既有规范
         // page-attributes 同口径);脏输入在这里收成 0(界面写着 min 0)
         if ($this->isHierarchical()) {
             $data['menu_order'] = max(0, (int) $request->input('menu_order', '0'));
@@ -211,7 +211,7 @@ final class SaveAction extends EditorScreen
             $this->assignTypeTaxonomies($saved->id, $request);
         }
 
-        // 页面模板(《114》):表单选中的模板过当前主题白名单,命中才写 meta;脏输入 / 空值 / 路径穿越
+        // 页面模板:表单选中的模板过当前主题白名单,命中才写 meta;脏输入 / 空值 / 路径穿越
         // 一律按「默认模板」清掉,不报错中断保存。放在 writer->save 之后才拿得到新建页的真实 id。
         if ($this->managedType === 'page') {
             $resolved = $this->theme?->resolvePageTemplate($request->input('page_template'));
@@ -224,7 +224,7 @@ final class SaveAction extends EditorScreen
         }
 
         if ($autosave) {
-            // 自动保存只要一条带子的文案,别把人整页刷走(《41》§6.2 每 30s + 《79》§10.3)
+            // 自动保存只要一条带子的文案,别把人整页刷走(既有规范每 30s + 既有规范)
             return Response::html(__('已于 %s 自动保存 · 修订 %s 份', 'molin', substr($saved->updated_at, 11, 5), count($this->writer->revisions($saved->id))));
         }
 
@@ -289,7 +289,7 @@ final class SaveAction extends EditorScreen
     }
 
     /**
-     * 自定义字段那几行:键与值成对提交,空键丢掉(《79》§4.7 第 6 盒)。
+     * 自定义字段那几行:键与值成对提交,空键丢掉(既有规范盒)。
      *
      * @return array<string, string>
      */

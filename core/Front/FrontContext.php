@@ -61,7 +61,7 @@ final class FrontContext
         $renderer = $container->get(Renderer::class);
 
         /*
-         * 列表数据装配(《13》§6.3、《34》§7):整页处理器与片段端点(list.fragment)共用这一份 ——
+         * 列表数据装配:整页处理器与片段端点(list.fragment)共用这一份 ——
          * 查询、组项、分页只此一处,不复制第二套。每页条数与「列表显示」口径都收进 ListSource。
          */
         /** @var ?CacheInterface $cache 主色结果的跨请求存储;装配线没给就退回本请求内计算 */
@@ -83,7 +83,7 @@ final class FrontContext
 
         $context = new self($container, $renderer, $listSource, $posts, $options);
 
-        // 未捕获错误从这里兜底(《26》第 8 节);404 交回主题,其余走内置友好页
+        // 未捕获错误从这里兜底;404 交回主题,其余走内置友好页
         ErrorHandler::boot(static fn (): Response => $context->notFound());
 
         return $context;
@@ -123,8 +123,8 @@ final class FrontContext
     }
 
     /**
-     * 404 页(《75》):状态码之外再随机挑一篇已发文章喂「或许你想看」。
-     * 随机在服务端算,每次访问可以不同(《75》§7 可变项);没有文章时那一块整块不渲染。
+     * 404 页:状态码之外再随机挑一篇已发文章喂「或许你想看」。
+     * 随机在服务端算,每次访问可以不同(既有规范可变项);没有文章时那一块整块不渲染。
      */
     public function notFound(?Renderer $override = null): Response
     {
@@ -137,7 +137,7 @@ final class FrontContext
         ], [], 404);
     }
 
-    /** 前台可见:已发布、未删除、且没到定时发布时间(《34》第 5 节) */
+    /** 前台可见:已发布、未删除、且没到定时发布时间 */
     public function isVisible(Post $post): bool
     {
         if ($post->status !== 'publish') {
@@ -154,7 +154,7 @@ final class FrontContext
     }
 
     /*
-     * 主题预览(《36》§7、《90》§8):管理员带 ?molin_theme_preview={slug} 打开前台,
+     * 主题预览:管理员带 ?molin_theme_preview={slug} 打开前台,
      * 这一趟按指定主题渲染,不动全站启用状态。权限不过或主题不存在就回默认渲染器。
      */
     private function previewRenderer(Request $request): ?Renderer

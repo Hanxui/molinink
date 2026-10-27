@@ -21,7 +21,7 @@ use Molin\User\Auth;
 use Molin\User\SessionStore;
 
 /**
- * 评论提交(《31》§4)。成功/失败都回文章页:成功按状态给反馈,失败把原因带回表单。
+ * 评论提交。成功/失败都回文章页:成功按状态给反馈,失败把原因带回表单。
  */
 final class CommentController
 {
@@ -61,7 +61,7 @@ final class CommentController
             return Response::redirect($back . $sep . 'comment_error=' . rawurlencode($e->getMessage()) . '#comments');
         }
 
-        // 待审的记进会话(《31》§3:作者可见"待审")—— 刷新文章页时它还在,且只对这位访客可见
+        // 待审的记进会话(作者可见"待审")—— 刷新文章页时它还在,且只对这位访客可见
         if ($result['status'] === 'pending') {
             $mine = array_map('intval', (array) ($session->data['pending_comments'] ?? []));
             $mine[] = (int) $result['id'];

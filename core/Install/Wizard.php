@@ -20,8 +20,8 @@ use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
 /**
- * 网页版安装向导(《42》第 1–5 节)。基准图是六步,作者 2026-10-01 定为维持五步:
- * 原"安全收尾"合并进完成页(《125》§11.7 的已确认偏离)。
+ * 网页版安装向导(既有规范–5 节)。设计稿是六步,作者 2026-10-01 定为维持五步:
+ * 原"安全收尾"合并进完成页(既有规范的已确认偏离)。
  *
  * 装什么、怎么装只有一套:`Installer`(与 `molin install` 共用同一个类)。这里只收字段、
  * 分步报错、把结果讲给人听 —— 不建表、不写配置、不碰哈希。
@@ -31,7 +31,7 @@ use Twig\Loader\FilesystemLoader;
  */
 final class Wizard
 {
-    /** 步骤名照《125》§7 的步骤条逐字(五步版) */
+    /** 步骤名照既有规范的步骤条逐字(五步版) */
     private const TITLES = [
         1 => '环境与欢迎',
         2 => '数据库',
@@ -46,7 +46,7 @@ final class Wizard
 
     private const DB_DEFAULTS = ['host' => '127.0.0.1', 'port' => '3306', 'prefix' => 'molin_', 'charset' => 'utf8mb4'];
 
-    /** 第 4 步七项执行清单(《125》§7;顺序与 Installer::install() 前七步一一对应) */
+    /** 第 4 步七项执行清单(既有规范;顺序与 Installer::install 前七步一一对应) */
     private const STAGES = [
         ['生成配置文件', '写入安全密钥与数据库连接信息'],
         ['创建数据表', '按顺序建好程序需要的全部数据表'],
@@ -59,10 +59,10 @@ final class Wizard
 
     private Environment $twig;
 
-    /** @var array{ok: bool, rows?: list<array{k: string, v: string}>, reason?: string, elapsed: string}|null 第 2 步的连接反馈(成功四行 / 失败原因),给 .feed 渲染(《125》§13.1) */
+    /** @var array{ok: bool, rows?: list<array{k: string, v: string}>, reason?: string, elapsed: string}|null 第 2 步的连接反馈(成功四行 / 失败原因),给 .feed 渲染 */
     private ?array $dbFeedback = null;
 
-    /** @var array{row: int, reason: string, trouble: string}|null 第 4 步的执行失败(第几项、原因、回滚瑕疵),给失败屏渲染(《125》§13.2) */
+    /** @var array{row: int, reason: string, trouble: string}|null 第 4 步的执行失败(第几项、原因、回滚瑕疵),给失败屏渲染 */
     private ?array $runFailure = null;
 
     /** @var list<string> 装成功后 Installer 回报的步骤,只给完成页看 */
@@ -108,7 +108,7 @@ final class Wizard
             [$target, $notice] = $this->advance($target, $post, $state);
         }
 
-        // 装过的站拦在门口:只给一个要显式勾选的重装入口(《42》第 2、10 节)
+        // 装过的站拦在门口:只给一个要显式勾选的重装入口
         if ($target === 1 && $this->installer->isInstalled() && !$state->wantsReinstall()) {
             return $this->render('installed.twig', $this->base(1, $state, $notice) + ['all_done' => true]);
         }
@@ -157,7 +157,7 @@ final class Wizard
     }
 
     /**
-     * 《42》第 3 节的"测试连接"展示层:探成功记四行回执、失败记原因行 —— 都落给 `.feed`(《125》§13.1)。
+     * 既有规范的"测试连接"展示层:探成功记四行回执、失败记原因行 —— 都落给 `.feed`。
      *
      * @param array<string, mixed> $post
      * @return array{0:bool, 1:array<string, mixed>} 是否连上、这套数据库参数
@@ -201,7 +201,7 @@ final class Wizard
     }
 
     /**
-     * 把错误原文削成"给用户看的一句"(《125》§13.1 的原因行):剥掉自家与 Database 层的包装前缀、
+     * 把错误原文削成"给用户看的一句"(既有规范的原因行):剥掉自家与 Database 层的包装前缀、
      * SQLSTATE 壳,错误码收到句尾写成「（错误码 N）」,尾注换成 .note 的"常见原因"。
      */
     private function reasonText(string $message): string
@@ -230,20 +230,20 @@ final class Wizard
         }
 
         $message = str_replace('(检查主机、端口、账号与口令)', '', $message);
-        $message = (string) preg_replace('/[（(]《42》[^）)]*[）)]\s*$/u', '', $message);
+        $message = (string) preg_replace('/[（(]既有规范[^）)]*[）)]\s*$/u', '', $message);
         $message = trim($message);
 
         return $message === '' ? '没有走通,原因见下。' : $message . $code;
     }
 
-    /** .why 是嵌在描述里的一句话,按基准句式以句号收尾(《125》§13.2 示例) */
+    /** .why 是嵌在描述里的一句话,按设计稿句式以句号收尾(既有规范示例) */
     private function sentence(string $text): string
     {
         return preg_match('/[。！？!?]\z/u', $text) === 1 ? $text : $text . '。';
     }
 
     /**
-     * 成功回执四行(《125》§13.1):服务器 / 当前用户 / 数据库 / 建表权限。
+     * 成功回执四行:服务器 / 当前用户 / 数据库 / 建表权限。
      *
      * @param array<string, mixed> $db
      * @param array<string, mixed> $facts Installer::testConnection() 的结构化回报
@@ -302,7 +302,7 @@ final class Wizard
      */
     private function takeSiteAndAdmin(array $post, WizardState $state): array
     {
-        // 复选框不勾就不提交:缺席 = 不要欢迎内容(《42》§4,默认勾上)。
+        // 复选框不勾就不提交:缺席 = 不要欢迎内容(既有规范默认勾上)。
         // 先记下再校验 —— 这一步折回去改字时,勾选不该跟着复位
         $state->setWelcome(($post['site_welcome'] ?? '') === '1');
 
@@ -310,7 +310,7 @@ final class Wizard
             'name' => trim((string) ($post['site_name'] ?? '')),
             'description' => trim((string) ($post['site_description'] ?? '')),
             'url' => trim((string) ($post['site_url'] ?? '')),
-            // 复选框不勾就不提交:缺席 = 关闭(《125》§6.3 的开关,默认开着)
+            // 复选框不勾就不提交:缺席 = 关闭(既有规范的开关,默认开着)
             'visible' => ($post['site_visible'] ?? '') === '1' ? '1' : '0',
         ];
         $admin = $this->adminFields($post, $state->admin());
@@ -349,7 +349,7 @@ final class Wizard
             $this->doneSteps = $this->installer->install($plan);
         } catch (InstallFailedException $e) {
             // 表与 config.php 已由 Installer 回滚;会话**留着**(含暂存口令,至多两小时),
-            // 失败屏的「重新写入」直接重跑,口令不必重填(《125》§13.2)
+            // 失败屏的「重新写入」直接重跑,口令不必重填
             $this->runFailure = [
                 'row' => $e->completedSteps() + 1,
                 'reason' => $this->sentence($this->reasonText($e->reason())),
@@ -519,8 +519,8 @@ final class Wizard
     }
 
     /**
-     * 检测器的九项结果拼成基准图的六行(《125》§6.1):可写多项并成一行,图片扩展并入推荐扩展。
-     * 「要求」列是《42》第 2 节的固定阈值文案,照《125》§7 逐字;状态词里基准没画 fail,
+     * 检测器的九项结果拼成设计稿的六行:可写多项并成一行,图片扩展并入推荐扩展。
+     * 「要求」列是既有规范的固定阈值文案,照既有规范逐字;状态词里设计稿没画 fail,
      * 失败一律说「需配置」(s.fail)。
      *
      * @param list<Requirement> $items
@@ -600,7 +600,7 @@ final class Wizard
     }
 
     /**
-     * 站点地址默认取当前访问地址(《42》第 4 节):装的人不必手抄一遍。
+     * 站点地址默认取当前访问地址:装的人不必手抄一遍。
      */
     private function origin(): string
     {
@@ -630,7 +630,7 @@ final class Wizard
     }
 
     /**
-     * 只给人看得懂、能照着做的一句话;堆栈不进页面(《42》第 8 节)。
+     * 只给人看得懂、能照着做的一句话;堆栈不进页面。
      */
     private function explain(Throwable $e): string
     {

@@ -1,9 +1,9 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  插件列表(《85》,基准 后台插件列表-定稿-2026-09-30)。
+  插件列表(设计稿)。
   页签 / 筛选要的接口与路由还没落地,先落「页头 + 行列表 + 底注」;
-  页头「＋ 安装或升级(.zip)」是离线上传 zip(《92》§8):同名包走覆盖升级(自动停用 →
+  页头「＋ 安装或升级(.zip)」是离线上传 zip:同名包走覆盖升级(自动停用 →
   换代码 → 恢复原启用状态),新包只装入不启用(口径同主题屏);表单契约与主题屏同一套
   (data-progress + .upbar + .uperr)。
   停用行名称转中灰(.tr.off),装不上的目录与原因单独一块。
@@ -23,7 +23,7 @@
             <p class="lede">{{ __('功能都是从外面长进来的。这里只管开关：能声明什么能力，才能干什么事。') }}</p>
         </div>
         {% if current_user and current_user.holds('plugin.activate') %}
-            {# 离线上传 zip(《92》§8):选文件即传,真进度条走 .upbar;同名包升级,新包只装入 #}
+            {# 离线上传 zip:选文件即传,真进度条走 .upbar;同名包升级,新包只装入 #}
             <form class="upf" method="post" action="{{ upload_url }}" enctype="multipart/form-data" data-progress>
                 <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
                 <input type="file" name="file" id="plugin-file" accept=".zip" data-auto hidden>
@@ -55,7 +55,7 @@
                 <span class="cell ink">{{ name in active ? __('已启用') : __('已停用') }}</span>
                 {% if current_user and current_user.holds('plugin.activate') %}
                     <div class="op">
-                        {# 管理入口:启用的插件声明了后台页才有,指向它声明的第一页(《12》§7.1;路由由内核解析) #}
+                        {# 管理入口:启用的插件声明了后台页才有,指向它声明的第一页(既有规范;路由由内核解析) #}
                         {% if name in active and plugin.manifest.adminPages|length > 0 %}
                             <a class="btn btn-ghost" href="{{ path('admin', {path: plugin.manifest.adminPages[0].route}) }}">{{ __('管理') }}</a>
                         {% endif %}

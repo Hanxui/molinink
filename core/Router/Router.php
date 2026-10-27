@@ -22,7 +22,7 @@ use Molin\Http\Request;
 use Molin\Http\Response;
 
 /**
- * fast-route 薄封装(《23-路由规范》)。
+ * fast-route 薄封装。
  *
  * 两条硬规矩:① 同方法同路径重复注册 → 当场报错并列出来源,不给"后者悄悄覆盖前者";
  * ② URL 一律由路由名生成,path() 与模板都不许拼字符串。
@@ -32,7 +32,7 @@ final class Router
     /** ALL 的落地写法:fast-route 1.x 没有 ANY,逐个方法登记 */
     private const ALL_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'];
 
-    /** 占位符预设(《23》第 3 节),默认"名称" */
+    /** 占位符预设,默认"名称" */
     private const DEFAULT_PERMALINK = '/%postname%/';
 
     /** @var array<string, array{name:string, handler:Closure}> "METHOD 路径" => 处理器 */
@@ -53,7 +53,7 @@ final class Router
         private readonly string $baseUrl = '',
         private readonly string $permalink = self::DEFAULT_PERMALINK
     ) {
-        // 名称表先于处理器:URL 生成只依赖《23》第 6 节的映射表,不依赖某条路由挂没挂处理器
+        // 名称表先于处理器:URL 生成只依赖既有规范的映射表,不依赖某条路由挂没挂处理器
         foreach (self::kernelNames() as $name => $route) {
             $this->paths[$name] = $route['paths'];
         }
@@ -91,7 +91,7 @@ final class Router
     }
 
     /**
-     * 404 的落点(《23》第 8 节:内部路由名 not-found,不是钩子)。
+     * 404 的落点(内部路由名 not-found,不是钩子)。
      */
     public function fallback(callable $handler): void
     {
@@ -100,7 +100,7 @@ final class Router
 
     public function dispatch(Request $request): Response
     {
-        // 《23》第 3 节的固定链接默认带尾斜杠(/%postname%/),而 fast-route 把尾斜杠当两个不同 URL;
+        // 既有规范的固定链接默认带尾斜杠(/%postname%/),而 fast-route 把尾斜杠当两个不同 URL;
         // 这里统一去掉多余的尾斜杠,'/' 本身保留。
         $path = $request->path();
 
@@ -147,7 +147,7 @@ final class Router
     /**
      * 单篇的路由模式:按当前固定链接结构现算,交给 fast-route 分发。
      *
-     * 结构与分发的对应(《23》第 3 节)是这套机制成立的关键 —— 换结构只改选项,
+     * 结构与分发的对应是这套机制成立的关键 —— 换结构只改选项,
      * 这里跟着算出新模式,不必再手工维护一条 `/{slug:[^/]+}`。
      * 查询式结构(`?p=%post_id%` 这种)没有路径段,返回 null,单篇改由 `/` 上的
      * `?p=` / `?page_id=` 解析(见 index.php 首页处理器)。
@@ -172,7 +172,7 @@ final class Router
         return str_contains($pattern, '{') ? $pattern : null;
     }
 
-    /** 结构里含 %category% 时,生成与查询都要带上主分类(《23》第 3 节)。 */
+    /** 结构里含 %category% 时,生成与查询都要带上主分类。 */
     public function needsCategoryInPath(): bool
     {
         return str_contains($this->permalink, '%category%');
@@ -190,7 +190,7 @@ final class Router
     }
 
     /**
-     * 由路由名生成 URL(《23》第 6 节)。
+     * 由路由名生成 URL。
      *
      * @param array<string, string|int> $params
      */
@@ -206,7 +206,7 @@ final class Router
      *
      * 跳转(302 Location)要的是站内相对地址:`Response::redirect()` 只认 '/' 开头,
      * 传绝对地址会被当成外站而退回 '/'。页面里的 <a href> 仍用 generate(),
-     * 那样才跟着 site_url 走(《23》第 6 节)。
+     * 那样才跟着 site_url 走。
      *
      * @param array<string, string|int> $params
      */
@@ -226,7 +226,7 @@ final class Router
             return $this->engine;
         }
 
-        // 《23》第 3 节优先级:静态 > 带占位 > 通配。fast-route 按登记顺序建表,
+        // 既有规范优先级:静态 > 带占位 > 通配。fast-route 按登记顺序建表,
         // 静态路由若排在 `/{slug:[^/]+}` 之后会直接抛 BadRouteException(整站 500),
         // 所以在这里定序,处理器注册顺序不用操这份心。PHP 8 排序稳定,同级保持原序。
         $map = $this->map;
@@ -276,7 +276,7 @@ final class Router
             $day = date('d', $stamp === false ? time() : $stamp);
         }
 
-        // 自定义内容类型不吃固定链接结构:地址恒为 `/{rewrite.slug}/{slug}`(《34》§2.2)。
+        // 自定义内容类型不吃固定链接结构:地址恒为 `/{rewrite.slug}/{slug}`。
         // 段从登记表取,登记表里非 public / rewrite=false 的类型取不到段,回落下面的既有口径。
         $type = (string) ($params['type'] ?? '');
         $segment = PostTypeRegistry::instance()->rewriteSlug($type);

@@ -1,5 +1,5 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   404 样式(源件:assets/ui/404-定稿-2026-09-29.html 与《75》实现规格)。
+   404 样式(源件:设计稿与既有规范实现规格)。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。
    页脚钉底:整页 flex 列布局,main 吃掉剩余高度并垂直居中。 */
 

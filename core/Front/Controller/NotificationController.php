@@ -19,7 +19,7 @@ use Molin\Theme\Renderer;
 use Molin\User\Auth;
 
 /**
- * 站内通知（对齐 ZAXU 原版）：列表片段 / 未读数 / 已读 / 删除。
+ * 站内通知：列表片段 / 未读数 / 已读 / 删除。
  * 只给本人看：所有查询都带 author_id = 当前用户。
  */
 final class NotificationController

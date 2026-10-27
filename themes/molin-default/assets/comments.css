@@ -1,7 +1,7 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
 
-/* 评论区(《125》配套的《31》基准,源件:文章详情-评论区-2026-09-30)
-   (《31》§2/§3/§5/§7) ── */
+/* 评论区(既有规范配套的,设计稿)
+   (既有规范/§3/§5/§7) ── */
   .comments{margin:96px auto 0;max-width:720px;width:100%;}
   .comments > h2{font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
   .clist{margin-top:34px;}

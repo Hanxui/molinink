@@ -17,7 +17,7 @@ use Molin\Support\Str;
 use Throwable;
 
 /**
- * 插件数据表迁移的执行器(《12》§7.3)。
+ * 插件数据表迁移的执行器。
  *
  * 迁移文件的形状与内核 core/Migrations/ 一模一样:一个实现 Molin\Migrations\Migration 的类
  * (通常继承 AbstractMigration,拿 prefix() 与 execute()),类名由文件名按内核同一套规则推出来
@@ -190,7 +190,7 @@ final class PluginMigrator
         if (!class_exists($class)) {
             throw new PluginLoadException(
                 "插件 {$plugin->name()} 的迁移 {$relative} 里找不到类 {$class};"
-                . '迁移类要建在 Molin\Plugins\{StudlyName}\Migrations\ 下,类名由文件名推出(见《12》§7.3)'
+                . '迁移类要建在 Molin\Plugins\{StudlyName}\Migrations\ 下,类名由文件名推出'
             );
         }
 

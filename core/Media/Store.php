@@ -14,19 +14,19 @@ use Molin\Content\Slug;
 use Molin\Exception\ConfigException;
 
 /**
- * 落盘与命名(《27-媒体库规范》第 4、9 节)。
+ * 落盘与命名。
  *
  * 三条硬规矩:
  * ① **永不使用原始文件名** —— 落盘名 = `主干-时间戳-随机8位.扩展`,人看得懂又不会被覆盖/猜到;
  * ② 按 年/月 分目录,单目录不堆山;
  * ③ 一切都在 `storage/uploads/` 里,这个目录不对外直接暴露(约定),
- *    对外 URL 走 `/uploads/...` 别名(部署侧配置见《27》第 9 节的 Nginx 片段)。
+ *    对外 URL 走 `/uploads/...` 别名(部署侧配置的 Nginx 片段)。
  */
 final class Store
 {
     private const UPLOADS_DIR = 'storage/uploads';
 
-    /** 对外别名前缀;与《27》第 9 节、部署侧的 `location ^~ /uploads/` 同一口径 */
+    /** 对外别名前缀;与既有规范部署侧的 `location ^~ /uploads/` 同一口径 */
     private const PUBLIC_PREFIX = '/uploads/';
 
     public function __construct(private readonly string $root)
@@ -34,7 +34,7 @@ final class Store
     }
 
     /**
-     * 《27》第 4.1 节的落盘名。主干取自原始名(只取可读性,不取真实性)。
+     * 既有规范的落盘名。主干取自原始名(只取可读性,不取真实性)。
      *
      * 两点要紧的:
      * ① 末尾的扩展先剥掉,否则 `Photo.JPG` 会 slug 成 `photo-jpg`;
@@ -56,7 +56,7 @@ final class Store
     }
 
     /**
-     * 相对 `storage/uploads/` 的路径(《21》第 8 节 `media.file_path` 存的就是它)。
+     * 相对 `storage/uploads/` 的路径(既有规范`media.file_path` 存的就是它)。
      */
     public function relativePath(string $name, ?int $now = null): string
     {
@@ -82,7 +82,7 @@ final class Store
     }
 
     /**
-     * 对外 URL。内核只拼前缀,权限与禁执行由部署侧的别名规则保证(《27》第 9 节)。
+     * 对外 URL。内核只拼前缀,权限与禁执行由部署侧的别名规则保证。
      */
     public function url(string $relative): string
     {
@@ -128,7 +128,7 @@ final class Store
     }
 
     /**
-     * 物理删一个文件(含衍生档)。定时任务清理待删内容时用得到(《27》第 8.1 节)。
+     * 物理删一个文件(含衍生档)。定时任务清理待删内容时用得到。
      */
     public function remove(string $relative): bool
     {

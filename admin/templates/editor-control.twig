@@ -1,7 +1,7 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  单个控件的渲染(《34A-字段注册与编辑器控件规范》§4 控件映射 / §7 转义;《36-主题配置器》§2 十四种控件词表)。
+  单个控件的渲染(既有规范控件映射 / §7 转义;既有规范十四种控件词表)。
   只被 editor-field.twig 复用:顶层控件的值走 name="meta_value[]" 成对通道,
   分组 / 中继器里的子控件只带 data-subkey,整组由 admin.js 序列化成 JSON 存单条 postmeta。
   control_args 的 options / rows / min / max / step / accept / lang 都在这里落到标记上。

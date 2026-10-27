@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列出备份(《35》§10、《58》§1 的 backup:list)。
+ * 列出备份(既有规范的 backup:list)。
  */
 final class BackupList extends BaseCommand
 {

@@ -16,13 +16,13 @@ use Molin\Http\Request;
 use Molin\Http\Response;
 
 /**
- * 自定义内容类型的前台路由(《34-内容模型与CPT》第 2.2 节)。
+ * 自定义内容类型的前台路由。
  *
  * 单篇 = `/{rewrite.slug}/{slug}`,归档 = `/{rewrite.slug}`(`has_archive=true`,含 `/page/{n}` 分页)。
  * 段只从登记表取(`PostTypeRegistry`),请求输入永不进 URL 拼接 —— 没有可注入的路径口子。
  *
  * 路由名:单篇 `posttype.{type}`、归档 `posttype.{type}.archive`、归档分页 `posttype.{type}.archive.page`。
- * 与其他路由一样走 `path()` 生成,模板与插件不拼字符串(《23》第 6 节);这三个名字是**运行时**按登记表
+ * 与其他路由一样走 `path` 生成,模板与插件不拼字符串;这三个名字是**运行时**按登记表
  * 现挂的,不进 `core/Router/names.php` 的冻结表 —— 那张表只列内核固定路由。
  *
  * 与既有路由的冲突处理(明确、可解释):
@@ -50,7 +50,7 @@ final class PostTypeRoutes
         return self::archiveName($type) . '.page';
     }
 
-    /** 单篇路径模式(《23》第 3 节:内核按同一套占位符现算路由) */
+    /** 单篇路径模式(内核按同一套占位符现算路由) */
     public static function singlePath(string $segment): string
     {
         return '/' . $segment . '/{postname:[^/]+}';

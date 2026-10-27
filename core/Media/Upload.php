@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Media;
 
 /**
- * 一次上传的输入(《27-媒体库规范》第 1 节第 ① 步)。
+ * 一次上传的输入(既有规范① 步)。
  *
  * 内核不读 `$_FILES`,所以由入口/后台屏把 PHP 给的那坨整理成这个对象再传进来。
  * `fromRequest` 标记它是真上传还是别处(测试、CLI 导入)拿来的文件 ——

@@ -16,7 +16,7 @@ use Molin\Support\Files;
 use RuntimeException;
 
 /**
- * 恢复流程(《35-备份与导入导出》§5):
+ * 恢复流程:
  * 解密(加密包) → 校验和 → 恢复前自动备份当前状态 → 停外键、清表 → 重放 database.sql → 还原文件 → 清缓存。
  *
  * 逐语句解析尊重引号(数据里的分号与换行都安全);只认自家命名的包。
@@ -33,7 +33,7 @@ final class Restore
     }
 
     /**
-     * @param string|null $password 加密包的解密密码(《35》§4 ⑥);未加密包传 null
+     * @param string|null $password 加密包的解密密码(既有规范⑥);未加密包传 null
      * @param Progress|null $progress 传了就往它报进度;调用方负责 begin() / finish(),这里只 advance()
      * @return list<string> 每步一句的反馈,调用方直接展示
      */
@@ -76,7 +76,7 @@ final class Restore
 
             $progress?->advance(0, 0, __('正在备份当前状态…'), 'pre');
 
-            // 《35》§5:恢复前先给当前状态留一份,防"恢复错了更糟";加密包沿用同一个密码
+            // 恢复前先给当前状态留一份,防"恢复错了更糟";加密包沿用同一个密码
             $pre = $this->backup->create($version, 'pre', $password, $progress);
             $steps[] = '已把当前状态备份为 ' . $pre['name'];
 

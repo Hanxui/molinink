@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * `themes` 表补一列 `updated_at`(《36-主题配置器》第 11 节:「上次保存」时间取库里最后一次写入)。
+ * `themes` 表补一列 `updated_at`(「上次保存」时间取库里最后一次写入)。
  */
 final class AddThemesUpdatedAt20261003000100 extends AbstractMigration
 {

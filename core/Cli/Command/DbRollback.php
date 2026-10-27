@@ -18,9 +18,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 回滚迁移(《29》第 6 节:每个迁移必须带 down())。
+ * 回滚迁移(每个迁移必须带 down)。
  *
- * 破坏性动作一律显式 --force(《58》第 7 节);先 --dry-run 看清范围再执行。
+ * 破坏性动作一律显式 --force;先 --dry-run 看清范围再执行。
  */
 final class DbRollback extends BaseCommand
 {

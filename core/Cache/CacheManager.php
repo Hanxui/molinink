@@ -16,7 +16,7 @@ use Molin\Support\Files;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * 缓存统一入口(《24-缓存抽象层规范》第 3、4、5、9 节)。
+ * 缓存统一入口。
  *
  * 业务代码只说"要缓存这个",换后端只改 config.php 的 `cache.backend` 一行;
  * `backend = null` 时走 NullStore,调用方不用改(§3.4)。
@@ -25,7 +25,7 @@ use Psr\SimpleCache\CacheInterface;
  * 并把"配置值 / 实际生效值"分别吐出来(§3.2 / §3.3、健康屏与设置页据此显示真状态),
  * 绝不假装连上了。降级只影响快慢,不影响正确性。
  *
- * 键命名走《24》§5 的 `{prefix}:{域}:{对象}:{标识}` 习惯,但**落到 PSR-16 存储前会把冒号换成点** ——
+ * 键命名走既有规范的 `{prefix}:{域}:{对象}:{标识}` 习惯,但**落到 PSR-16 存储前会把冒号换成点** ——
  * PSR-16 §2 把 `{}()/\@:` 列为保留字符,FileStore 也照此校验,直传冒号键会当场抛。
  * 这是文档习惯与 PSR-16 约束的取舍,不改存储适配器的合规性。
  */
@@ -37,7 +37,7 @@ final class CacheManager
     /** 键前缀缺省值;配置 `cache.prefix` 可覆盖 */
     public const DEFAULT_PREFIX = 'molin';
 
-    /** 默认存活秒数(《24》§4 的 `cache.ttl`) */
+    /** 默认存活秒数(既有规范的 `cache.ttl`) */
     public const DEFAULT_TTL = 3600;
 
     /** 标签索引目录名(落在数据目录下,与 FileStore 的两位十六进制分片目录互不干扰) */
@@ -347,7 +347,7 @@ final class CacheManager
     }
 
     /**
-     * 键的命名空间当标签:标准键形如 `post:list:{hash}`(《24》§5),
+     * 键的命名空间当标签:标准键形如 `post:list:{hash}`,
      * 于是它同时属于 `post` 与 `post:list` —— 内容一变,失效方传 `post` 就能一并清掉,
      * 不用让每个业务调用点各自学会打标签。
      *

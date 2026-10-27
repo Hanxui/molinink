@@ -35,11 +35,11 @@ use ReflectionClass;
 use Throwable;
 
 /**
- * 插件屏与插件后台页(《41》§4、《12》§13/§14):启停删除、离线上传、回执,以及插件声明的后台页。
+ * 插件屏与插件后台页(既有规范/§14):启停删除、离线上传、回执,以及插件声明的后台页。
  */
 final class PluginPages
 {
-    /** 插件启停与删除的回执(《41》§4):一句话说清结果,细节进日志 */
+    /** 插件启停与删除的回执:一句话说清结果,细节进日志 */
     private const PLUGIN_NOTICES = [
         'activated' => '插件已启用。',
         'deactivated' => '插件已停用。',
@@ -71,7 +71,7 @@ final class PluginPages
     }
 
     /**
-     * 插件启停与删除(《41》§4)。能力已由 handle() 按「插件」页校验(plugin.activate),
+     * 插件启停与删除。能力已由 handle 按「插件」页校验(plugin.activate),
      * 这里只认动作与 CSRF;启停的审计与钩子由 Loader 自己播报,删除照本文件备份那套
      * 带请求上下文记一条 plugin.delete。
      */
@@ -88,7 +88,7 @@ final class PluginPages
             return Response::redirect($this->router->path('admin', ['path' => 'plugins']) . '?done=expired');
         }
 
-        // 离线上传 zip(《92》§8)动作最重,单开一条私有方法
+        // 离线上传 zip动作最重,单开一条私有方法
         if ($path === 'plugins/upload') {
             return $this->uploadPlugin($request, $user);
         }
@@ -151,14 +151,14 @@ final class PluginPages
     }
 
     /**
-     * 插件屏的「上传插件」(《92》§8 离线链):新装只解包落盘、不启用;同名已存在则按升级走
+     * 插件屏的「上传插件」(既有规范离线链):新装只解包落盘、不启用;同名已存在则按升级走
      * (自动停用 → 换代码 → 恢复原启用状态,详见 Loader::upgrade)。
      *
      * 校验、解压、备份、失败回滚全在 ZipInstaller + Loader,这里只管权限、回执与审计。
      */
     private function uploadPlugin(Request $request, User $user): Response
     {
-        // 藏菜单不算防护:进页与上传都在这道闸上各校验一次(《61》§3.1)
+        // 藏菜单不算防护:进页与上传都在这道闸上各校验一次
         if (!$this->can->can($user, 'plugin.activate')) {
             return $this->view->render('forbidden.twig', [
                 'page_title' => __('插件'),
@@ -210,7 +210,7 @@ final class PluginPages
     }
 
     /**
-     * 插件屏的回执文案(《41》§4 + 《92》§8):结果一句话说清,细节进日志。
+     * 插件屏的回执文案:结果一句话说清,细节进日志。
      * msg 是服务端自己写的结果细节(插件名 / 失败原因),按主题屏口径截到 300 字。
      */
     public function pluginFlash(Request $request): string
@@ -232,7 +232,7 @@ final class PluginPages
     }
 
     /**
-     * 插件后台页解析(《12》§13、§14)。四条规矩:
+     * 插件后台页解析(既有规范)。四条规矩:
      * 1) 只认**已启用**插件声明的 route —— 停用即 404,不留后门;
      * 2) route 不许占用内核已有路径(整条,或第一段与内核页重名 —— 内核优先);
      * 3) 视图缺文件就当作没声明(404),不让一个漏打包的插件把后台打成 500;
@@ -270,7 +270,7 @@ final class PluginPages
         throw new NotFoundException('后台没有这个页面:' . $path);
     }
 
-    /** 内核页优先:整条路径或它第一段已经是内核的,插件盖不住(《12》§13)。 */
+    /** 内核页优先:整条路径或它第一段已经是内核的,插件盖不住。 */
     private function kernelOwns(string $route): bool
     {
         $first = strtok($route, '/');
@@ -326,7 +326,7 @@ final class PluginPages
         }
 
         // 控制器不在钩子回调/懒加载上下文里 —— 用 withPlugin 划出归属:
-        // 插件在这一路上才认得出自己的清单,能力门卫才有把手(《62》第 5、6 节)。
+        // 插件在这一路上才认得出自己的清单,能力门卫才有把手。
         $result = HookBus::instance()->withPlugin(
             $plugin->name(),
             fn (): array|Response => $controller->handle(new AdminPageContext(
@@ -350,7 +350,7 @@ final class PluginPages
     }
 
     /**
-     * 取插件后台页的控制器实例(《12》§14)。三道运行期检查:类在、实现了接口、能无参构造。
+     * 取插件后台页的控制器实例。三道运行期检查:类在、实现了接口、能无参构造。
      *
      * 任何一道不过都按"这一页没有控制器"办 —— 一个写动作没接好,不该把整页弄没。
      * 但也不静默:记一条插件日志,排查时看得见是谁、差在哪。

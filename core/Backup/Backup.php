@@ -15,9 +15,9 @@ use Molin\Support\Files;
 use RuntimeException;
 
 /**
- * 备份创建与备份列表(《35-备份与导入导出》§1–§4、§3 的最小可用版)。
+ * 备份创建与备份列表(既有规范的最小可用版)。
  *
- * 打包用 PharData(纯 PHP,不碰 exec —— 《61》§4.8 禁 shell 拼用户输入):
+ * 打包用 PharData(纯 PHP,不碰 exec —— 既有规范禁 shell 拼用户输入):
  * 库逐表导出为 SQL,上传目录与 config.php 进包,manifest 带版本与校验和。
  * 加密可以选(第六步,密码由用户设);远端上传在 Remote 类里,创建后由调用方决定推不推。
  */
@@ -58,7 +58,7 @@ final class Backup
     /**
      * 创建一份全量备份,返回文件信息。
      *
-     * @param string|null $password 给了密码就整包加密(AES-256-GCM,《35》§4 ⑥)
+     * @param string|null $password 给了密码就整包加密(AES-256-GCM,既有规范⑥)
      * @param Progress|null $progress 传了就往它报进度;调用方负责 begin() / finish(),这里只 advance()
      * @return array{name:string, size:int, tables:int, encrypted:bool}
      */
@@ -266,9 +266,9 @@ final class Backup
                 'name' => $name,
                 'size' => $size,
                 'created_at' => (int) filemtime($path),
-                // 文件名里就带着它是全量还是恢复前的自留底(《109》§4「来源」列)
+                // 文件名里就带着它是全量还是恢复前的自留底(既有规范「来源」列)
                 'source' => $m[1] === 'pre' ? '恢复前' : '手动',
-                // 「已加密」标签只看文件头,不解包(《109》§5.9)
+                // 「已加密」标签只看文件头,不解包
                 'encrypted' => Cipher::isEncryptedFile($path),
             ];
         }

@@ -1,6 +1,6 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {#
-  登录屏(《121-登录页实现规格》)。三态:默认 / 会话失效(.strip)/ 锁定(.note + 全禁用)。
+  登录屏。三态:默认 / 会话失效(.strip)/ 锁定(.note + 全禁用)。
   两态互斥,同时成立按"锁定优先"(§6.3)。锁定阈值两个数字随配置渲染,不写死(§10)。
 #}
 {% extends "auth_layout.twig" %}

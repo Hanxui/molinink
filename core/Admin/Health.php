@@ -26,10 +26,10 @@ use RecursiveIteratorIterator;
 use SplFileInfo;
 
 /**
- * 站点健康的读模型(《111-后台站点健康实现规格》)。18 项检查分五组 6/3/3/2/4,只读不写。
+ * 站点健康的读模型。18 项检查分五组 6/3/3/2/4,只读不写。
  *
- * 判据尽量与《42》§2 的安装检测同源(PHP 版本 / 扩展 / ini 阈值 / 目录可写 / 伪静态观察法)。
- * 尚未接线的指标如实说"未接…"(《77》§4.5 同一条诚实口径),不自造阈值、不写死数字。
+ * 判据尽量与既有规范的安装检测同源(PHP 版本 / 扩展 / ini 阈值 / 目录可写 / 伪静态观察法)。
+ * 尚未接线的指标如实说"未接…"(既有规范同一条诚实口径),不自造阈值、不写死数字。
  * 输出形状对齐模板:三档状态(ok/tip/bad)、当下值(词级分段:code/dim 与纯文本)、判定标准、修复链接。
  * `fix.url` 只有路由表里真有的才给(/admin/logs),没落地的只有文案、没有 href(§11-10 不自造路由)。
  */
@@ -39,7 +39,7 @@ final class Health
 
     private const REQUIRED_EXT = ['pdo_mysql', 'mbstring', 'json', 'openssl', 'fileinfo'];
 
-    /** 推荐扩展里除掉图片这一对之外的名字(《42》§2 表) */
+    /** 推荐扩展里除掉图片这一对之外的名字(既有规范表) */
     private const EXTRA_EXT = ['intl', 'zip', 'curl'];
 
     public function __construct(
@@ -57,7 +57,7 @@ final class Health
     }
 
     /**
-     * @param string $serverSoftware 入口脚本收口进来的 SERVER_SOFTWARE(《42》§2 伪静态观察法)
+     * @param string $serverSoftware 入口脚本收口进来的 SERVER_SOFTWARE(既有规范伪静态观察法)
      * @return array{groups: list<array{name:string, note:string, rows:list<array<string,mixed>>}>, sum: array<string, array{n:int, label:string}>, when: string}
      */
     public function payload(string $serverSoftware): array
@@ -85,7 +85,7 @@ final class Health
                 'tip' => ['n' => $tally['tip'], 'label' => __('项建议')],
                 'bad' => ['n' => $tally['bad'], 'label' => __('项严重')],
             ],
-            // 检测就在本次渲染里跑完,"上次检测"即此刻(《111》§10:检测结果没有单独缓存,不自造)
+            // 检测就在本次渲染里跑完,"上次检测"即此刻(检测结果没有单独缓存,不自造)
             'when' => __('上次检测：今天 %s', 'molin', date('H:i')),
         ];
     }
@@ -270,7 +270,7 @@ final class Health
 
         $cv = [self::text(__('缺') . ' '), self::code(implode('、', $missing))];
 
-        // gd 在岗、只缺 imagick:缩略图不受影响,与基准同一句把话说完
+        // gd 在岗、只缺 imagick:缩略图不受影响,与设计稿同一句把话说完
         if ($missing === ['imagick'] && extension_loaded('gd')) {
             $cv[] = self::dim(__('（已用 gd 生成缩略图）'));
         }
@@ -334,7 +334,7 @@ final class Health
     }
 
     /**
-     * 伪静态只能观察:PHP 看不见 nginx/apache 的配置(《42》§2 同款判据)。
+     * 伪静态只能观察:PHP 看不见 nginx/apache 的配置(既有规范同款判据)。
      *
      * @return array<string, mixed>
      */
@@ -423,7 +423,7 @@ final class Health
     {
         $rows = [];
 
-        // 《24》的缓存适配器已接线:显示**实际生效**的后端(配置写了 yac/redis 而不可用时如实降级为文件);
+        // 既有规范的缓存适配器已接线:显示**实际生效**的后端(配置写了 yac/redis 而不可用时如实降级为文件);
         // 未接装配线(测试手工装配)时才退回"仅编译缓存"的说法 —— 不说没发生的事
         $manager = CacheManager::instance();
 
@@ -447,7 +447,7 @@ final class Health
     }
 
     /**
-     * 第 3 层页面缓存(《24》§7)的当前占用。命中计数尚未做,所以只报"缓存了多少页",
+     * 第 3 层页面缓存的当前占用。命中计数尚未做,所以只报"缓存了多少页",
      * 报的是可核的事实,不编一个命中率。
      *
      * @return array<string, mixed>
@@ -545,8 +545,8 @@ final class Health
             $rows[] = $this->row($fresh ? 'ok' : 'bad', __('备份新鲜度'), $cv, __('每日至少一份'), $fresh ? null : ['label' => __('去处理'), 'warn' => true]);
         }
 
-        // 《29》的升级检查已落在后台「更新」页;这里只读那份检查留下的已验签清单(Feed::cachedStatus),
-        // 不联网、不写 —— 健康屏只读(《111》)。有新版据实报,没查过就指路「更新」页,不谎称"已是最新"。
+        // 既有规范的升级检查已落在后台「更新」页;这里只读那份检查留下的已验签清单(Feed::cachedStatus),
+        // 不联网、不写 —— 健康屏只读。有新版据实报,没查过就指路「更新」页,不谎称"已是最新"。
         $update = $this->feed?->cachedStatus(Kernel::VERSION) ?? ['state' => 'unchecked', 'version' => ''];
         $updateText = match ($update['state']) {
             'available' => __('可更新到 %s', 'molin', $update['version']),
@@ -566,7 +566,7 @@ final class Health
         $rows = [];
 
         // 三条耗时读的是**真实访问**的采样(ErrorHandler 收尾时落进 storage/cache/data/perf-samples.json),
-        // 不是打开本页现测一次。首页按页面静态缓存命中 / 未命中分桶,分别对《57》§2 的两条预算;
+        // 不是打开本页现测一次。首页按页面静态缓存命中 / 未命中分桶,分别对既有规范的两条预算;
         // 采不到就如实说"尚未采到样本" —— 不写死数字、不外推。
         $samples = $this->samples ?? new RequestSamples();
 
@@ -587,7 +587,7 @@ final class Health
             $admin === null ? '' : __('近 %d 次', 'molin', $admin['count'])
         );
 
-        // 《111》§11-6:内核体积在《57》§2 没有判据,只报读数,不自造阈值(判定标准保持"预算待定")
+        // 内核体积在既有规范没有判据,只报读数,不自造阈值(判定标准保持"预算待定")
         $bytes = self::dirSize(MOLIN_ROOT . '/core') + self::dirSize(MOLIN_ROOT . '/vendor');
         $rows[] = $this->row('tip', __('程序体积'), [
             self::text(number_format($bytes / 1048576, 1) . ' MB'),
@@ -701,7 +701,7 @@ final class Health
     }
 
     /**
-     * shorthand 阈值比较(K/M/G),与《42》§2 的安装检测同一口径;-1 表示不限。
+     * shorthand 阈值比较(K/M/G),与既有规范的安装检测同一口径;-1 表示不限。
      */
     private static function bytes(string $value): int
     {

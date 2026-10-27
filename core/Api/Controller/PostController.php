@@ -27,16 +27,16 @@ use Molin\User\Authorizer;
 use Molin\User\User;
 
 /**
- * 文章与页面端点(《25》§3.1、§3.2):公开列表 / 单篇 / 我的文章 / 新建 / 更新 / 回收站。
+ * 文章与页面端点(既有规范):公开列表 / 单篇 / 我的文章 / 新建 / 更新 / 回收站。
  *
  * 公开读走 visible() 这一道可见性闸;写端先过能力,再按状态机把 contributor 的"发布"降成待审。
  */
 final class PostController extends ApiSupport
 {
-    /** 写端点收的字段白名单(《21》§2 的子集;口令、特色图等留给后台专属形态) */
+    /** 写端点收的字段白名单(既有规范的子集;口令、特色图等留给后台专属形态) */
     private const WRITABLE = ['title', 'slug', 'excerpt', 'content', 'status', 'comment_status', 'categories', 'tags'];
 
-    /** App 的文章状态口径 → 内核状态机(《34》)。App 说 published,内核说 publish */
+    /** App 的文章状态口径 → 内核状态机。App 说 published,内核说 publish */
     private const STATUS_ALIASES = ['published' => 'publish'];
 
     public function __construct(
@@ -74,7 +74,7 @@ final class PostController extends ApiSupport
             return $this->fail('bad_request', 'order 只认 asc / desc', 400);
         }
 
-        // 《25》§5:status 默认 publish,别的取值需要权限;令牌体系落地前只放公开态
+        // status 默认 publish,别的取值需要权限;令牌体系落地前只放公开态
         if ((string) $request->query('status', 'publish') !== 'publish') {
             return $this->fail('forbidden', '按状态取内容需要权限', 403);
         }
@@ -206,7 +206,7 @@ final class PostController extends ApiSupport
             ->content();
 
         if ($trashOnly) {
-            // 回收站行 deleted_at 非空,默认查询会把它们全滤掉,必须显式 trashed()(《34》第 5 节)
+            // 回收站行 deleted_at 非空,默认查询会把它们全滤掉,必须显式 trashed
             $query->status(StatusMachine::TRASH)->trashed();
         } else {
             $query->statuses([StatusMachine::DRAFT, StatusMachine::PENDING, StatusMachine::PUBLISH, StatusMachine::PRIVATE]);
@@ -274,7 +274,7 @@ final class PostController extends ApiSupport
     }
 
     /**
-     * POST /api/v1/posts —— 新建(《25》§3.1,能力 post.create)。
+     * POST /api/v1/posts —— 新建(既有规范能力 post.create)。
      */
     public function create(Request $request, User $user, bool $viaSession): Response
     {
@@ -304,7 +304,7 @@ final class PostController extends ApiSupport
     }
 
     /**
-     * DELETE /api/v1/posts/{id} —— 入回收站(《25》§3.1:删除 == 回收站,不是销毁)。
+     * DELETE /api/v1/posts/{id} —— 入回收站(删除 == 回收站,不是销毁)。
      * 带 `?force=1|true` 才是彻底删除,且只认回收站里的文章(与后台回收站栏同口径)。
      */
     public function delete(Request $request, User $user, bool $viaSession, int $id): Response
@@ -453,7 +453,7 @@ final class PostController extends ApiSupport
     }
 
     /**
-     * 《32》§3:contributor 有内容没 post.publish —— 想发布就是"提交待审",与后台同口径。
+     * contributor 有内容没 post.publish —— 想发布就是"提交待审",与后台同口径。
      * 没碰状态或没这个键时返回 null(不改)。
      *
      * @param array<string, mixed> $data
@@ -490,7 +490,7 @@ final class PostController extends ApiSupport
             }
         }
 
-        // App 说的是 published,内核说 publish(《34》状态机);别让 App 的词汇渗进内核
+        // App 说的是 published,内核说 publish(既有规范状态机);别让 App 的词汇渗进内核
         if (isset($out['status']) && is_string($out['status'])) {
             $out['status'] = self::STATUS_ALIASES[$out['status']] ?? $out['status'];
         }

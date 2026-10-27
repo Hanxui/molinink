@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 身份未确认 → 401。层级见《26》第 1 节。
+ * 身份未确认 → 401。层级。
  */
 final class UnauthorizedException extends AuthException
 {

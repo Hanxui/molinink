@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列插件(《58》第 1 节)。状态读的是 {p}plugins 表 —— 权威源(《21》第 9 节)。
+ * 列插件。状态读的是 {p}plugins 表 —— 权威源。
  */
 final class PluginList extends BaseCommand
 {

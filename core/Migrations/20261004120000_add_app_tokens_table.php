@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * App 登录令牌表(《25》第 3.3 节的落地件)。
+ * App 登录令牌表(既有规范的落地件)。
  *
  * App 没有浏览器那套 cookie/CSRF,靠 `Authorization: Bearer` 带一对不透明令牌:
  * access 短命(1 小时)、refresh 长命(默认 30 天);两者共用 series,登出或检出

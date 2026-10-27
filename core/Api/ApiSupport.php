@@ -22,12 +22,12 @@ use Molin\User\Auth;
 /**
  * 接口层各控制器共用的响应包裹、地址、分页、会话防跨站与内容序列化支撑。
  *
- * 这些方法的输出形状由《25-接口规范》§4 / §6 统一约束,放在一处才能保证
+ * 这些方法的输出形状由既有规范/ §6 统一约束,放在一处才能保证
  * 每个资源控制器的成功/失败包裹一字不差 —— 尤其 respond() 是 `api/response/before` 的唯一挂点。
  */
 abstract class ApiSupport
 {
-    /** 《25》§5 的 orderby 取值 → 查询列。白名单,用户输入不进 ORDER BY */
+    /** 既有规范的 orderby 取值 → 查询列。白名单,用户输入不进 ORDER BY */
     protected const ORDERS = [
         'date' => 'published_at',
         'title' => 'title',
@@ -82,7 +82,7 @@ abstract class ApiSupport
     }
 
     /**
-     * 公开端点的可见性(《34》§5):未删除、已发布、到点。草稿与定时稿同样回 404,不泄露存在性。
+     * 公开端点的可见性:未删除、已发布、到点。草稿与定时稿同样回 404,不泄露存在性。
      */
     protected function visible(?Post $post): ?Post
     {
@@ -145,7 +145,7 @@ abstract class ApiSupport
     }
 
     /**
-     * 会话路径的写请求要带防跨站令牌(《61》§3):浏览器自动带 cookie,
+     * 会话路径的写请求要带防跨站令牌:浏览器自动带 cookie,
      * 不设这层,任何站点的一张表单都能替登录者发文。API Key 路径不需要 —— 头不跨站。
      */
     protected function guardSession(Request $request, bool $viaSession): ?Response
@@ -192,7 +192,7 @@ abstract class ApiSupport
     }
 
     /**
-     * 唯一出口 —— `api/response/before` 只挂这一处,成功与失败响应都过它(《25》§8)。
+     * 唯一出口 —— `api/response/before` 只挂这一处,成功与失败响应都过它。
      *
      * @param array<string, mixed> $payload
      */

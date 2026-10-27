@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Support;
 
 /**
- * 面向用户的错误编号,如 ERR-9F3A2C(《26》第 4 节)。
+ * 面向用户的错误编号,如 ERR-9F3A2C。
  * 它只用于"用户报号、开发者查日志",本身不含任何路径或异常信息。
  */
 final class ErrorId

@@ -13,12 +13,12 @@ namespace Molin\Update;
 use Molin\Plugin\CapabilityGate;
 
 /**
- * 升级源要的那一次 GET(《29》§5:只走 https、要能带 If-None-Match 拿 304)。
+ * 升级源要的那一次 GET(只走 https、要能带 If-None-Match 拿 304)。
  *
  * 只做最薄的一件事:发出去、把状态码/正文/ETag 拿回来。判断与验签不在这里。
  * 证书照常校验 —— 为了"能连上"而跳过校验,等于把防掉包这件事自己拆了。
  *
- * 本类是 `http.outbound` 能力的拦截面(《62》第 6 节):内核的出网 GET 从这一处走,
+ * 本类是 `http.outbound` 能力的拦截面:内核的出网 GET 从这一处走,
  * 门卫放在发出去之前 —— 内核自身(无插件上下文)照常发,插件未声明即被拦下。
  */
 final class Http
@@ -95,7 +95,7 @@ final class Http
     }
 
     /**
-     * 没装 curl 时的退路:allow_url_fopen 开了也能拿(《51》把 curl 列在推荐栏,不是必需)。
+     * 没装 curl 时的退路:allow_url_fopen 开了也能拿(既有规范把 curl 列在推荐栏,不是必需)。
      *
      * @return array{status: int, body: string, etag: string, error: string}
      */

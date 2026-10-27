@@ -92,7 +92,7 @@ use Molin\User\UserRepository;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * 启动装配(《52-自动加载与命名空间》第 8 节的顺序)。
+ * 启动装配(既有规范的顺序)。
  *
  * 单入口与 CLI 共用同一条装配路径 —— 两条路若各接一遍服务,行为迟早分叉。
  * 这里只负责"把容器接好",不注册路由、不分发请求。
@@ -118,7 +118,7 @@ final class Bootstrap
         /** @var array<string, mixed> $config */
         $config = require $root . '/config.php';
 
-        // 《26》第 3 节:环境判断只认这一个开关
+        // 环境判断只认这一个开关
         if (!defined('APP_DEBUG')) {
             define('APP_DEBUG', (bool) ($config['debug'] ?? false));
         }
@@ -134,10 +134,10 @@ final class Bootstrap
         $container->instance('config', $config);
         $container->instance(ClassLoader::class, $autoloader);
         $container->instance('root', $root);
-        // 钩子总线是进程内单例(《11》《22》):注册成服务,渲染器按容器取同一份
+        // 钩子总线是进程内单例:注册成服务,渲染器按容器取同一份
         $container->instance(HookBus::class, HookBus::instance());
 
-        // 缓存统一入口(《24》§3/§4):按 config.php 的 cache 段装配,并 boot 成全局实例。
+        // 缓存统一入口(既有规范/§4):按 config.php 的 cache 段装配,并 boot 成全局实例。
         // yac / redis 扩展缺失或适配器未落地时 fromConfig 会**如实降级为文件后端**,健康屏显示真状态。
         $container->set(CacheManager::class, static function (Container $c): CacheManager {
             /** @var array<string, mixed> $config */
@@ -147,7 +147,7 @@ final class Bootstrap
 
             return $manager;
         });
-        // 页面静态缓存(《24》§7.1):目录 storage/cache/pages,测试经 MOLIN_STATE_ROOT 换根。
+        // 页面静态缓存:目录 storage/cache/pages,测试经 MOLIN_STATE_ROOT 换根。
         // TTL 跟数据缓存同一个口径,取 config.php 的 `cache.ttl` —— 配置里没这一节(或写成非正数)时
         // 回落 CacheManager::DEFAULT_TTL,不再由 PageCache 自己写死 3600。
         $container->set(PageCache::class, static function (Container $c): PageCache {
@@ -181,7 +181,7 @@ final class Bootstrap
         $container->set(Database::class, static fn (): Database => new Database((array) ($config['database'] ?? [])));
         $container->set(Options::class, static function (Container $c): Options {
             $options = new Options($c->get(Database::class));
-            // 插件配置存储(《12》§14)与 plugin_setting() 全局助手都要内核这一份 Options
+            // 插件配置存储与 plugin_setting 全局助手都要内核这一份 Options
             Settings::boot($options);
 
             return $options;
@@ -230,7 +230,7 @@ final class Bootstrap
             $c->get(HookBus::class),
             // 主题设置里的 image 字段存附件 id,模板 image(id) 要有一条取图通道
             Renderer::mediaProvider($c->get(MediaRepository::class), $c->get(Store::class)),
-            // 模板 post_meta(文章 id, 键) 的数据源(《34》§4)
+            // 模板 post_meta(文章 id, 键) 的数据源
             Renderer::metaProvider($c->get(MetaStore::class))
         ));
         $container->set(ThemeSettings::class, static function (Container $c): ThemeSettings {
@@ -239,7 +239,7 @@ final class Bootstrap
                 $c->get(Options::class),
                 $c->get('root') . '/themes'
             );
-            // theme_setting() 全局助手与 Twig 同名同源(《36》§5),启动时接上实例
+            // theme_setting 全局助手与 Twig 同名同源,启动时接上实例
             ThemeSettings::boot($settings);
 
             return $settings;
@@ -265,7 +265,7 @@ final class Bootstrap
         // CSRF 令牌第一次生成时必须立刻落库:否则它只活在这一趟请求的内存里,
         // 表单发出去的令牌下一次请求就查不到,任何表单都会永远判 stale(2026-10-23 修)
         Csrf::boot(static fn (Session $session): mixed => $container->get(SessionStore::class)->save($session));
-        // 内建定时任务(《58》§5):cron:run 的取数口,到期状态落 storage/cache/data/cron.json
+        // 内建定时任务:cron:run 的取数口,到期状态落 storage/cache/data/cron.json
         $container->set(Cron::class, static fn (Container $c): Cron => new Cron(
             $c->get(SessionStore::class),
             $c->get(RememberTokens::class),
@@ -274,7 +274,7 @@ final class Bootstrap
         $container->set(ApiKeys::class, static fn (Container $c): ApiKeys => new ApiKeys($c->get(Database::class)));
         $container->set(AppTokens::class, static fn (Container $c): AppTokens => new AppTokens($c->get(Database::class)));
         $container->set(LoginThrottle::class, static fn (Container $c): LoginThrottle => new LoginThrottle((string) $c->get('root')));
-        // 接口限速(《25》§8):计数落 storage/cache/data,测例经 MOLIN_STATE_ROOT 换根
+        // 接口限速:计数落 storage/cache/data,测例经 MOLIN_STATE_ROOT 换根
         $container->set(RateLimiter::class, static fn (Container $c): RateLimiter => new RateLimiter((string) $c->get('root')));
         $container->set(Auth::class, static fn (Container $c): Auth => new Auth(
             $c->get(UserRepository::class),
@@ -283,7 +283,7 @@ final class Bootstrap
             $c->get(RememberTokens::class)
         ));
         $container->set(Authorizer::class, static fn (): Authorizer => new Authorizer());
-        // 写入链(第 9 轮)也要在 Web 侧可用:后台文章屏靠它,不能再像 CLI 那样手搓一遍
+        // 写入链也要在 Web 侧可用:后台文章屏靠它,不能再像 CLI 那样手搓一遍
         $container->set(MetaStore::class, static fn (Container $c): MetaStore => new MetaStore($c->get(Database::class)));
         $container->set(TermAssigner::class, static fn (Container $c): TermAssigner => new TermAssigner($c->get(Database::class)));
         $container->set(PostWriter::class, static fn (Container $c): PostWriter => new PostWriter(
@@ -301,7 +301,7 @@ final class Bootstrap
             $c->get(Router::class),
             $c->get(Options::class)
         ));
-        // 媒体库(《27》):落盘目录跟着站点根走,storage/uploads 不对外(约定)
+        // 媒体库:落盘目录跟着站点根走,storage/uploads 不对外(约定)
         $container->set(MediaRepository::class, static fn (Container $c): MediaRepository => new MediaRepository($c->get(Database::class)));
         $container->set(Store::class, static fn (Container $c): Store => new Store($c->get('root')));
         $container->set(Uploader::class, static fn (Container $c): Uploader => new Uploader(
@@ -320,14 +320,14 @@ final class Bootstrap
             $c->get(Authorizer::class),
             $c->get(PostRepository::class)
         ));
-        // 评论(《31》):存取与提交流各一个类;反垃圾的"最低限度"在 Submitter,智能判定交插件
+        // 评论:存取与提交流各一个类;反垃圾的"最低限度"在 Submitter,智能判定交插件
         $container->set(CommentRepository::class, static fn (Container $c): CommentRepository => new CommentRepository($c->get(Database::class)));
 
         // 站内通知的存取与写入实现由插件经 social/services/collect 注入,内核不再注册实现类
 
         // 状态迁移唯一门(mark 批准/垃圾/回收):后台屏与接口层共用,钩子只在这里触发一次
         $container->set(Moderator::class, static fn (Container $c): Moderator => new Moderator($c->get(CommentRepository::class)));
-        // 前台评论树(《31》§2/§3):已通过 + "仅你可见"的待审,按 comment_nest_depth 压平
+        // 前台评论树(既有规范/§3):已通过 + "仅你可见"的待审,按 comment_nest_depth 压平
         $container->set(Thread::class, static fn (Container $c): Thread => new Thread(
             $c->get(CommentRepository::class),
             $c->get(Options::class),
@@ -339,7 +339,7 @@ final class Bootstrap
             $c->get(Options::class),
             $c->get(Authorizer::class)
         ));
-        // 仪表盘的取数与缓存清理(《77》§4–§6):取数只读,清理只删编译产物,别的一概不碰
+        // 仪表盘的取数与缓存清理:取数只读,清理只删编译产物,别的一概不碰
         $container->set(Dashboard::class, static fn (Container $c): Dashboard => new Dashboard(
             $c->get(Database::class),
             $c->get(PostRepository::class),
@@ -352,7 +352,7 @@ final class Bootstrap
         $container->set(Restore::class, static fn (Container $c): Restore => new Restore($c->get(Backup::class), $c->get(Database::class), $c->get('root')));
         $container->set(DownloadTokens::class, static fn (Container $c): DownloadTokens => new DownloadTokens($c->get('root')));
         $container->set(Remote::class, static fn (Container $c): Remote => new Remote((string) $c->get('root')));
-        // i18n(《33》):语言目录常年只读,启动就位;__() / _e() 全局助手靠 boot
+        // i18n:语言目录常年只读,启动就位;__ / _e 全局助手靠 boot
         $container->set(Translator::class, static function (Container $c): Translator {
             $translator = new Translator(
                 (string) $c->get('root'),
@@ -363,7 +363,7 @@ final class Bootstrap
 
             return $translator;
         });
-        // 头像助手(《31》§7):模板随时会叫 avatar(),boot 放在装配期,省得第一屏拿到降级实例
+        // 头像助手:模板随时会叫 avatar,boot 放在装配期,省得第一屏拿到降级实例
         $container->set(Avatar::class, static function (Container $c): Avatar {
             $avatar = new Avatar(
                 $c->get(UserRepository::class),
@@ -447,7 +447,7 @@ final class Bootstrap
             $c->get('root') . '/themes',
             $c->get('root') . '/storage/trash'
         ));
-        // 个人资料屏(《84》):只经手登录者自己的数据
+        // 个人资料屏:只经手登录者自己的数据
         $container->set(ProfileController::class, static fn (Container $c): ProfileController => new ProfileController(
             $c->get(AdminView::class),
             $c->get(UserRepository::class),
@@ -459,14 +459,14 @@ final class Bootstrap
             $c->get(SessionStore::class),
             $c->get(Router::class)
         ));
-        // 日志查看器(《112》):只读屏,数据源是 storage/logs 的文件(读取根可被 MOLIN_LOG_ROOT 重定向)
+        // 日志查看器:只读屏,数据源是 storage/logs 的文件(读取根可被 MOLIN_LOG_ROOT 重定向)
         $container->set(LogReader::class, static fn (): LogReader => new LogReader());
         $container->set(LogsController::class, static fn (Container $c): LogsController => new LogsController(
             $c->get(AdminView::class),
             $c->get(LogReader::class),
             $c->get(Router::class)
         ));
-        // 站点健康(《111》):只读体检屏;18 项检查的取数在 Health,结构版本对着 core/Migrations 的清单数
+        // 站点健康:只读体检屏;18 项检查的取数在 Health,结构版本对着 core/Migrations 的清单数
         $container->set(Migrator::class, static fn (Container $c): Migrator => new Migrator(
             $c->get(Database::class),
             $c->get('root') . '/core/Migrations'
@@ -487,26 +487,26 @@ final class Bootstrap
             // 2026-10-17:健康屏改成"按了才测",检测结果要存一份快照给下一次进页面读
             $c->get(Options::class)
         ));
-        // 用户新建与编辑(《106》):进页/保存保守挂在 user.create(《106》§11-8 待裁)
+        // 用户新建与编辑:进页/保存保守挂在 user.create(既有规范待裁)
         $container->set(UserEditController::class, static fn (Container $c): UserEditController => new UserEditController(
             $c->get(AdminView::class),
             $c->get(UserRepository::class),
             $c->get(Authorizer::class),
             $c->get(Router::class)
         ));
-        // 分类与标签(《87》):一页两态,写动作三条 POST;门控 category.manage 由页面表声明
+        // 分类与标签:一页两态,写动作三条 POST;门控 category.manage 由页面表声明
         $container->set(CategoriesController::class, static fn (Container $c): CategoriesController => new CategoriesController(
             $c->get(AdminView::class),
             $c->get(TermAssigner::class),
             $c->get(Router::class)
         ));
-        // 角色能力矩阵(《105》):只读屏,数据全走 Roles/Capabilities 登记表;「来源:」认已启用插件的清单申报
+        // 角色能力矩阵:只读屏,数据全走 Roles/Capabilities 登记表;「来源:」认已启用插件的清单申报
         $container->set(RolesController::class, static fn (Container $c): RolesController => new RolesController(
             $c->get(AdminView::class),
             $c->get(Loader::class),
             $c->get(Router::class)
         ));
-        // 修订版本比对(《113》):属「文章」组;post_revisions 只读,"恢复"本轮只留痕(§11-4 语义待裁)
+        // 修订版本比对:属「文章」组;post_revisions 只读,"恢复"本轮只留痕(§11-4 语义待裁)
         $container->set(RevisionRepository::class, static fn (Container $c): RevisionRepository => new RevisionRepository(
             $c->get(Database::class)
         ));
@@ -518,7 +518,7 @@ final class Bootstrap
             $c->get(Router::class),
             $c->get(Authorizer::class)
         ));
-        // 菜单编辑器(《107》):属「外观」组,配置写进 Options;门控 theme.switch
+        // 菜单编辑器:属「外观」组,配置写进 Options;门控 theme.switch
         $container->set(MenuController::class, static fn (Container $c): MenuController => new MenuController(
             $c->get(AdminView::class),
             $c->get(Options::class),
@@ -526,7 +526,7 @@ final class Bootstrap
             $c->get(PostRepository::class),
             $c->get(TermAssigner::class)
         ));
-        // 导入与导出(《110》):属「工具」组;走白名单表结构,不做任意 SQL;门控 setting.manage
+        // 导入与导出:属「工具」组;走白名单表结构,不做任意 SQL;门控 setting.manage
         $container->set(ImportExportController::class, static fn (Container $c): ImportExportController => new ImportExportController(
             $c->get(AdminView::class),
             $c->get(Database::class),
@@ -534,7 +534,7 @@ final class Bootstrap
             $c->get(Router::class),
             $c->get(Authorizer::class)
         ));
-        // 内核更新(《93》):属「设置」组,门控 update.core;清单源与九步执行链都接在这里
+        // 内核更新:属「设置」组,门控 update.core;清单源与九步执行链都接在这里
         $container->set(UpdateController::class, static fn (Container $c): UpdateController => new UpdateController(
             $c->get(AdminView::class),
             $c->get(Options::class),
@@ -588,7 +588,7 @@ final class Bootstrap
         ));
 
         /*
-         * 缓存失效接线(《24》§6.2/§6.3),按影响范围分三档 —— 能从事件里认出"只动了哪一篇"的
+         * 缓存失效接线(既有规范/§6.3),按影响范围分三档 —— 能从事件里认出"只动了哪一篇"的
          * 就只清那一篇,认不出来的保持整片清。原则:宁可多清一份,不能留下脏页。
          *
          *   事件                                 数据缓存                        整页缓存
@@ -658,7 +658,7 @@ final class Bootstrap
 
         /*
          * 主题启停 / 主题设置 / 菜单更新带一个标签来:能按标签清就只清这一批。
-         * 标签从没登记过时 invalidateTags() 自己会退回全清(《24》§6.2),不会漏。
+         * 标签从没登记过时 invalidateTags 自己会退回全清,不会漏。
          */
         add_action('cache/invalidate/after', static function (mixed $tag = null) use ($container): void {
             $label = is_scalar($tag) ? trim((string) $tag) : '';

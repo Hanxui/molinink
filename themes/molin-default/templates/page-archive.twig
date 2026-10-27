@@ -1,6 +1,6 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {# molin:template 归档页 #}
-{# 归档页页面模板(《74》):年 → 月 → 文章三级折叠,默认全收起;整树由内核 archive_tree() 聚合好,模板只负责铺开。
+{# 归档页页面模板:年 → 月 → 文章三级折叠,默认全收起;整树由内核 archive_tree 聚合好,模板只负责铺开。
    页头、页脚与首页/文章详情同源,一律走 partial,本模板不另写导航。
    月/日补零靠字符串拼 + slice,Twig 受限子集里没有 sprintf 类的补位过滤器。 #}
 <!DOCTYPE html>

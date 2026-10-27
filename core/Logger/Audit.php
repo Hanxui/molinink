@@ -13,10 +13,10 @@ namespace Molin\Logger;
 use Molin\Http\Request;
 
 /**
- * 审计日志:谁在何时对什么做了什么、结果如何(《26》第 7 节)。
+ * 审计日志:谁在何时对什么做了什么、结果如何。
  *
- * 走 audit 通道,IP 与 UA 按《26》第 6 节保留全值(该通道不过脱敏处理器),
- * 且按《26》第 5.3 节单独存放、不随常规日志清理。
+ * 走 audit 通道,IP 与 UA 保留全值(该通道不过脱敏处理器),
+ * 且单独存放、不随常规日志清理。
  */
 final class Audit
 {
@@ -39,7 +39,7 @@ final class Audit
             'ua'     => $request?->userAgent() ?? '',
         ];
 
-        // 《26》第 5.2 节:拒绝的操属于"可疑但已处理",记 WARNING
+        // 拒绝的操属于"可疑但已处理",记 WARNING
         if ($allowed) {
             Log::channel('audit')->info($action, $context);
         } else {

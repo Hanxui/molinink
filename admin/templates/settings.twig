@@ -1,11 +1,11 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  后台设置(《76》,基准 assets/ui/后台设置-*-定稿-2026-09-29.html 与各分组态图)。
+  后台设置(设计稿与各分组态图)。
   外壳(head/topbar/content/savebar)由 layout.twig 提供,这里只写内容区:页头 + 分组页签 + 表单。
   分组顺序固定:常规 / 写作 / 阅读 / 讨论 / 固定链接 / 媒体 / 缓存 / 更新。
   当前分组由 settings_section 决定(默认 regular);页签整页跳转(?sec=),口径同文章列表的分页签。
-  可选前缀(分类页前缀 / 标签页前缀)本轮不做(《76》§11.5)。
+  可选前缀(分类页前缀 / 标签页前缀)本轮不做。
 #}
 {% extends "layout.twig" %}
 

@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列 API 密钥(《25》第 2 节)。永远不显示明文 —— 明文只在发放那一次出现。
+ * 列 API 密钥。永远不显示明文 —— 明文只在发放那一次出现。
  */
 final class ApiKeyList extends BaseCommand
 {

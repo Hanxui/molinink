@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Content;
 
 /**
- * 文章状态机(《34-内容模型与CPT》第 5 节)。
+ * 文章状态机。
  *
  * 只放行文档画出来的跃迁。文档没写的路径(private 还原、draft 直接进回收站)一律拒绝 ——
  * 状态机松一寸,后台和插件就会各按各的想象写,最后连"这篇到底算不算发布"都说不清。
@@ -61,14 +61,14 @@ final class StatusMachine
         }
 
         if ($to === self::PRIVATE) {
-            // 《34》第 5 节:`publish/any ──设为私密──→ private`。这里的 any 不含附件 ——
+            // `publish/any ──设为私密──→ private`。这里的 any 不含附件 ——
             // 附件的可见性随父(`attachment → inherit`),给它单独设私密没有意义。
             return $from !== self::INHERIT;
         }
 
         if ($to === self::TRASH) {
-            // 《34》第 5 节(2026-09-30 作者授权改定):草稿、待审、已发布、私密一样能进回收站,
-            // 与《41》第 6.1 节"每行都有回收站"对齐。附件(inherit)不走这条路,删除归媒体库。
+            // 既有规范(2026-09-30 作者授权改定):草稿、待审、已发布、私密一样能进回收站,
+            // 与既有规范"每行都有回收站"对齐。附件(inherit)不走这条路,删除归媒体库。
             return $from !== self::TRASH && $from !== self::INHERIT;
         }
 

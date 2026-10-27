@@ -26,26 +26,26 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 用户新建与编辑屏(《106-后台用户新建与编辑实现规格》)。
+ * 用户新建与编辑屏。
  *
  * 两条路:`users/new`(新建态)与 `users/{id}/edit`(编辑态),一屏两态。
  *
- * 权限键取保守档:《106》§11-8 指出「改昵称/邮箱」该要的 `user.write` 不在
- * 《32》§3 的 19 项词表里(与《105》§11-1 同一处词表冲突,待作者裁),
+ * 权限键取保守档:既有规范指出「改昵称/邮箱」该要的 `user.write` 不在
+ * 既有规范的 19 项词表里(与既有规范同一处词表冲突,待作者裁),
  * 于是进页与保存整体先挂在 `user.create`(仅管理员),改角色再单查 `user.role.change` ——
  * 收紧容易放宽难,裁定后只动这一处常量。
  *
  * 已知未接(均记入待办清单,不在本屏自造):
- * - 「发送欢迎邮件」只读值不投递 —— 投递依赖还没落地的邮件插件与 `mail.send` 能力(《106》§11-11)。
+ * - 「发送欢迎邮件」只读值不投递 —— 投递依赖还没落地的邮件插件与 `mail.send` 能力。
  * - `.from` 来源标签:内置能力写「管理员单独授予」、插件注册的能力写「插件授予」——
- *   具体授予者/插件名没有字段可依(《106》§11-5),先照这个口径降级。
+ *   具体授予者/插件名没有字段可依,先照这个口径降级。
  */
 final class UserEditController
 {
-    /** 进页与保存的权限键(保守档;《106》§11-8 待裁) */
+    /** 进页与保存的权限键(保守档;既有规范待裁) */
     private const CAP_ACCESS = 'user.create';
 
-    /** 改角色另查的权限键(《32》§3:仅管理员) */
+    /** 改角色另查的权限键(仅管理员) */
     private const CAP_ROLE = 'user.role.change';
 
     private const NOTICES = [
@@ -99,7 +99,7 @@ final class UserEditController
     }
 
     /**
-     * 新建(《106》§11-1 的七处缺口按最保守推定,已在待办清单登记待追认)。
+     * 新建(既有规范的七处缺口按最保守推定,已在待办清单登记待追认)。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */
@@ -173,7 +173,7 @@ final class UserEditController
             $error = __('没有这个角色。');
         }
 
-        // 密码三项预检放在写入之前,免得资料已存、密码却卡在半路(与《84》§6 同口径)
+        // 密码三项预检放在写入之前,免得资料已存、密码却卡在半路(与既有规范同口径)
         if ($error === '' && $newPassword !== '') {
             $strength = Password::checkStrength($newPassword);
             $error = $strength === [] ? '' : __($strength[0]);
@@ -251,7 +251,7 @@ final class UserEditController
     }
 
     /**
-     * 角色下拉:五内置角色的次序即《32》§3 的次序(管理员 / 编辑 / 作者 / 贡献者 / 订阅者)。
+     * 角色下拉:五内置角色的次序即既有规范的次序(管理员 / 编辑 / 作者 / 贡献者 / 订阅者)。
      *
      * @return list<array{v:string, t:string, sel:bool}>
      */
@@ -271,7 +271,7 @@ final class UserEditController
     }
 
     /**
-     * 额外能力只读表(《106》§10):只列不属于当前角色能力集的那部分。
+     * 额外能力只读表:只列不属于当前角色能力集的那部分。
      * 行序按存储序(grant() 落库时排过序,不在这里重排)。
      *
      * @return list<array{k:string, why:string, from:string, lock:bool}>
@@ -295,7 +295,7 @@ final class UserEditController
     }
 
     /**
-     * 「最后活跃 2026-09-26 · 8 篇文章」(《106》§5.2)。
+     * 「最后活跃 2026-09-26 · 8 篇文章」。
      *
      * @return array{date:string, posts:int}
      */

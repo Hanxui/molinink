@@ -15,11 +15,11 @@ use Molin\Exception\MolinException;
 use Molin\Option\Options;
 
 /**
- * 主题设置器(《36-主题配置器》):声明式定义 → 后台自动渲染 → 逐类型校验 →
+ * 主题设置器:声明式定义 → 后台自动渲染 → 逐类型校验 →
  * 存 `themes.settings` → `theme_setting()` 取值(用户值 → 主题 default → 兜底)。
  *
- * 父主题的设置由子主题同名键覆盖(《36》§6);字段声明 `store: option` 时值写站点选项、
- * 不落 themes.settings(《36》§4)。
+ * 父主题的设置由子主题同名键覆盖;字段声明 `store: option` 时值写站点选项、
+ * 不落 themes.settings。
  */
 final class ThemeSettings
 {
@@ -210,7 +210,7 @@ final class ThemeSettings
     }
 
     /**
-     * 校验并保存《36》§4:任一字段不过就整体不落库,回字段级错误。
+     * 校验并保存任一字段不过就整体不落库,回字段级错误。
      *
      * @param array<string, mixed> $input 表单原样(nested: settings[组][键]);缺失的字段保持原值
      * @return array{ok:bool, errors:array<string, string>}
@@ -267,7 +267,7 @@ final class ThemeSettings
     /**
      * 选图即写库(2026-10-16 修):只写命中的那一个字段,其余字段一字不动。
      *
-     * 原先是"选完先盖在模型上、点「保存」才写"(《36》§4),但那个流程有个暗坑:
+     * 原先是"选完先盖在模型上、点「保存」才写",但那个流程有个暗坑:
      * 连着选两张图时,第二次回跳只带最后一张的 picked,前一张的选择当场丢掉 ——
      * 作者 2026-10-16 报的"选了横幅还是不显示"就是这么来的(横幅先选、头像后选)。
      * 这里借用 save() 的同一套校验与 afterChange(缓存失效),不另开一条写库的口子。
@@ -286,7 +286,7 @@ final class ThemeSettings
     }
 
     /**
-     * 清空用户值:取值回落到主题 default(《36》§5)。
+     * 清空用户值:取值回落到主题 default。
      * 给了 $group(且该组在声明里)时只清这一组,其余组的用户值一字不动。
      */
     public function reset(Theme $theme, ?string $group = null): void
@@ -316,7 +316,7 @@ final class ThemeSettings
     }
 
     /**
-     * 导出为 JSON(全量当前值,结构同 settings 的值部分;《36》§8)。程序版权位是站点选项,不随主题走。
+     * 导出为 JSON(全量当前值,结构同 settings 的值部分;既有规范)。程序版权位是站点选项,不随主题走。
      */
     public function export(Theme $theme): string
     {
@@ -337,7 +337,7 @@ final class ThemeSettings
     }
 
     /**
-     * 导入 JSON:先按声明校验,通过才落库(《36》§8)。
+     * 导入 JSON:先按声明校验,通过才落库。
      *
      * @return array{ok:bool, errors:array<string, string>}
      */
@@ -431,7 +431,7 @@ final class ThemeSettings
     }
 
     /**
-     * 逐类型校验与归一(《36》§4;错误文案字段级)。
+     * 逐类型校验与归一(既有规范;错误文案字段级)。
      *
      * @param array<string, mixed> $field
      */
@@ -597,7 +597,7 @@ final class ThemeSettings
             return null;
         }
 
-        // 体量口径与媒体库同一把尺(《80》第 4.4/4.5 节):KB 取整、MB 一位小数
+        // 体量口径与媒体库同一把尺(既有规范/4.5 节):KB 取整、MB 一位小数
         $bytes = (int) ($row['file_size'] ?? 0);
 
         return [
@@ -660,7 +660,7 @@ final class ThemeSettings
         switch ($model['type']) {
             case 'color':
                 $raw = (string) $value;
-                // 输入不合法时色块退回默认色:错误态下色块不该变空白(基准图错误态色块仍有色)
+                // 输入不合法时色块退回默认色:错误态下色块不该变空白(设计稿错误态色块仍有色)
                 $model['swatch'] = preg_match('/\A#[0-9a-fA-F]{6}\z/', $raw) === 1
                     ? $raw
                     : (string) ($field['default'] ?? '');

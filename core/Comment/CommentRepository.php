@@ -13,7 +13,7 @@ namespace Molin\Comment;
 use Molin\Database\Database;
 
 /**
- * 评论的存取(《31-评论系统规范》第 2、3 节;表结构见《21-数据模型》第 6 节)。
+ * 评论的存取(既有规范;表结构)。
  *
  * 只管"存进去、查出来、改状态";提交链的反垃圾与钩子在 Submitter。
  */
@@ -44,9 +44,9 @@ final class CommentRepository
     }
 
     /**
-     * 一批文章各自的「最近 N 条已通过评论」(《13》§6.3 `items[].comments_preview`)。
+     * 一批文章各自的「最近 N 条已通过评论」(既有规范`items[].comments_preview`)。
      *
-     * 整页一次查询:窗口函数按 post_id 分区取前 N 条,不做逐篇查询(《57》§5 的 N+1 红线)。
+     * 整页一次查询:窗口函数按 post_id 分区取前 N 条,不做逐篇查询(既有规范的 N+1 红线)。
      * 预览只给纯文本与作者名/头像 —— 卡片上是一行小字,不需要富文本形态。
      *
      * @param list<int> $postIds
@@ -115,7 +115,7 @@ final class CommentRepository
     }
 
     /**
-     * 「仅你可见」的待审评论(《31》§3:pending 作者可见"待审")。
+     * 「仅你可见」的待审评论(pending 作者可见"待审")。
      * 登录者按 user_id 认;游客按会话里记过的提交 id 认 —— 会话是服务端数据,伪造不了别人的 id。
      *
      * @param list<int> $ids 当前会话提交过的评论 id
@@ -154,7 +154,7 @@ final class CommentRepository
     }
 
     /**
-     * 评论正文渲染钩子(《11》§7.6):入参是允许改写的 HTML 字符串,第二个参数是整行评论。
+     * 评论正文渲染钩子:入参是允许改写的 HTML 字符串,第二个参数是整行评论。
      *
      * 只在前台取数口(approvedForPost / pendingVisibleTo)跑:库里的原文不动,
      * 改动只落在喂给模板的这份副本上;后台列表与审核屏要的是原文,不该被展示钩子改写。
@@ -181,7 +181,7 @@ final class CommentRepository
     }
 
     /**
-     * 全站评论列表(App 评论屏,《25》§3)。状态口径与后台审核屏一致(pending/approved/spam/trash),
+     * 全站评论列表(App 评论屏,既有规范)。状态口径与后台审核屏一致(pending/approved/spam/trash),
      * 带所属文章标题,新在前。默认不带状态 = 四态全给(App 首屏要"待审"计数,也得看见其余)。
      *
      * @param array{status?:string, post?:int} $filters
@@ -250,7 +250,7 @@ final class CommentRepository
     }
 
     /**
-     * 状态转移(《31》§3:pending/approved/spam/trash 之间由调用方把关,这里只认合法词)。
+     * 状态转移(pending/approved/spam/trash 之间由调用方把关,这里只认合法词)。
      */
     public function setStatus(int $id, string $status): bool
     {
@@ -262,7 +262,7 @@ final class CommentRepository
     }
 
     /**
-     * 真删一行 —— 只有回收站里的评论允许走到这里(《31》§3)。
+     * 真删一行 —— 只有回收站里的评论允许走到这里。
      */
     public function delete(int $id): bool
     {
@@ -377,7 +377,7 @@ final class CommentRepository
     }
 
     /**
-     * 这个邮箱通过过几条 —— "首评必审,过审即免审"(《31》§5)就看它。
+     * 这个邮箱通过过几条 —— "首评必审,过审即免审"就看它。
      */
     public function approvedCountForEmail(string $email): int
     {
@@ -429,7 +429,7 @@ final class CommentRepository
     }
 
     /**
-     * 把文章的 comment_count 校准成"已通过"的真实条数(《31》§4 ⑧)。
+     * 把文章的 comment_count 校准成"已通过"的真实条数(既有规范⑧)。
      */
     public function recomputeCount(int $postId): void
     {

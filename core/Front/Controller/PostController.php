@@ -31,7 +31,7 @@ use Molin\User\SessionStore;
 use Molin\User\UserRepository;
 
 /**
- * 单篇 / 独立页面 / 自定义内容类型的详情页(《73》《114》《34》§2.2),外加口令解锁端点。
+ * 单篇 / 独立页面 / 自定义内容类型的详情页,外加口令解锁端点。
  *
  * 三条入口共用 handle():固定链接路由、首页的 ?p= / ?page_id=、以及 CPT 的 /{rewrite}/{slug}。
  * 差别只在 $kind(页型)与 $type(内容类型)两个参数上。
@@ -65,7 +65,7 @@ final class PostController
         $view = $this->context->view($request);
         $posts = $this->context->posts();
 
-        // 单表 + type(《00》D4):路径段名随固定链接结构变(见 Router::postPattern),
+        // 单表 + type(既有规范D4):路径段名随固定链接结构变(见 Router::postPattern),
         // 有 post_id 就按 id 取,否则按 slug 先文章后页面;查询式结构(?p= / ?page_id=)
         // 没有路径段,改从查询串解析。$type 给定时(自定义内容类型,见下方 PostTypeRoutes)只在该类型里找。
         $queryId = $request->input('p');
@@ -111,7 +111,7 @@ final class PostController
             return $this->context->notFound($view);
         }
 
-        // 浏览量(《13》§6.3):前端单篇每请求一次 +1,不去重 —— 口径由作者 2026-10-14 定"刷新一次就加一"。
+        // 浏览量:前端单篇每请求一次 +1,不去重 —— 口径由作者 2026-10-14 定"刷新一次就加一"。
         // 独立页面不记:主题的页面模板上不显示浏览量,别把数字藏进看不见的地方。
         // 主题预览(管理员带 ?molin_theme_preview=)不算真实浏览;草稿预览也不算(还没发出去,不该有"浏览量")。
         if ($request->method() === 'GET' && $post->type !== 'page' && $view === $this->context->renderer() && !$draftPreview) {
@@ -153,7 +153,7 @@ final class PostController
          * 匿名 GET 因此不再产生会话,整页 HTML 里也没有任何与个人绑定的东西,可以放心共享。
          */
 
-        // 评论区(《31》§2/§3:两级嵌套;待审只给提交者自己)+ 提交反馈(?comment= / ?comment_error= / ?replyto=)
+        // 评论区(既有规范/§3:两级嵌套;待审只给提交者自己)+ 提交反馈(?comment= / ?comment_error= / ?replyto=)
         $commentVars = ['comments' => [], 'comment_total' => 0];
 
         // [朋友圈主题补丁 2026-10-25] 除 post 外，声明了 comments 支持的 CPT（如 moments）也要挂评论区。
@@ -197,8 +197,8 @@ final class PostController
 
         $vars = ['post' => $this->contentRenderer->render($post, ContentContext::MODE_FULL, false), 'rating' => $rating] + $commentVars;
 
-        // 独立页面(《114》):.subs 列本页的子页(《34》§1 层级),顺序取自定义序 menu_order;
-        // 《114》§11 第 3 条没定排序,先按它实现,拍板后再改
+        // 独立页面:.subs 列本页的子页(既有规范层级),顺序取自定义序 menu_order;
+        // 既有规范条没定排序,先按它实现,拍板后再改
         if ($post->type === 'page') {
             $subs = [];
 
@@ -209,7 +209,7 @@ final class PostController
             $vars['subs'] = $subs;
         }
 
-        // 文末标签(《73》§12,2026-10-11 增):键始终在,空数组占位,模板不做 defined 猜谜
+        // 文末标签(既有规范-11 增):键始终在,空数组占位,模板不做 defined 猜谜
         $vars['tags'] = [];
 
         // 头部「标题上面那行」要作者名(2026-10-17 增):列表侧一直有(items[].author.name),详情页补同源的一份
@@ -225,7 +225,7 @@ final class PostController
             $vars['author_url'] = $this->router->path('author', ['slug' => (string) $authorRow['username']]);
         }
 
-        // 文章详情页头三件套(《73》§3.2):分类 / 署名 / 上/下篇。独立页面只有标题区,不赘这些(《114》)
+        // 文章详情页头三件套:分类 / 署名 / 上/下篇。独立页面只有标题区,不赘这些
         if ($post->type === 'post') {
             $first = $this->terms->firstTermsFor([$post->id], TermAssigner::CATEGORY)[$post->id] ?? null;
             $vars['category'] = $first === null ? null : [
@@ -233,7 +233,7 @@ final class PostController
                 'url' => $this->router->path('category', ['slug' => $first['slug']]),
             ];
 
-            // 文末那行标签(《73》§12,2026-10-11 增):分类在眉标里,标签在这儿给"更细的入口"
+            // 文末那行标签(既有规范-11 增):分类在眉标里,标签在这儿给"更细的入口"
             $vars['tags'] = array_map(
                 fn (array $tag): array => [
                     'name' => $tag['name'],
@@ -286,7 +286,7 @@ final class PostController
             $context['noindex'] = 1;
         }
 
-        // 页面模板(《114》):只有最终页型是 page 才认 meta 里的选择,过了当前渲染主题的白名单才生效
+        // 页面模板:只有最终页型是 page 才认 meta 里的选择,过了当前渲染主题的白名单才生效
         if ($finalKind === 'page') {
             $chosen = $this->meta->get($post->id, 'page_template');
             $resolved = $chosen === null ? null : $view->theme()->resolvePageTemplate($chosen);
@@ -340,7 +340,7 @@ final class PostController
         return in_array($postId, $ids, true);
     }
 
-    /** 阅读时长估计(《73》§3.2 署名那一行):去掉标签与空白后按 350 字/分钟估,最少 1 分钟 */
+    /** 阅读时长估计(既有规范署名那一行):去掉标签与空白后按 350 字/分钟估,最少 1 分钟 */
     private function readingMinutes(?string $content): int
     {
         $text = preg_replace('/\s+/u', '', strip_tags((string) $content)) ?? '';

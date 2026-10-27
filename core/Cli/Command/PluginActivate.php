@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 启用插件(《58》第 1 节)。写序是先表后缓存(《21》第 9 节),且本请求内立即加载生效。
+ * 启用插件。写序是先表后缓存,且本请求内立即加载生效。
  */
 final class PluginActivate extends BaseCommand
 {

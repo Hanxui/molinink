@@ -17,13 +17,13 @@ use Molin\Logger\Audit;
 use Molin\Security\Password;
 
 /**
- * 内容写入(《34-内容模型与CPT》第 5、6 节)。
+ * 内容写入。
  *
  * 一次保存跨五张表(posts / postmeta / terms 三件套 / post_revisions),整段走事务 ——
  * 半套关系落库比保存失败更难查。
  *
  * 播报的钩子:content/save/before|after、post/publish/before|after(转进 publish 的那一刻)、
- * post/status/after、content/delete/before。入参形状以《11》§3 的签名表为准;
+ * post/status/after、content/delete/before。入参形状以既有规范的签名表为准;
  * 表里没登记的(post/publish/*)按"最少够用"给 —— 发布只给 Post,谁发的由监听自己问 current_user()。
  *
  * 两处口径要记住:
@@ -32,7 +32,7 @@ use Molin\Security\Password;
  */
 final class PostWriter
 {
-    /** 《34》第 6 节:每篇默认留最近 10 份修订。比对屏(《113》金属行)同源引用这里 */
+    /** 每篇默认留最近 10 份修订。比对屏(既有规范金属行)同源引用这里 */
     public const REVISIONS_KEPT = 10;
 
     private const MAX_SLUG_TRIES = 100;
@@ -48,7 +48,7 @@ final class PostWriter
     /**
      * 新建或保存。$id 为 null 就是新建。
      *
-     * 可用键(《21》第 2 节):type / status / title / slug / excerpt / content /
+     * 可用键:type / status / title / slug / excerpt / content /
      * parent_id / menu_order / comment_status / thumbnail_id / published_at,
      * 外加 categories、tags(名字数组)与 meta(键值对)。
      * 私密正文口令走 password 键:非空明文密封成哈希落库,空串 = 解除保护(见 storedPassword)。
@@ -57,7 +57,7 @@ final class PostWriter
      */
     public function save(array $data, int $authorId, ?int $id = null): Post
     {
-        // 插件可在落库前改写入数据(《11》第 3 节 content/save/before)。
+        // 插件可在落库前改写入数据(既有规范content/save/before)。
         // 生产模式若回吐了非数组,按"不改"处理 —— 一条坏签名不该把整次保存变成 500。
         $filtered = apply_filters('content/save/before', $data, $id);
 
@@ -66,7 +66,7 @@ final class PostWriter
         }
 
         if (array_key_exists('content', $data)) {
-            // 正文交主题时是 |raw 的富文本(《14》3.5),所以落库前先过白名单(《37》§9)。
+            // 正文交主题时是 |raw 的富文本,所以落库前先过白名单。
             // 这一步写在内核里而不是挂到钩子上:插件只能收紧,不能放宽,也不能把它摘掉。
             $data['content'] = HtmlSanitizer::clean((string) $data['content']);
         }
@@ -85,9 +85,9 @@ final class PostWriter
     }
 
     /**
-     * 移入回收站(软删除,30 天后才真删,《34》第 5 节)。
+     * 移入回收站(软删除,30 天后才真删,既有规范)。
      *
-     * 层级内容的子项不跟着走:提升到上一层(《86》§6)。挂在回收站里的父项下面,
+     * 层级内容的子项不跟着走:提升到上一层。挂在回收站里的父项下面,
      * 列表里就再也找不着它了 —— 还原/删除父项时子项也不该莫名消失。
      */
     public function trash(int $id, string $actor = 'system'): Post
@@ -115,7 +115,7 @@ final class PostWriter
     }
 
     /**
-     * 从回收站还原。《34》第 5 节只画了 trash → draft / publish。
+     * 从回收站还原。既有规范只画了 trash → draft / publish。
      */
     public function restore(int $id, string $status = StatusMachine::DRAFT, string $actor = 'system'): Post
     {
@@ -129,7 +129,7 @@ final class PostWriter
             $this->refuseTransition(StatusMachine::TRASH, $status);
         }
 
-        // 还原进 publish 也算"发布"(《11》§7.1),与 update() 同一条口径
+        // 还原进 publish 也算"发布",与 update 同一条口径
         $publishing = $status === StatusMachine::PUBLISH;
 
         if ($publishing) {
@@ -155,7 +155,7 @@ final class PostWriter
     }
 
     /**
-     * 彻底删除。《34》第 5 节没写要不要级联清 meta / 关系 / 修订,这里按"清干净"处理:
+     * 彻底删除。既有规范没写要不要级联清 meta / 关系 / 修订,这里按"清干净"处理:
      * 留下孤儿行,日后任何按 post_id 聚合的统计都会凭空多出一截。
      */
     public function forceDelete(int $id, string $actor = 'system'): void
@@ -182,7 +182,7 @@ final class PostWriter
     }
 
     /**
-     * 父项进回收站时,活着的子项提升到父项原先的层级(《86》§6)。
+     * 父项进回收站时,活着的子项提升到父项原先的层级。
      * 已在回收站的子项不动 —— 保持原父,还原时还找得回位置。
      */
     private function promoteChildren(int $id): void
@@ -295,7 +295,7 @@ final class PostWriter
             'content' => $content,
             'excerpt' => $excerpt === '' ? null : $excerpt,
             'status' => $status,
-            // 渲染缓存随本次改动作废,下次输出重新过一遍钩子(《21》第 2 节)
+            // 渲染缓存随本次改动作废,下次输出重新过一遍钩子
             'content_filtered' => null,
             'deleted_at' => $status === StatusMachine::TRASH ? $now : null,
         ];
@@ -330,7 +330,7 @@ final class PostWriter
                 ?? $now;
         }
 
-        // 发布 = 状态跃迁进 publish(《11》§7.1:发布前 / 发布后)。
+        // 发布 = 状态跃迁进 publish(发布前 / 发布后)。
         // 入参只给 Post:谁发的由插件自己问 current_user(),内核不替它猜。
         $publishing = $status === StatusMachine::PUBLISH && $current->status !== StatusMachine::PUBLISH;
 
@@ -358,7 +358,7 @@ final class PostWriter
     }
 
     /**
-     * 存的是**改之前**的那一版 —— 修订的作用就是"退回上一步"(《34》第 6 节)。
+     * 存的是**改之前**的那一版 —— 修订的作用就是"退回上一步"。
      */
     private function snapshotRevision(Post $previous, string $title, string $content, int $authorId, string $now): void
     {
@@ -508,14 +508,14 @@ final class PostWriter
             return null;
         }
 
-        // 定时发布:给了未来时间就照给,到点前前台不可见(《34》第 5 节)
+        // 定时发布:给了未来时间就照给,到点前前台不可见
         return $this->stamp($data['published_at'] ?? null) ?? $now;
     }
 
     /**
      * 时间格收上来的值:datetime-local 给的是 2026-10-05T14:30,是**站点时区**的钟点。
      * 库里一律存 UTC —— 与 created_at、定时发布的 `UTC_TIMESTAMP()` 判断同一口径;
-     * 展示时再由 `|date` 过滤器换回站点时区(《21》)。
+     * 展示时再由 `|date` 过滤器换回站点时区。
      */
     private function stamp(mixed $value): ?string
     {
@@ -546,7 +546,7 @@ final class PostWriter
     /**
      * 正文 → 纯文本摘要(最多 120 字)。
      *
-     * 只给"内容即摘要"的无标题类型用(《34》§2.2:supports 里没有 title),不碰有标题的文章 ——
+     * 只给"内容即摘要"的无标题类型用(supports 里没有 title),不碰有标题的文章 ——
      * 那些的摘要仍由作者手填,内核不替他编。
      */
     private static function deriveExcerpt(string $content): string

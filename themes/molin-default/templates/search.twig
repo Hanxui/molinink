@@ -1,5 +1,5 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
-{# 搜索结果页(《28》;版式照 搜索结果-定稿 / 移动端-定稿-2026-09-30)。title_html/excerpt_html 由 Searcher::highlight 生成:先转义后包 mark,无注入面 #}
+{# 搜索结果页(既有规范;版式照搜索结果-设计稿 / 设计稿)。title_html/excerpt_html 由 Searcher::highlight 生成:先转义后包 mark,无注入面 #}
 <!DOCTYPE html>
 <html lang="{{ html_lang() }}">
 <head>
@@ -32,7 +32,7 @@
 
         {% if keyword %}
             {% if items is empty %}
-                {# 无结果态(《104》§4.1,源件 搜索结果-无结果-2026-09-30):一句结论 + 三条建议;分类/归档落点内核给不了就不出 #}
+                {# 无结果态(既有规范源件设计稿):一句结论 + 三条建议;分类/归档落点内核给不了就不出 #}
                 <section class="empty">
                     <p class="msg">{{ __('没有匹配「%s」的文章。整段关键词与标题、摘要、正文逐字比对，不做中文分词。', 'theme', keyword) }}</p>
                     <div class="suggest">

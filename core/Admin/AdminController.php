@@ -35,10 +35,10 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 后台外壳与分发(《41-后台信息架构》第 2、4 节)。
+ * 后台外壳与分发。
  *
  * 两条硬规矩:① 未登录一律跳登录页;② 菜单按能力过滤**只是体验**,
- * 每个页面进来还要再校验一次能力(《61》第 3.1 节:不能只藏菜单)。
+ * 每个页面进来还要再校验一次能力(不能只藏菜单)。
  */
 final class AdminController
 {
@@ -98,7 +98,7 @@ final class AdminController
         $user = Auth::user();
 
         if ($user === null) {
-            // 带着会话 cookie 却认不出人 = 会话过期 / 改过密码 / 被强制下线,回登录页要说一句(《121》§6.3)
+            // 带着会话 cookie 却认不出人 = 会话过期 / 改过密码 / 被强制下线,回登录页要说一句
             $stale = $request->cookie(Auth::COOKIE) !== null ? '?expired=1' : '';
 
             return Response::redirect('/login' . $stale);
@@ -111,7 +111,7 @@ final class AdminController
         // 子路径(posts/7/edit 这类)按第一段认领这一栏,具体动作的更细能力由各屏自己再判一次
         $page = $this->pages[$path] ?? $this->pages[$root] ?? null;
 
-        // 自定义内容类型(CPT)的后台屏(《34》§10):公开且非内置的已登记类型各占一段
+        // 自定义内容类型(CPT)的后台屏:公开且非内置的已登记类型各占一段
         // `/admin/{type}`。内核页优先(上一句已判),CTP 再优先于插件页。
         if ($page === null) {
             $cpt = $this->menuBuilder->cptPage($root);
@@ -129,7 +129,7 @@ final class AdminController
             }
         }
 
-        // 插件后台页(《12》§7.1、§14):内核表里没有的路径交给已启用插件认领,认领不了就是 404
+        // 插件后台页(既有规范):内核表里没有的路径交给已启用插件认领,认领不了就是 404
         if ($page === null) {
             return $this->pluginPages->pluginPage($request, $path, $user);
         }
@@ -154,12 +154,12 @@ final class AdminController
         }
 
         if ($root === 'tools') {
-            // 备份 / 恢复的服务端进度(《35》§5):长任务在另一条请求里跑,浏览器轮这条问"到哪了"
+            // 备份 / 恢复的服务端进度:长任务在另一条请求里跑,浏览器轮这条问"到哪了"
             if ($path === 'tools/progress') {
                 return Response::json($this->progress()->read());
             }
 
-            // 远端凭据「测试连接」(《109》§12):就地探一次真写入,结果回 JSON,不跳页
+            // 远端凭据「测试连接」:就地探一次真写入,结果回 JSON,不跳页
             if ($path === 'tools/remote/test' && $request->isPost()) {
                 return $this->cacheTools->remoteTest($request);
             }
@@ -187,59 +187,59 @@ final class AdminController
             return $this->commentScreen->handle($request, $path, $user, $this->menu($root));
         }
 
-        // 个人资料属「用户」组:侧栏当前项借 users 的位(《84》§8)
+        // 个人资料属「用户」组:侧栏当前项借 users 的位
         if ($root === 'profile') {
             return $this->profileScreen->handle($request, $path, $user, $this->menu('users'));
         }
 
-        // 日志查看器属「工具」组:侧栏当前项借 tools 的位(《112》第 4 节结构树)
+        // 日志查看器属「工具」组:侧栏当前项借 tools 的位(既有规范结构树)
         if ($root === 'logs') {
             return $this->logScreen->handle($request, $path, $user, $this->menu('tools'));
         }
 
-        // 站点健康同属「工具」组(《111》第 4 节结构树)
+        // 站点健康同属「工具」组(既有规范结构树)
         if ($root === 'health') {
             return $this->healthScreen->handle($request, $path, $user, $this->menu('tools'));
         }
 
-        // 用户新建与编辑(《106》):`users` 列表之外的两条路归这一屏,侧栏当前项仍是「用户」。
-        // 进页能力由这一屏自判(保守档 user.create),不借列表页的 user.list(《106》§11-8)
+        // 用户新建与编辑:`users` 列表之外的两条路归这一屏,侧栏当前项仍是「用户」。
+        // 进页能力由这一屏自判(保守档 user.create),不借列表页的 user.list
         if ($root === 'users' && $path !== 'users') {
             return $this->userEditScreen->handle($request, $path, $user, $this->menu('users'));
         }
 
-        // 分类与标签(《87》):属「文章」组,紧排在文章之后;2026-10-11 起它有自己的侧栏项,
+        // 分类与标签:属「文章」组,紧排在文章之后;2026-10-11 起它有自己的侧栏项,
         // 所以当前项就是它自己(此前 menu:null,借的是 posts 的位)
         if ($root === 'categories') {
             return $this->categoriesScreen->handle($request, $path, $user, $this->menu('categories'));
         }
 
-        // 角色能力矩阵(《105》):属「用户」组,侧栏当前项借 users 的位(《41》§9)
+        // 角色能力矩阵:属「用户」组,侧栏当前项借 users 的位
         if ($root === 'roles') {
             return $this->rolesScreen->handle($request, $path, $user, $this->menu('users'));
         }
 
-        // 修订版本比对(《113》):属「文章」组,侧栏当前项借 posts 的位(《113》§1)
+        // 修订版本比对:属「文章」组,侧栏当前项借 posts 的位
         if ($root === 'revisions') {
             return $this->revisionScreen->handle($request, $path, $user, $this->menu('posts'));
         }
 
-        // 菜单编辑器(《107》):属「外观」组,侧栏当前项借 appearance 的位(《107》§1)
+        // 菜单编辑器:属「外观」组,侧栏当前项借 appearance 的位
         if ($root === 'menus') {
             return $this->menuScreen->handle($request, $path, $user, $this->menu('appearance'));
         }
 
-        // 导入与导出(《110》):属「工具」组,侧栏当前项借 tools 的位(《110》§1)
+        // 导入与导出:属「工具」组,侧栏当前项借 tools 的位
         if ($root === 'import-export') {
             return $this->importExportScreen->handle($request, $path, $user, $this->menu('tools'));
         }
 
-        // 插件启停(《41》§4):两下 POST 动作归这一处,侧栏当前项仍是「插件」
+        // 插件启停:两下 POST 动作归这一处,侧栏当前项仍是「插件」
         if ($root === 'plugins' && $path !== 'plugins') {
             return $this->pluginPages->pluginsAction($request, $path, $user);
         }
 
-        // 内核更新(《93》):属「设置」组,侧栏当前项借 settings 的位(《41》§4)
+        // 内核更新:属「设置」组,侧栏当前项借 settings 的位
         if ($root === 'update') {
             return $this->updateScreen->handle($request, $path, $user, $this->menu('settings'));
         }
@@ -260,7 +260,7 @@ final class AdminController
     }
 
     /**
-     * 仪表盘(《77》)。数据取数全在 Dashboard 这一处,这里只管"谁进得来、看到哪些动作"。
+     * 仪表盘。数据取数全在 Dashboard 这一处,这里只管"谁进得来、看到哪些动作"。
      */
     private function showDashboard(Request $request, User $user): Response
     {
@@ -287,7 +287,7 @@ final class AdminController
     }
 
     /**
-     * 备份 / 恢复的服务端进度槽(《35》§5)。单槽位,落在 storage/backups/ 下。
+     * 备份 / 恢复的服务端进度槽。单槽位,落在 storage/backups/ 下。
      */
     private function progress(): Progress
     {
@@ -295,8 +295,8 @@ final class AdminController
     }
 
     /**
-     * 一级菜单(按能力过滤,《41》第 2、4 节)。`$active` 是这一屏的路径首段,
-     * 侧栏要靠它画出那条 2px 暖赭竖条 —— 基准图里"当前项"就是这个样子。
+     * 一级菜单(按能力过滤,既有规范)。`$active` 是这一屏的路径首段,
+     * 侧栏要靠它画出那条 2px 暖赭竖条 —— 设计稿里"当前项"就是这个样子。
      *
      * @return list<array{title:string, path:string, active:bool, badge?:string, icon?:string}>
      */
@@ -306,8 +306,8 @@ final class AdminController
     }
 
     /**
-     * 备份列表的展示形状:大小与时间在这里折算好,模板不做算术(《109》§4)。
-     * 时间照基准做相对显示:今天 / 昨天 / 更早给日期(《109》§5.9)。
+     * 备份列表的展示形状:大小与时间在这里折算好,模板不做算术。
+     * 时间照设计稿做相对显示:今天 / 昨天 / 更早给日期。
      *
      * @return list<array<string, string|bool>>
      */
@@ -378,7 +378,7 @@ final class AdminController
         // 只给工具页读备份目录:别的屏不需要为一次 glob 付账
         $backups = $path === 'tools' ? $this->backupRows() : [];
 
-        // 远端凭据对话框(《109》§12):?remote=驱动 打开,标签页走服务端切换
+        // 远端凭据对话框:?remote=驱动打开,标签页走服务端切换
         $remoteParam = $request->input('remote');
         $remoteOpen = in_array($remoteParam, Remote::DRIVERS, true);
         $remoteTab = $remoteOpen ? $remoteParam : 's3';
@@ -409,7 +409,7 @@ final class AdminController
                 'remote_clear_url' => $this->router->path('admin', ['path' => 'tools/remote/clear']),
                 'remote_test_url' => $this->router->path('admin', ['path' => 'tools/remote/test']),
                 'remote_any' => $this->remote->readAll() !== [],
-                // 备份 / 恢复进度轮询的端点(《35》§5)
+                // 备份 / 恢复进度轮询的端点
                 'progress_url' => $this->router->path('admin', ['path' => 'tools/progress']),
             ],
             'plugins' => [
@@ -418,9 +418,9 @@ final class AdminController
                 'available' => $this->plugins->available(),
                 'active' => $this->plugins->activeNames(),
                 'broken' => $this->plugins->broken(),
-                // 启用名单里有、但本趟没能加载的(目录被删/清单坏了):站点照常起,这里如实报(《12》§4)
+                // 启用名单里有、但本趟没能加载的(目录被删/清单坏了):站点照常起,这里如实报
                 'skipped' => $this->plugins->skipped(),
-                // 离线上传 zip(《92》§8):本地装包,只装入不启用
+                // 离线上传 zip:本地装包,只装入不启用
                 'upload_url' => $this->router->path('admin', ['path' => 'plugins/upload']),
             ],
             // page_kind 供外观用:用户组两屏的二级导航样式挂在 .page-users 上(2026-10-17 补)

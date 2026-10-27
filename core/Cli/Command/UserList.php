@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列用户(《58》第 1 节的 user:list)。
+ * 列用户(既有规范的 user:list)。
  */
 final class UserList extends BaseCommand
 {

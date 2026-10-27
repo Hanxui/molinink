@@ -1,5 +1,5 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   首页样式(源件:assets/ui/首页-定稿-2026-09-29.html 与 首页-移动端-定稿-2026-09-29.html)。
+   首页样式(源件:设计稿)。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
 
 .hero{margin-top:78px;}
@@ -7,7 +7,7 @@
 h1{margin-top:30px;font-size:80px;font-weight:400;line-height:1.22;letter-spacing:.01em;max-width:1100px;}
 .underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
 
-/* 精选栏目(《71》§5.3,第 64 轮定稿:方案①朴素横排;后台「首页→精选栏目」配了才出) */
+/* 精选栏目(既有规范轮设计稿:方案①朴素横排;后台「首页→精选栏目」配了才出) */
 .featured{margin-top:96px;}
 .featured-row{margin-top:30px;display:flex;flex-wrap:wrap;gap:26px 64px;}
 .featured-col h2{font-size:26px;font-weight:400;line-height:1.3;letter-spacing:.02em;}

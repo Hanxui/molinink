@@ -13,7 +13,7 @@ namespace Molin\Exception;
 use RuntimeException;
 
 /**
- * 项目异常基类,层级见《26-错误处理与日志规范》第 1 节。
+ * 项目异常基类,层级。
  */
 class MolinException extends RuntimeException
 {

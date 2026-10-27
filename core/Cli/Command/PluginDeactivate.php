@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 停用插件(《58》第 1 节)。
+ * 停用插件。
  *
  * 已经注册进本请求的回调收不回(PHP 撤不掉闭包),所以"完全不再参与"从下一个请求开始 ——
  * 这点必须说给用户听,否则他会以为刷新一下就够了。

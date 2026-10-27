@@ -1,5 +1,5 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
-{# 主题配色/布局/字体变量(《36》§5):取值经主题设置器回退,没配过也有合理默认;色值已过 #RRGGBB 校验。
+{# 主题配色/布局/字体变量:取值经主题设置器回退,没配过也有合理默认;色值已过 #RRGGBB 校验。
    布局宽度、正文字族、正文字号、自定义 CSS 也在此落到 CSS 变量与内联样式 —— 配了就有,不配回退默认。 #}
 <style>
   :root {
@@ -20,6 +20,6 @@
   }
   body { font-family: var(--font-body); font-size: var(--font-size); }
   .page { max-width: var(--content-width); }
-  {# 自定义 CSS 原样输出(代码字段仅管理员可配,《36》§9);断掉 `</`,防样式块被提前闭合 #}
+  {# 自定义 CSS 原样输出(代码字段仅管理员可配,既有规范);断掉 `</`,防样式块被提前闭合 #}
   {{ theme_setting('code.css')|replace({'</': '<\\/'})|raw }}
 </style>

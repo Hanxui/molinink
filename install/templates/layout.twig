@@ -1,9 +1,9 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  安装向导外壳(《125》§1、§4):字标行 + 步骤条 + 页脚六步(实现五步)共用,只有 .wiz-body 换。
-  样式整份烤在 <style> 里 —— 向导跑在 config.php 之前,没有静态资源管线可用(《42》§10)。
-  步骤条五格是作者 2026-10-01 定的口径(基准图六格,见《125》§11.7)。
+  安装向导外壳(既有规范):字标行 + 步骤条 + 页脚六步(实现五步)共用,只有 .wiz-body 换。
+  样式整份烤在 <style> 里 —— 向导跑在 config.php 之前,没有静态资源管线可用。
+  步骤条五格是作者 2026-10-01 定的口径(设计稿六格,)。
 #}
 <!doctype html>
 <html lang="zh-Hans">
@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     <title>安装向导 · {{ titles[step] }} · 墨林</title>
-    {# 站点图标(《品牌视觉规格》§6 定稿);向导跑在 config.php 之前,静态文件由 Nginx 直出 #}
+    {# 站点图标(既有规范设计稿);向导跑在 config.php 之前,静态文件由 Nginx 直出 #}
     <link rel="icon" type="image/png" sizes="32x32" href="/assets/icon/favicon-32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/assets/icon/favicon-16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/assets/icon/apple-touch-icon.png">
@@ -101,7 +101,7 @@
   .danger{background:transparent;border-color:var(--rule);color:var(--accent);}
   .danger:hover{border-color:var(--accent);color:var(--accent);}
 
-  /* 复选框(口径同后台媒体库 .cb)与失败态两枚(《125》§13) */
+  /* 复选框(口径同后台媒体库 .cb)与失败态两枚 */
   .cb{width:15px;height:15px;border:1.3px solid #C9C6BF;border-radius:4px;background:#fff;
     -webkit-appearance:none;appearance:none;cursor:pointer;position:relative;flex:0 0 auto;}
   .cb:checked{background:var(--ink);border-color:var(--ink);}
@@ -205,11 +205,11 @@
  .step-5 .admwarn b{font-weight:500;}
 
     @media (max-width: 768px) {
-/* ── 移动端版式(基准视口 390)──
+/* ── 移动端版式(设计稿视口 390)──
      本页即移动版,不做媒体查询。以下只覆盖桌面版的排布数值,
      色值、字号层级、组件样式一律沿用同页桌面源件,未新增任何值。
-     横向可滑的步骤条 = 《76》§6「分组页签横向可滚(隐藏滚动条)」同一口径;
-     表单单列、字段上下内边距 16px = 《76》§6 同一口径。 */
+     横向可滑的步骤条 = 既有规范「分组页签横向可滚(隐藏滚动条)」同一口径;
+     表单单列、字段上下内边距 16px = 既有规范同一口径。 */
   .col{padding:0 18px;}
   .wiz-head{padding-top:26px;}
   .mark{font-size:20px;}

@@ -14,7 +14,7 @@ use DateInterval;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * 空缓存(《24-缓存抽象层规范》3.4):backend=null 时的 no-op 实现。
+ * 空缓存:backend=null 时的 no-op 实现。
  *
  * 业务代码只用 PSR-16 接口说话,关缓存时换成本实现,一个字都不用改 ——
  * 读永远未命中、写永远"成功"、清永远干净,正确性全靠回源。

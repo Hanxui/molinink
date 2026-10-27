@@ -24,7 +24,7 @@ final class Toolkit
     /** 落地的导出文件名,下载令牌与删除都据此校验(防穿越) */
     public const EXPORT_FILENAME = '#\Aexport-molin-\d{14}\.(json|xml)\z#';
 
-    /** 站点没配「上传大小上限」时,导入文件按这个数当顶(与《27》的默认值同口径) */
+    /** 站点没配「上传大小上限」时,导入文件按这个数当顶(与既有规范的默认值同口径) */
     private const DEFAULT_UPLOAD_MB = 10;
 
     /**

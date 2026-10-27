@@ -1,8 +1,8 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  主题设置(《91》,基准 后台主题设置-定稿-2026-09-30):字段 + 底部保存栏。
-  字段全集来自主题 theme.json 的 settings 声明(《36》),本模板不写死任何字段。
+  主题设置(设计稿):字段 + 底部保存栏。
+  字段全集来自主题 theme.json 的 settings 声明,本模板不写死任何字段。
   2026-10-25:右栏「实时预览」iframe 整块撤掉(维护两只主题的 preview_vars、还要 JS 注入
   变量才看得出来,实际没人靠它调色;想看效果直接点外观页的「预览」开前台)。
 #}
@@ -79,7 +79,7 @@
                             <div class="fields">
                                 {% set section = '' %}
                                 {% for field in group.fields %}
-                                    {# 字段声明了 section:同组内换段时插一行子标题(《36》首页那三十项分段) #}
+                                    {# 字段声明了 section:同组内换段时插一行子标题(既有规范首页那三十项分段) #}
                                     {% if field.section is defined and field.section and field.section != section %}
                                         {% set section = field.section %}
                                         <h3 class="gsub">{{ field.section }}</h3>
@@ -196,7 +196,7 @@
     </div>
 
     {# 每组「恢复默认」各走一只独立表单:主表单里不能嵌表单,按钮靠 form 属性牵过来;
-       无脚本也能提交,POST 只多带一个 group 键(后端按组回滚,《36》§5) #}
+       无脚本也能提交,POST 只多带一个 group 键(后端按组回滚,既有规范) #}
     {% for group in groups %}
         <form id="grp-rst-{{ group.key }}" method="post" action="{{ reset_action }}" hidden>
             <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">

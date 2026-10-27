@@ -14,7 +14,7 @@ use Molin\Logger\Audit;
 use Molin\User\User;
 
 /**
- * 评论审核状态转移的唯一入口(《31-评论系统》第 3 节)。
+ * 评论审核状态转移的唯一入口。
  *
  * 后台列表/仪表盘/接口三处都从这里过,`comment/moderate/before|after` 两个钩子
  * 也只在这里触发 —— 两处各写一份,插件挂哪个入口都要想一遍,早晚分叉。

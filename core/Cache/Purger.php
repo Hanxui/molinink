@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Cache;
 
 /**
- * 编译缓存清理(《24-缓存抽象层规范》第 6 节:清理动作要有,但业务代码不认具体适配器)。
+ * 编译缓存清理(清理动作要有,但业务代码不认具体适配器)。
  *
  * 按扩展名删:装配线给的是 Twig 编译产物目录(storage/cache/twig,删 `.php`),
  * 页面缓存(PageCache)另复用它删 `.html`。缓存适配器(CacheManager / FileStore)已落地

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Media;
 
 /**
- * 图片处理驱动接口(《27-媒体库规范》第 5.1 节)。
+ * 图片处理驱动接口。
  *
  * 优先 Imagick(质量、EXIF、方向更好),缺失退 GD;两者都没有就跳过缩略图,
  * 原图照常可用并记 WARNING —— 上传本身不许因为"没有图片库"而失败。

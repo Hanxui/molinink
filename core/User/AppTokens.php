@@ -13,7 +13,7 @@ namespace Molin\User;
 use Molin\Database\Database;
 
 /**
- * App 登录令牌仓储(《25》第 3.3 节)。
+ * App 登录令牌仓储。
  *
  * 一对不透明随机串:access 短命、refresh 长命,库里只存 sha256 ——
  * 明文只在签发时返回一次,翻库也拿不到可用凭据。access 与 refresh 共用 series,

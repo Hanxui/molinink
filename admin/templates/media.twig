@@ -1,9 +1,9 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {#
-  后台媒体库(《80-后台媒体库实现规格》)。
-  结构、类名与文案逐字取自 assets/ui/后台媒体库-定稿-2026-09-29.html(网格)与
-  后台媒体库-列表视图-2026-09-30.html(列表),二次确认照《80》第 10.3 节。
-  缩略图:文件在盘上就出真图,不在就留基准图那套灰描边线稿(《80》第 4.5 节)。
+  后台媒体库。
+  结构、类名与文案逐字取自设计稿(网格)与
+  设计稿(列表),二次确认照既有规范。
+  缩略图:文件在盘上就出真图,不在就留设计稿那套灰描边线稿。
   这一屏不用 JS 也能走通:选中 ?sel=、视图 ?view=、页签筛选分页都是 GET,删除确认走 ?confirm=trash。
   只有图片才配 <img>:文档/音视频一律线稿,别拿载不动的文件当图源(那会留一块纯白)。
 
@@ -50,7 +50,7 @@
     {%- endif -%}
 {% endmacro %}
 
-{# 网格右栏详情(《80》第 4.7 节)。Ajax 换栏时只渲染这一块,替换 #media-detail 的内容 #}
+{# 网格右栏详情。Ajax 换栏时只渲染这一块,替换 #media-detail 的内容 #}
 {% macro pane(detail, field, token, edited) %}
     <div class="dh">{{ __('附件详情') }}</div>
     <div class="prev">
@@ -89,7 +89,7 @@
             <label for="cap">{{ __('说明') }}</label>
             <textarea id="cap" name="caption" rows="3">{{ detail.caption }}</textarea>
             <p class="save-note{% if edited %} show{% endif %}">{{ __('已保存') }}</p>
-            {# 有脚本时失焦即保存(《80》第 6 节);没脚本时这一钮就是唯一的保存出口 #}
+            {# 有脚本时失焦即保存;没脚本时这一钮就是唯一的保存出口 #}
             <noscript><button class="btn btn-ghost" type="submit">{{ __('保存') }}</button></noscript>
         </div>
     </form>
@@ -115,7 +115,7 @@
     </div>
 {% endmacro %}
 
-{# 列表视图行下展开块(《80》第 10.1 节)。与 pane 同源数据,Ajax 换栏时整块吐出插到行后 #}
+{# 列表视图行下展开块。与 pane 同源数据,Ajax 换栏时整块吐出插到行后 #}
 {% macro qedit(detail, field, token, edited) %}
     <div class="qedit">
         <div class="qe-top">
@@ -239,7 +239,7 @@
                 <div class="hint">{{ __('或将文件拖到此处上传') }}</div>
             </div>
 
-            {# 队列容器常驻但默认收起:XHR 上传要往这里插行(《80》第 10.2 节) #}
+            {# 队列容器常驻但默认收起:XHR 上传要往这里插行 #}
             <div class="upq" id="upq"{% if queue is empty %} hidden{% endif %}>
                 {% for row in queue %}
                     {% include "media-queue-row.twig" with {row: row} %}

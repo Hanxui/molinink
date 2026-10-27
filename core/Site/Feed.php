@@ -14,7 +14,7 @@ use Molin\Content\Post;
 use Molin\Option\Options;
 
 /**
- * 订阅输出(《23》§4:`/feed` `/feed/rss` `/feed/atom`)。
+ * 订阅输出(`/feed` `/feed/rss` `/feed/atom`)。
  *
  * 口径(2026-10-05 自定,记录在案):条数走内核选项 `posts_per_rss`(默认 10);
  * 摘要 / 全文走 `rss_use_excerpt`(`'1'` = 摘要,取 `excerpt`,空则正文去标签截 160 字;

@@ -23,7 +23,7 @@ use Molin\Security\Csrf;
 use Molin\User\Auth;
 
 /**
- * 设置页(《76》):分组、当前值、字段白名单与落库。页面变量在这里凑齐,外壳只负责合并。
+ * 设置页:分组、当前值、字段白名单与落库。页面变量在这里凑齐,外壳只负责合并。
  */
 final class SettingsScreen
 {
@@ -53,19 +53,19 @@ final class SettingsScreen
             'settings_section' => $this->settingsSection($request),
             'categories' => $this->termChoices(),
             'updated_text' => $this->settingsUpdatedText(),
-            // ?reset=1:只把当前分组换回默认再画一遍,不落库(《76》§12.6);别的分组原样保留
+            // ?reset=1:只把当前分组换回默认再画一遍,不落库;别的分组原样保留
             'values' => $this->settingsValues(
                 $request->input('reset') === '1' ? $this->settingsSection($request) : null
             ),
             'languages' => Translator::instance()->available(),
             'pages' => $this->pageScreen->frontPageChoices((string) $this->options->get('page_on_front', '0')),
-            // 固定链接组示例地址的前缀:前端换预设/改结构时现算示例要用(《76》§12.5)
+            // 固定链接组示例地址的前缀:前端换预设/改结构时现算示例要用
             'site_base' => rtrim((string) $this->options->get('site_url', ''), '/'),
         ];
     }
 
     /**
-     * 设置分组(《76》§3):八组页签,整页跳转靠 ?sec=。认不出的一律回落常规组。
+     * 设置分组:八组页签,整页跳转靠 ?sec=。认不出的一律回落常规组。
      */
     private function settingsSection(Request $request): string
     {
@@ -139,7 +139,7 @@ final class SettingsScreen
     }
 
     /**
-     * 分类下拉的候选(《87》):writing 组「默认分类」用。
+     * 分类下拉的候选:writing 组「默认分类」用。
      *
      * @return list<array{id:int, name:string, selected:bool}>
      */
@@ -240,7 +240,7 @@ final class SettingsScreen
                 'upload_types' => ['type' => 'text', 'default' => 'jpg jpeg png gif webp pdf zip mp4 webm mp3'],
             ],
             // 缓存组暂无「可配」字段:缓存开关在 config.php 的 cache 段,这一组本来就不写库。
-            // (2026-10-12 更正旧注释"《24》的数据缓存适配器与页面缓存都还没落地"—— 已过时:
+            // (2026-10-12 更正旧注释"既有规范的数据缓存适配器与页面缓存都还没落地"—— 已过时:
             //  0.74.0 起 CacheManager / PageCache 已接线,设置页与仪表盘显示的是实际生效的后端。)
             // 页面上只放只读说明,不留会写库的输入 —— 有输入却没人读,就是会说谎的开关。
             'cache' => [],
@@ -310,7 +310,7 @@ final class SettingsScreen
     }
 
     /**
-     * 站点语言只收装得上语言包的(《33》§8)。
+     * 站点语言只收装得上语言包的。
      */
     private function validLocale(string $raw): ?string
     {
@@ -320,7 +320,7 @@ final class SettingsScreen
     }
 
     /**
-     * 固定链接结构:必须留至少一个占位符,且以 / 或 ? 起头,否则回落默认(《23》第 6 节)。
+     * 固定链接结构:必须留至少一个占位符,且以 / 或 ? 起头,否则回落默认。
      */
     private function normalizePermalink(string $raw, string $default): string
     {

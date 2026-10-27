@@ -13,12 +13,12 @@ namespace Molin\User;
 use Molin\Plugin\CapabilityGate;
 
 /**
- * 用户值对象(《21-数据模型》第 5 节 users + usermeta 内置键)。
+ * 用户值对象(既有规范users + usermeta 内置键)。
  *
  * 角色与额外能力都装在这里:role 存 usermeta.role,
- * capabilities 存 usermeta.capabilities(《32》第 4.1 节)。
+ * capabilities 存 usermeta.capabilities。
  *
- * fromRows() 是 `user.read_email` 能力的拦截面(《62》第 6 节):邮箱随行数据一起装进对象,
+ * fromRows 是 `user.read_email` 能力的拦截面:邮箱随行数据一起装进对象,
  * 这一处是"用户对象取邮箱"的唯一入口,门卫落在这里。内核自身(无插件上下文)照常装载。
  */
 final class User
@@ -44,7 +44,7 @@ final class User
 
     /**
      * @param array<string, mixed> $row  users 表的一行
-     * @param array<string, string> $meta usermeta 的键值(内置键见《32》第 9 节)
+     * @param array<string, string> $meta usermeta 的键值(内置键)
      */
     public static function fromRows(array $row, array $meta): self
     {

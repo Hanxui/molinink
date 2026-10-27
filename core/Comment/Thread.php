@@ -14,7 +14,7 @@ use Molin\Option\Options;
 use Molin\User\Avatar;
 
 /**
- * 一篇文章的评论树(《31》§2 嵌套 + §3 待审"作者可见")。
+ * 一篇文章的评论树(既有规范嵌套 + §3 待审"作者可见")。
  *
  * 前台只认这一份装配:已通过的全部可见;待审的只给提交者自己(登录按 user_id、
  * 游客按会话里记过的 id)。展示层级与排序由选项定(comment_nest_depth / comment_order):

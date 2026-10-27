@@ -15,7 +15,7 @@ use Molin\Media\Store;
 use Molin\Option\Options;
 
 /**
- * 头像解析(《31》第 7 节)。头像源是唯一开关,取值四档:
+ * 头像解析。头像源是唯一开关,取值四档:
  *
  *   `upload`  用自己上传的头像(usermeta.avatar 存附件 id);没传过直接落本地字母,不往别的源退;
  *   `gravatar` Gravatar 外链,按邮箱哈希;

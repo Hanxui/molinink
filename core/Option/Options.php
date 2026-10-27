@@ -15,12 +15,12 @@ use Molin\Logger\Audit;
 use Molin\Plugin\CapabilityGate;
 
 /**
- * 站点配置读写(options 表,《21-数据模型》第 7 节)。
+ * 站点配置读写(options 表,既有规范)。
  *
  * autoload=1 的项启动时一次性预载;其余用时再取,取过的记在本请求内,不再回库。
- * option() 全局助手等内核服务定位器就绪后再接(《52》第 5 节)。
+ * option 全局助手等内核服务定位器就绪后再接。
  *
- * set() 同时是 `setting.write` 能力的拦截面(《62》第 6 节):设置写入(站点设置与插件自己的
+ * set 同时是 `setting.write` 能力的拦截面:设置写入(站点设置与插件自己的
  * `plugin.*` 键)都只有这一处出口,门卫落在这一处就一处不漏。内核自身(无插件上下文)照常写。
  */
 final class Options
@@ -118,7 +118,7 @@ final class Options
 
         unset($this->missing[$name]);
 
-        // 《26》第 7 节:设置修改必须留痕。只记键名,值不入库日志 —— 值可能是密钥或邮箱
+        // 设置修改必须留痕。只记键名,值不入库日志 —— 值可能是密钥或邮箱
         Audit::record('setting.update', $name);
     }
 

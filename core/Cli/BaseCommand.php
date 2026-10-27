@@ -29,9 +29,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
 /**
- * 命令基类:统一挂《58-CLI工具》第 3 节的全局选项,并把子类的工作集中在 handle()。
+ * 命令基类:统一挂既有规范的全局选项,并把子类的工作集中在 handle。
  *
- * 命令名一旦发布不改(《58》第 9 节),所以名字写死在这里、不靠约定生成。
+ * 命令名一旦发布不改,所以名字写死在这里、不靠约定生成。
  */
 abstract class BaseCommand extends Command
 {
@@ -77,7 +77,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * 密码类输入的取法(《58》§7:优先提示输入,脚本走环境变量,不写进 shell 历史)。
+     * 密码类输入的取法(优先提示输入,脚本走环境变量,不写进 shell 历史)。
      */
     protected function askSecret(InputInterface $input, OutputInterface $output, string $label, string $env): string
     {
@@ -138,7 +138,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * 主题设置器(《36》§8 的导出/导入命令与后台配置器读同一份声明与取值)。
+     * 主题设置器(既有规范的导出/导入命令与后台配置器读同一份声明与取值)。
      */
     protected function themeSettings(): ThemeSettings
     {

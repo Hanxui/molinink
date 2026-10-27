@@ -13,7 +13,7 @@ namespace Molin\Plugin;
 use Molin\Http\Response;
 
 /**
- * 插件后台页的控制器(《12》§14)。
+ * 插件后台页的控制器。
  *
  * 只在 `plugin.json` 的 `admin.menu[].children[].controller` 声明了实现本接口的类时,
  * 内核才会在渲染这一页时调它 —— 类必须落在插件自己的命名空间下

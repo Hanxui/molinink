@@ -16,9 +16,9 @@ use Molin\Hook\Registry;
 use Molin\Support\Str;
 
 /**
- * plugin.json 的读取与校验(《12-插件清单 schema》)。
+ * plugin.json 的读取与校验。
  *
- * 致命项一律拒绝启用;只有"未知钩子"按《12》第 9 节第 8 项降级为警告。
+ * 致命项一律拒绝启用;只有"未知钩子"第 8 项降级为警告。
  * 字段只增不改,新增字段必须是可选的。
  */
 final class Manifest
@@ -120,7 +120,7 @@ final class Manifest
         return is_string($this->data['author']) ? $this->data['author'] : (array) $this->data['author'];
     }
 
-    /** 作者显示名:清单允许「字符串」与「{name, url}」两副长相(《12》§5),展示层要的是一行文本。 */
+    /** 作者显示名:清单允许「字符串」与「{name, url}」两副长相,展示层要的是一行文本。 */
     public function authorName(): string
     {
         $author = $this->author();
@@ -240,7 +240,7 @@ final class Manifest
     }
 
     /**
-     * 插件类的 PSR-4 根目录(《52》第 3 节)。
+     * 插件类的 PSR-4 根目录。
      */
     public function sourceDirectory(): string
     {
@@ -248,7 +248,7 @@ final class Manifest
     }
 
     /**
-     * 插件根目录。views/ 与 migrations/ 都挂在它下面(《12》§3)。
+     * 插件根目录。views/ 与 migrations/ 都挂在它下面。
      */
     public function directory(): string
     {
@@ -261,7 +261,7 @@ final class Manifest
     }
 
     /**
-     * 后台菜单声明(《12》§7.1 admin.menu):入口挂在 children 的 route 上,摊平成一层给「管理」键用。
+     * 后台菜单声明(既有规范admin.menu):入口挂在 children 的 route 上,摊平成一层给「管理」键用。
      *
      * @return list<array{title: string, route: string}>
      */
@@ -294,8 +294,8 @@ final class Manifest
     }
 
     /**
-     * 后台页面声明(《12》§7.1、§14):每个 children 一项 = 一个插件后台页。
-     * 页面归 admin.page 管(《12》§6.1),没声明就一个页也不认。
+     * 后台页面声明(既有规范):每个 children 一项 = 一个插件后台页。
+     * 页面归 admin.page 管,没声明就一个页也不认。
      * route 与 template 两个都合规才收 —— 前者由内核解析,后者在插件自己的 views/ 里($12》§3)。
      * `controller` 可选:声明了才有写动作;声明得不对只在警告里点名、按"没有写动作"处理,
      * 不连坐整页 —— 展示页不该因为一个写动作没接好就整个消失。
@@ -354,7 +354,7 @@ final class Manifest
 
     /**
      * 页面路径:只认小写字母数字与 - ,段间用 / 分隔。刻意收窄 —— 这条路径会被当后台 URL 用,
-     * 放宽就等于让插件自己决定 URL 长什么样(《23》第 1 节第 4 条)。
+     * 放宽就等于让插件自己决定 URL 长什么样(既有规范条)。
      */
     private static function adminRoute(mixed $raw): ?string
     {
@@ -378,7 +378,7 @@ final class Manifest
     }
 
     /**
-     * 后台页控制器类名(《12》§14)。只做**形状**校验:合法类名 + 落在插件自己的命名空间下。
+     * 后台页控制器类名。只做**形状**校验:合法类名 + 落在插件自己的命名空间下。
      *
      * 「类存不存在、实没实现接口、能不能无参构造」是运行期的事 —— 走到这里时插件的 PSR-4 还没挂上,
      * `class_exists()` 一定说不存在。那三项留给 AdminController 在真要调它时判。
@@ -393,12 +393,12 @@ final class Manifest
             return null;
         }
 
-        // 只能指自己的类(同《12》§6.1 对自定义能力的规矩):不许把内核或别的插件的类拿来当控制器
+        // 只能指自己的类(对自定义能力的规矩):不许把内核或别的插件的类拿来当控制器
         return str_starts_with($raw, $namespacePrefix) ? $raw : null;
     }
 
     /**
-     * 自定义路由声明(《12》§7.2)。method 白名单、path 规范化、handler 解析到本插件命名空间。
+     * 自定义路由声明。method 白名单、path 规范化、handler 解析到本插件命名空间。
      *
      * 不合规的一条只记 warning 并丢开(按"无此路由"处理),不连坐整个插件 ——
      * 一条路由写错不该让插件整个启不来;真正与内核路径撞车的那类只在这里如实收下,
@@ -470,7 +470,7 @@ final class Manifest
         return $this->parsedRoutes = $routes;
     }
 
-    /** method 白名单,大小写不敏感统一大写(《12》§7.2)。 */
+    /** method 白名单,大小写不敏感统一大写。 */
     private static function routeMethod(mixed $raw): ?string
     {
         if (!is_string($raw)) {
@@ -482,7 +482,7 @@ final class Manifest
         return in_array($method, ['GET', 'POST', 'PUT', 'DELETE'], true) ? $method : null;
     }
 
-    /** path 规范化:必须以 / 开头、不许 .. 与查询串;尾斜杠去掉(分发前内核也会去,《23》)。 */
+    /** path 规范化:必须以 / 开头、不许 .. 与查询串;尾斜杠去掉(分发前内核也会去,既有规范)。 */
     private static function routePath(mixed $raw): ?string
     {
         if (!is_string($raw)) {
@@ -546,7 +546,7 @@ final class Manifest
         return is_string($raw) && strtolower(trim($raw)) === 'none' ? 'none' : 'session';
     }
 
-    /** 路由名后缀:路径段转点分(`/api/pay/{id}` → `api.pay.id`)。URL 仍按路由名生成(《23》§6)。 */
+    /** 路由名后缀:路径段转点分(`/api/pay/{id}` → `api.pay.id`)。URL 仍按路由名生成。 */
     private static function routeNameSuffix(string $path): string
     {
         $trimmed = trim(str_replace(['{', '}'], '', $path), '/');
@@ -671,7 +671,7 @@ final class Manifest
                 );
             }
 
-            // 插件自定义能力只允许在自己的命名空间下(《62》第 10 节)
+            // 插件自定义能力只允许在自己的命名空间下
             if (str_starts_with($capability, $this->name() . '.') && Capability::isValidName($capability)) {
                 continue;
             }
@@ -695,7 +695,7 @@ final class Manifest
                 throw new PluginValidationException("插件 {$this->name()} 缺迁移文件: {$table['migration']}");
             }
 
-            // 《12》第 7.3 节:必须提供回滚,否则拒绝启用
+            // 必须提供回滚,否则拒绝启用
             if (preg_match('/function\s+down\s*\(/', (string) file_get_contents($path)) !== 1) {
                 throw new PluginValidationException(
                     "插件 {$this->name()} 的迁移 {$table['migration']} 没有 down(),无法回滚"
@@ -772,7 +772,7 @@ final class Manifest
     }
 
     /**
-     * 支持 >=、>、<=、<、== 与 * 的最小版本约束比较(《12》第 2.4 节)。
+     * 支持 >=、>、<=、<、== 与 * 的最小版本约束比较。
      */
     private static function versionSatisfies(string $actual, string $constraint): bool
     {

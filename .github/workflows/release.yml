@@ -31,7 +31,9 @@ jobs:
           set -euo pipefail
           VER="${GITHUB_REF_NAME#v}"
           rm -rf build && mkdir -p build/molin
-          rsync -a --exclude='.git/' --exclude='.github/' --exclude='config.php' --exclude='storage/*/*' ./ build/molin/
+          # build/ 是组包用的暂存目录，不排掉会被 rsync 复制进自己肚子里，
+          # 安装包里就会多一个空的 build/molin/ —— 2026-10-27 实测发现过
+          rsync -a --exclude='.git/' --exclude='.github/' --exclude='build/' --exclude='config.php' --exclude='storage/*/*' ./ build/molin/
           for d in "" backups cache cache/data cache/pages cache/twig logs plugins trash uploads; do
             mkdir -p "build/molin/storage/$d"
             touch "build/molin/storage/$d/.gitkeep"

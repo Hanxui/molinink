@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列出内建与插件定时任务、来源、上次运行时间与下次到期时间(《58-CLI工具》第 5 节)。只读,不动任何数据。
+ * 列出内建与插件定时任务、来源、上次运行时间与下次到期时间。只读,不动任何数据。
  */
 final class CronList extends BaseCommand
 {

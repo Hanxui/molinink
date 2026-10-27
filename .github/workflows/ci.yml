@@ -27,7 +27,8 @@ jobs:
       - name: 提交说明检查
         run: |
           msg=$(git log -1 --pretty=%B)
-          banned='纯文档|不升号|不动版本号|口径|铁律|交接|内部记录|项目负责人|主人'
+          # 词表编码存放：把要挡的词直接印在公开文件里，本身就是一种暴露
+          banned=$(printf '%s' '57qv5paH5qGjfOS4jeWNh+WPt3zkuI3liqjniYjmnKzlj7d85Y+j5b6EfOmTgeW+i3zkuqTmjqV85YaF6YOo6K6w5b2VfOmhueebrui0n+i0o+S6unzkuLvkuro=' | base64 -d)
           if printf '%s' "$msg" | grep -Eq "$banned"; then
             echo "::error::提交说明里出现了内部用语 —— 只写改了什么就行"
             printf '%s\n' "$msg" | grep -En "$banned"
@@ -54,7 +55,9 @@ jobs:
           done
 
           # 4) 源码与文档里不许有内部用语（vendor 与 .github 自身除外）
-          if grep -rInE '项目负责人|铁律|内部记录|交接文件|交接文档|AGENTS\.md|主人' \
+          # 同上，词表编码存放
+          words=$(printf '%s' '6aG555uu6LSf6LSj5Lq6fOmTgeW+i3zlhoXpg6jorrDlvZV85Lqk5o6l5paH5Lu2fOS6pOaOpeaWh+aho3xBR0VOVFNcLm1kfOS4u+S6ug==' | base64 -d)
+          if grep -rInE "$words" \
                --include='*.php' --include='*.twig' --include='*.md' --include='*.txt' \
                --include='*.js' --include='*.css' \
                --exclude-dir=vendor --exclude-dir=.github . ; then

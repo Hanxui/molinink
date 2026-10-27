@@ -13,16 +13,16 @@ namespace Molin\Media;
 use Molin\Database\Database;
 
 /**
- * 媒体读写(《21-数据模型》第 8 节)。
+ * 媒体读写。
  *
  * 一条附件占两行:`posts`(`type=attachment`、`status=inherit`、`parent_id` 指向所属内容)
  * 是本体,`media` 存扩展信息(路径、尺寸、alt、说明、各档 sizes)。
- * 删除走 `posts` 的软删(见 Remover),`media` 跟着本体活着 —— 定时清理才物理删文件(《27》第 8.1 节)。
+ * 删除走 `posts` 的软删(见 Remover),`media` 跟着本体活着 —— 定时清理才物理删文件。
  */
 final class MediaRepository
 {
     /**
-     * 页签的三类(《80》第 4.2 节:图片 / 文档 / 音视频)。
+     * 页签的三类(图片 / 文档 / 音视频)。
      * 白名单里的 zip 与其余非图片非音视频的都归"文档" —— 这三段 SQL 是常量,不接用户输入。
      */
     private const CATEGORIES = [
@@ -31,7 +31,7 @@ final class MediaRepository
         'doc' => "(m.mime_type NOT LIKE 'image/%' AND m.mime_type NOT LIKE 'video/%' AND m.mime_type NOT LIKE 'audio/%')",
     ];
 
-    /** 排序取自《80》第 4.3 节那个下拉的四个选项,列名钉死在这里 */
+    /** 排序取自既有规范那个下拉的四个选项,列名钉死在这里 */
     private const ORDERS = [
         '' => 'm.id DESC',
         'new' => 'm.id DESC',
@@ -47,7 +47,7 @@ final class MediaRepository
     /**
      * 一条 media 记录 + 它的 posts 本体,一次事务写完。
      *
-     * @param array<string, mixed> $media 《21》第 8 节的字段(sizes 传数组,内部转 JSON)
+     * @param array<string, mixed> $media 既有规范的字段(sizes 传数组,内部转 JSON)
      * @param array<string, mixed> $attachment 本体行:至少给 title / parent_id / author_id
      * @return int media.id
      */
@@ -177,7 +177,7 @@ final class MediaRepository
     }
 
     /**
-     * 把一条 media 记录拼成模板直接能用的图片数据(《27》§5、《14》§5.2)。
+     * 把一条 media 记录拼成模板直接能用的图片数据。
      *
      * 列表页的特色图与主题设置里的 logo / 大图都走这一把尺:
      * `url` 是默认档(medium → large → xlarge → thumb → 原图),`srcset` 收全部衍生档,
@@ -271,9 +271,9 @@ final class MediaRepository
     }
 
     /**
-     * 媒体库浏览(《41》第 7 节、《80》第 4 节 + 第 12 节):页签 + 月份 + 关键词 + 排序 + 分页。
+     * 媒体库浏览(既有规范):页签 + 月份 + 关键词 + 排序 + 分页。
      *
-     * 每一项都带 `ref_count` —— 卡片要按《80》第 4.5 节在未引用项的元信息尾部标暖赭「未引用」,
+     * 每一项都带 `ref_count` —— 卡片要在未引用项的元信息尾部标暖赭「未引用」,
      * 列表视图「引用」列要的是数字,一次查完,不在循环里逐条数引用。
      * `tab=removed` 看的是已软删的那批(待清理栏),其余页签一律排除软删行。
      *
@@ -309,9 +309,9 @@ final class MediaRepository
     }
 
     /**
-     * 页签计数与已用空间(《80》第 4.2、4.4 节 + 第 12 节「待清理」)。一次查完。
+     * 页签计数与已用空间(既有规范「待清理」)。一次查完。
      *
-     * 统计条跟着页签走(《80》第 6 节),所以每一档都要自己的项数与字节;
+     * 统计条跟着页签走,所以每一档都要自己的项数与字节;
      * `removed` 是已软删的那批 —— 它们不占"在用"的空间,但清理工位要看得见总量。
      *
      * @return array<string, array{n:int, bytes:int}> 键 = 页签值(all/image/doc/av/unref/removed)
@@ -355,7 +355,7 @@ final class MediaRepository
     }
 
     /**
-     * 有哪些内容在用这条附件(《80》第 4.7 节「被 N 篇文章引用」下面的那几条链接)。
+     * 有哪些内容在用这条附件(既有规范「被 N 篇文章引用」下面的那几条链接)。
      *
      * @return list<array{id:int, type:string, slug:string, title:string}>
      */
@@ -394,7 +394,7 @@ final class MediaRepository
     }
 
     /**
-     * 附件页的引用列表(《117》§11 第 7 条先按此实现):反查带用途与发布时间,新的在前。
+     * 附件页的引用列表(既有规范条先按此实现):反查带用途与发布时间,新的在前。
      *
      * 与 referencedBy()/references() 同一套条件(特色图片或正文点名,回收站与已删不算),
      * 只是多带 published_at 和「怎么用的」,给附件页的每行用。
@@ -438,7 +438,7 @@ final class MediaRepository
     }
 
     /**
-     * 这条附件是不是被哪篇内容当特色图片用着(《117》§11 第 5 条:h1 后缀「— 特色图片」的判定)。
+     * 这条附件是不是被哪篇内容当特色图片用着(既有规范条:h1 后缀「— 特色图片」的判定)。
      */
     public function featuredBy(int $id): bool
     {
@@ -461,7 +461,7 @@ final class MediaRepository
     }
 
     /**
-     * 库里出现过的年月(《80》第 4.3 节「全部时间」下面那些选项),从落盘路径 年/月 取。
+     * 库里出现过的年月(既有规范「全部时间」下面那些选项),从落盘路径年/月取。
      *
      * @return list<string> 形如 `2026/09`,新在前
      */
@@ -516,7 +516,7 @@ final class MediaRepository
     }
 
     /**
-     * 「被用着」的判定(《27》第 8.1 节口径:当特色图片用的,或正文里写了这个文件名的,
+     * 「被用着」的判定(既有规范口径:当特色图片用的,或正文里写了这个文件名的,
      * 外加**被当头像用的**)。回收站里的与被删掉的那些都不算,与 references() 同一套条件。
      *
      * 这里必须用 `SELECT 1` 而不是 `SELECT COUNT(*)`:聚合子句永远返回一行,
@@ -528,7 +528,7 @@ final class MediaRepository
     }
 
     /**
-     * 数一数被多少篇内容用着(《80》第 10.1 节「引用」列要的是数字,不是有/无)。
+     * 数一数被多少篇内容用着(既有规范「引用」列要的是数字,不是有/无)。
      */
     private function refCountSql(): string
     {
@@ -538,7 +538,7 @@ final class MediaRepository
     /**
      * 两处判定共用的一段 FROM 子句 —— 参数是外层查询里的 `m` 行,不是绑定值。
      * 两路并集:内容在用(特色图 / 正文点名),以及**被当头像用** ——
-     * `usermeta.avatar` 存的是 media.id(《21》§5),拿它当头像的账号同样在用这个文件。
+     * `usermeta.avatar` 存的是 media.id,拿它当头像的账号同样在用这个文件。
      * 做成派生表,EXISTS 与 COUNT(*) 两头都能直接套。
      */
     private function refFrom(): string
@@ -574,7 +574,7 @@ final class MediaRepository
     }
 
     /**
-     * 软删(《27》第 8.1 节):只打"待清理"标记,文件先不动。
+     * 软删:只打"待清理"标记,文件先不动。
      *
      * 附件不走内容的状态机 —— 它的状态是 inherit(随父),删除归媒体库自己管,
      * 所以这里只写 `deleted_at`,不去碰 `status`。所有常规查询都带 `deleted_at IS NULL`,
@@ -615,7 +615,7 @@ final class MediaRepository
     }
 
     /**
-     * 改 alt / 说明(《41》第 7 节"编辑:alt、标题、说明")。标题在 posts 本体上。
+     * 改 alt / 说明(既有规范"编辑:alt、标题、说明")。标题在 posts 本体上。
      *
      * @param array{alt?:string, caption?:string, title?:string} $edits
      */
@@ -651,7 +651,7 @@ final class MediaRepository
     }
 
     /**
-     * 被多少处引用(《41》第 7 节:删除时先提示"被 N 处引用")。
+     * 被多少处引用(删除时先提示"被 N 处引用")。
      * 算三处:当特色图片用的、正文里写了这个文件名的,以及**被当头像用的**。回收站里的那篇自己不算。
      */
     public function references(int $id): int
@@ -683,7 +683,7 @@ final class MediaRepository
     }
 
     /**
-     * 拿这条附件当头像的账号(《80》第 4.7 节:引用列表要把头像那一路也露出来,
+     * 拿这条附件当头像的账号(引用列表要把头像那一路也露出来,
      * 否则计数里有它、列表里没它,对不上)。
      *
      * @return list<array{id:int, title:string}>
@@ -713,7 +713,7 @@ final class MediaRepository
     }
 
     /**
-     * 物理清账(《27》第 8.1 节清理动作的手动版):media 行 + posts 本体 + 它的 meta。
+     * 物理清账(既有规范清理动作的手动版):media 行 + posts 本体 + 它的 meta。
      * 文件不在这儿删 —— 盘上归 `Remover`/`Store` 管,这里只管账。
      */
     public function purge(int $id): bool

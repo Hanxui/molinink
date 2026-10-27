@@ -1,7 +1,7 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  页面列表(《86》,《78》的姊妹页)。外壳、页签、筛选、批量条、分页全部与文章列表同一套 CSS:
+  页面列表(既有规范的姊妹页)。外壳、页签、筛选、批量条、分页全部与文章列表同一套 CSS:
   .inner 上同时挂 page-posts 与 page-pages,后者只负责「层级」这一列的差异。
   与文章的三处不同:页签无「待审」、筛选用「父页面」不用「分类」、行内没有「评论」列。
 #}
@@ -73,13 +73,13 @@
 
         {% for row in rows %}
             <div class="tr{% if quick_id == row.id %} qe{% endif %}" data-rows>
-                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择《%s》', 'molin', row.label) }}"></span>
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择既有规范', 'molin', row.label) }}"></span>
                 <div class="ttl">
                     <div class="t">
                         {% if row.edit_url %}<a href="{{ row.edit_url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}
                     </div>
                     <div class="sub"><span>{{ row.sub }}</span></div>
-                    {# 移动端换这两行:状态前置(《86》§5),别名另起一行 #}
+                    {# 移动端换这两行:状态前置,别名另起一行 #}
                     <div class="mmeta">
                         <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
                         <span class="sep">·</span><span>{{ row.hierarchy }}</span>
@@ -160,7 +160,7 @@
     {% if pagination.total > 0 %}
         <div class="pager">
             <div class="info">{{ __('第 %s–%s 个，共 %s 个', 'molin', pagination.from, pagination.to, pagination.total) }}</div>
-            {# 不足一页只留说明、不出页码(《86》§4) #}
+            {# 不足一页只留说明、不出页码 #}
             {% if pagination.total_pages > 1 %}
                 <div class="pages">
                     {% for link in pagination.links %}

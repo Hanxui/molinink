@@ -31,11 +31,11 @@ use Molin\User\User;
 use Throwable;
 
 /**
- * 外观族(版式照 后台主题-定稿-2026-09-30 与 后台主题设置-定稿-2026-09-30):
- * 主题列表 / 启用切换 / 上传 / 删除,以及主题配置器(《36》:渲染、校验、保存、重置、导入导出、选图)。
+ * 外观族(版式照设计稿):
+ * 主题列表 / 启用切换 / 上传 / 删除,以及主题配置器(渲染、校验、保存、重置、导入导出、选图)。
  *
  * 主题只管长相:切主题 = 改启用状态,内容一字不动。预览用 ?molin_theme_preview={slug}
- * 让管理员在前台先看(《90》§8),设置写进 themes.settings,取值走 theme_setting()。
+ * 让管理员在前台先看,设置写进 themes.settings,取值走 theme_setting。
  */
 final class AppearanceController
 {
@@ -43,7 +43,7 @@ final class AppearanceController
 
     private const TABS = ['all', 'on', 'available'];
 
-    /** 选图层一页 6 张,与编辑页那个选择器同一口径(《79》§11.2) */
+    /** 选图层一页 6 张,与编辑页那个选择器同一口径 */
     private const PICKER_PER_PAGE = 6;
 
     public function __construct(
@@ -117,7 +117,7 @@ final class AppearanceController
         return $this->index($request, $menu);
     }
 
-    // ---- 主题列表(《90》) ----
+    // ---- 主题列表 ----
 
     /**
      * 扫 themes/ 目录读各自的 theme.json, active 的排最前。
@@ -174,7 +174,7 @@ final class AppearanceController
     }
 
     /**
-     * 主题卡预览图(《90》§11):清单声明 screenshot 且文件真在主题目录里才给地址,
+     * 主题卡预览图:清单声明 screenshot 且文件真在主题目录里才给地址,
      * 否则空串 —— 模板落回 #F1EFEA 占位块,不留裂图。
      *
      * @param array<string, mixed> $manifest
@@ -284,7 +284,7 @@ final class AppearanceController
             return Response::redirect($this->url('appearance') . '?done=unknown');
         }
 
-        // 生命周期钩子与整站一致(《13》§9):先 before、再落状态、后 after、最后广播缓存失效
+        // 生命周期钩子与整站一致:先 before、再落状态、后 after、最后广播缓存失效
         $previous = (string) $this->options->get('active_theme', 'molin-default');
         do_action('theme/activate/before', $theme->slug(), $previous);
         $this->settings->activate($theme->slug());
@@ -296,7 +296,7 @@ final class AppearanceController
     }
 
     /**
-     * 上传主题包(《90》§8、《16》§8):解包 → 七项校验 → 移入 themes/{slug}/,不自动启用。
+     * 上传主题包:解包 → 七项校验 → 移入 themes/{slug}/,不自动启用。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */
@@ -322,7 +322,7 @@ final class AppearanceController
     }
 
     /**
-     * 删除主题(《90》§8):主题目录真删、不可恢复,内容数据一律不动。
+     * 删除主题:主题目录真删、不可恢复,内容数据一律不动。
      * 启用中的主题不可自删;有子主题依赖时先提示数目(安全 > 便捷)。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
@@ -420,7 +420,7 @@ final class AppearanceController
         return @rmdir($dir);
     }
 
-    // ---- 配置器(《36》《91》) ----
+    // ---- 配置器 ----
 
     /**
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
@@ -437,12 +437,12 @@ final class AppearanceController
 
         $groups = $this->settings->present($theme, $errors, $overlay);
 
-        // 代码类字段仅管理员可见(《36》§9);本屏本来只有 administrator 进得来,这条是双保险
+        // 代码类字段仅管理员可见;本屏本来只有 administrator 进得来,这条是双保险
         if ($user->role !== Roles::ADMINISTRATOR) {
             $groups = $this->withoutCode($groups);
         }
 
-        // 图片字段的预览图:值已经在库里(《36》§4 修订:选图即写),这里把附件地址补进模型供模板出图
+        // 图片字段的预览图:值已经在库里(既有规范修订:选图即写),这里把附件地址补进模型供模板出图
         $groups = $this->withAttachmentPreviews($groups);
 
         $done = $request->input('done');
@@ -556,7 +556,7 @@ final class AppearanceController
     }
 
     /**
-     * 设置页里的选图对话框(《79》§4.7 第 4 盒同一件,只是回跳目标换成设置页)。
+     * 设置页里的选图对话框(既有规范盒同一件,只是回跳目标换成设置页)。
      *
      * @return array<string, mixed>|null
      */
@@ -658,7 +658,7 @@ final class AppearanceController
     }
 
     /**
-     * 重置:带 group 只回滚那一组,不带就是整只主题(《36》§5)。
+     * 重置:带 group 只回滚那一组,不带就是整只主题。
      * group 只认主题里真声明过的组键 —— 白名单在 definitions 里,通不过就按整体重置走,不报错。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
@@ -695,7 +695,7 @@ final class AppearanceController
     }
 
     /**
-     * 导出为 settings.json 下载(《36》§8);程序版权位是站点选项,不随主题走。
+     * 导出为 settings.json 下载;程序版权位是站点选项,不随主题走。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */
@@ -764,7 +764,7 @@ final class AppearanceController
     }
 
     /**
-     * 选图回跳:只把附件 id 卡在地址上,落库等「保存」(《36》§8"点保存才落库")。
+     * 选图回跳:只把附件 id 卡在地址上,落库等「保存」(既有规范"点保存才落库")。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */
@@ -889,7 +889,7 @@ final class AppearanceController
     }
 
     /**
-     * 目标主题:?theme= 指定,没给就是当前启用那只(《91》§11「正在配置」)。
+     * 目标主题:?theme= 指定,没给就是当前启用那只(既有规范「正在配置」)。
      */
     private function target(Request $request): ?Theme
     {
@@ -907,7 +907,7 @@ final class AppearanceController
     }
 
     /**
-     * 预览入口:前台首页带预览参数(《36》§7、《90》§8);只有 theme.switch 的人进得去,
+     * 预览入口:前台首页带预览参数;只有 theme.switch 的人进得去,
      * 换渲染器在 index.php 里做,这里只负责给出地址。
      */
     private function previewUrl(string $slug): string

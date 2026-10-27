@@ -15,7 +15,7 @@ use Molin\Support\Files;
 use RuntimeException;
 
 /**
- * 备份推送远端(《35》§4 ⑦:S3 / WebDAV / FTP 三选一)。
+ * 备份推送远端(既有规范⑦:S3 / WebDAV / FTP 三选一)。
  *
  * 凭证放 `storage/backups/remote.json`(服务器文件系统,与 config.php 同一信任级别;
  * 不进备份包、不落日志)。格式:
@@ -27,7 +27,7 @@ use RuntimeException;
  * 后台「推送到远端」字段与管理对话框走本类的 save / clear;CLI 走 push。
  * 密钥类字段(secret / password)留空提交 = 保持原值——表单不回显密钥。
  *
- * push() / probe() 是 `http.outbound` 能力的拦截面(《62》第 6 节):三条驱动的直连出网
+ * push / probe 是 `http.outbound` 能力的拦截面:三条驱动的直连出网
  * (S3 的签名请求、WebDAV 与 FTP)都从这两个入口出去,门卫落在发出去之前 ——
  * 内核自身(无插件上下文)照常推,插件未声明即被拦下。
  */
@@ -262,7 +262,7 @@ final class Remote
     }
 
     /**
-     * 就地探一次"真写得进去吗"(《109》§12「测试连接」):PUT 一个几十字节的探针对象,随即删掉。
+     * 就地探一次"真写得进去吗"(既有规范「测试连接」):PUT 一个几十字节的探针对象,随即删掉。
      *
      * 拿**表单里当前的值**探,不只认已保存的凭据 —— 填完先测、再保存才是顺手的顺序;
      * 只读握手不解决问题:读得到不等于写得进,而备份推送的本质是写。

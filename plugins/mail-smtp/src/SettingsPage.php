@@ -15,7 +15,7 @@ use Molin\Plugin\AdminPageContext;
 use Molin\Plugin\AdminPageController;
 
 /**
- * 「SMTP 发信」的后台设置页(《12》§13/§14)。
+ * 「SMTP 发信」的后台设置页(既有规范/§14)。
  *
  * 在此之前,配 SMTP 只能上服务器手写 storage/.secrets/mail.php —— 对不懂技术的站长就是一道墙。
  * 这一页把它变成:填、存、试发一封。密码框**永远不回显**(只告诉你有没存过),留空 = 不改动。

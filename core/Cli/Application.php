@@ -48,9 +48,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /**
- * molin 命令表(《58-CLI工具》第 1 节)。
+ * molin 命令表。
  *
- * 自己接管异常与退出码:Console 默认只会给 0/1,而《58》第 4 节要求 3=配置、4=数据库、5=权限,
+ * 自己接管异常与退出码:Console 默认只会给 0/1,而既有规范要求 3=配置、4=数据库、5=权限,
  * 脚本要按这些码分支。
  */
 final class Application extends ConsoleApplication

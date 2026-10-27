@@ -20,11 +20,11 @@ use Molin\Router\Router;
 use Molin\User\UserRepository;
 
 /**
- * 附件页(《117》):内容栏 900px,媒体框 / 元数据表 / 引用列表,无评论区也无分页。
+ * 附件页:内容栏 900px,媒体框 / 元数据表 / 引用列表,无评论区也无分页。
  *
- * 附件本体 status=inherit(《34》§1,软删只打 deleted_at、findBySlug 已排除);
- * 媒体框盘上有真文件才输出 <img>,否则模板走线稿占位(《117》§11 第 10 条);
- * 引用行日期只给文章(页面那行不带,《117》§7 两种日期格式并存)。
+ * 附件本体 status=inherit(既有规范软删只打 deleted_at、findBySlug 已排除);
+ * 媒体框盘上有真文件才输出 <img>,否则模板走线稿占位(既有规范条);
+ * 引用行日期只给文章(页面那行不带,既有规范两种日期格式并存)。
  */
 final class AttachmentController
 {
@@ -72,7 +72,7 @@ final class AttachmentController
             }
         }
 
-        // 尺寸档 chips:档位与数值取站点配置的解析结果(默认即《27》§5 权威表),0 = 原图;
+        // 尺寸档 chips:档位与数值取站点配置的解析结果(默认即既有规范权威表),0 = 原图;
         // 档文件不在盘上就不给链接(模板落回 '#')
         $chips = [];
 
@@ -109,7 +109,7 @@ final class AttachmentController
         }
 
         return $view->render('attachment', [
-            // h1 后缀规则(《117》§11 第 5 条待拍板):被当特色图片用时缀「— 特色图片」,先按此实现
+            // h1 后缀规则(既有规范条待拍板):被当特色图片用时缀「— 特色图片」,先按此实现
             'heading' => $post->title . ($this->media->featuredBy((int) $media['id']) ? ' — 特色图片' : ''),
             'media' => [
                 'url' => $fileUrl,
@@ -129,7 +129,7 @@ final class AttachmentController
         ], ['slug' => $post->slug, 'id' => $post->id]);
     }
 
-    /** 口径与后台媒体库同一把尺(《80》§4.4):KB 取整、MB 一位小数 */
+    /** 口径与后台媒体库同一把尺:KB 取整、MB 一位小数 */
     private function sizeText(int $bytes): string
     {
         if ($bytes >= 1048576) {

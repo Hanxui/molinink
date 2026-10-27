@@ -44,7 +44,7 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 接口层(《25-接口规范》第 1–9 节):读端点 + 写端点 + 密钥认证 + 限速。
+ * 接口层(既有规范–9 节):读端点 + 写端点 + 密钥认证 + 限速。
  *
  * 认证与授权分离(§2):先认"是谁"(会话 cookie 或 API Key),再由能力决定"能不能"(§7);
  * 会话路径的写请求要过防跨站令牌 —— 浏览器会自动带 cookie,没这层就是现成的 CSRF 面。
@@ -151,7 +151,7 @@ final class ApiController extends ApiSupport
                 'media' => $this->listOnly($segments, fn (): Response => $this->mediaController->mediaList($request, $user)),
                 'categories' => $this->termController->categoryRoute($request, $segments, $user),
                 'tags' => $this->listOnly($segments, fn (): Response => $this->termController->termList('post_tag', $user)),
-                // 《25》§3.6 列了 `GET /menus`,但菜单拼装只活在后台屏与主题渲染器里,
+                // 既有规范列了 `GET /menus`,但菜单拼装只活在后台屏与主题渲染器里,
                 // 内核没有可复用的读取路径 —— 按未实现端点诚实 404,不吐不相干的东西。
                 'menus' => $this->fail('not_found', '这个端点尚未实现', 404),
                 default => $this->fail('not_found', '没有这个端点', 404),
@@ -167,7 +167,7 @@ final class ApiController extends ApiSupport
     }
 
     /**
-     * 当前是谁:先认会话 cookie(后台自带前端),再认 App 令牌,最后认 API Key(《25》§2)。
+     * 当前是谁:先认会话 cookie(后台自带前端),再认 App 令牌,最后认 API Key。
      * 头里带了凭据却认不出来 → 401,不悄悄降级成匿名(配置错了要当场知道)。
      *
      * @return array{0: ?User, 1: bool, 2: bool} 用户 / 是否会话路径 / 凭据无效
@@ -207,7 +207,7 @@ final class ApiController extends ApiSupport
     }
 
     /**
-     * 未认证按 IP、认证按用户(《25》§9)。超限 429 + Retry-After。
+     * 未认证按 IP、认证按用户。超限 429 + Retry-After。
      */
     private function throttle(Request $request, ?User $user): ?Response
     {
@@ -224,7 +224,7 @@ final class ApiController extends ApiSupport
     }
 
     /**
-     * 只有"列表"一种形状的端点入口(`GET /tags`、`/comments`、`/media`,《25》§3.2/§3.4/§3.5)。
+     * 只有"列表"一种形状的端点入口(`GET /tags`、`/comments`、`/media`,既有规范/§3.4/§3.5)。
      * 分派只认首段,`/tags/7/posts` 之类会落回列表静默吐回整张表 —— 多带任何尾段一律 404,不许给错数据。
      *
      * @param list<string> $segments
@@ -267,7 +267,7 @@ final class ApiController extends ApiSupport
             return $this->commentController->commentReply($request, $user, $viaSession, (int) $segments[1]);
         }
 
-        // 发评论(《25》§3.4,认证:—):游客可发,与网页表单同一条提交流
+        // 发评论(既有规范认证:—):游客可发,与网页表单同一条提交流
         if (($segments[0] ?? '') === 'posts' && isset($segments[1]) && preg_match('/\A\d+\z/', $segments[1]) === 1 && ($segments[2] ?? '') === 'comments' && !isset($segments[3])) {
             return $this->commentController->commentSubmit($request, $user, $viaSession, (int) $segments[1]);
         }

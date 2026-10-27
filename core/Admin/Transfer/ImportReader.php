@@ -26,19 +26,19 @@ use Molin\User\User;
  */
 final class ImportReader
 {
-    /** 导入批处理大小(《110》§7) */
+    /** 导入批处理大小 */
     private const BATCH = 100;
 
     /** 导入允许的冲突策略 */
     private const STRATEGIES = ['create', 'overwrite', 'skip', 'merge'];
 
     /**
-     * 导出结构里的列表字段(《35》§6 的 categories / tags 是字符串数组)。
+     * 导出结构里的列表字段(既有规范的 categories / tags 是字符串数组)。
      * XML 侧靠它把空的 `<字段名/>` 还原成空数组 —— 光看元素分不出「空列表」与「空标量」。
      */
     private const LIST_FIELDS = ['categories', 'tags'];
 
-    /** 可写入的正文状态;其余一律回落草稿(《35》§7 的安全档) */
+    /** 可写入的正文状态;其余一律回落草稿(既有规范的安全档) */
     private const SAFE_STATUSES = ['publish', 'draft', 'pending', 'private'];
 
     public function __construct(
@@ -72,7 +72,7 @@ final class ImportReader
         }
 
         if ($ext === 'tar.gz') {
-            // tar.gz 打包规格未定(《110》§11 未列此项;《35》§6 只点了「含媒体打包 tar.gz」,未给包内清单),不自造 —— 只解读 JSON 与 XML
+            // tar.gz 打包规格未定(既有规范未列此项;既有规范只点了「含媒体打包 tar.gz」,未给包内清单),不自造 —— 只解读 JSON 与 XML
             return $this->page->render($menu, ['error' => __('tar.gz 的打包解析待接入，本轮先支持 JSON 与 XML 导入。')]);
         }
 
@@ -111,7 +111,7 @@ final class ImportReader
         $fails = [];
         $line = 0;
         $authorMap = $this->authorMap();
-        // 顶层 categories / tags 段是导出包里唯一带显示名的地方(《35》§6):收成 slug => 名字,
+        // 顶层 categories / tags 段是导出包里唯一带显示名的地方:收成 slug => 名字,
         // 新建词条时才不会把 slug 当成名字 —— 导进全新空站正是这条路的正用法。
         $termNames = [
             TermAssigner::CATEGORY => $this->termNameMap($payload['categories'] ?? null),
@@ -317,7 +317,7 @@ final class ImportReader
         }
 
         if ($existing !== null && $strategy === 'merge') {
-            // 合并语义文档未定(《110》§11):保守做法 = 保留原内容,只补分类与标签
+            // 合并语义文档未定:保守做法 = 保留原内容,只补分类与标签
             $this->assignTerms((int) $existing['id'], $item, $termNames);
             $this->recountTerms((int) $existing['id']);
 
@@ -347,7 +347,7 @@ final class ImportReader
     }
 
     /**
-     * 按《35》§6 的口径把 post 上的 categories / tags 落到关系表。
+     * 的口径把 post 上的 categories / tags 落到关系表。
      * 数组里的值默认是 **slug**(`tech`);手写或旧文件可能给**显示名**(`技术`),
      * 故取值走「先 slug 后名字,都没有才新建」—— 见 termIdFor()。
      *
@@ -463,7 +463,7 @@ final class ImportReader
     }
 
     /**
-     * 作者映射:导出包里的作者名先按本站用户名匹配,匹配不上归当前管理员(《35》§7 ④)。
+     * 作者映射:导出包里的作者名先按本站用户名匹配,匹配不上归当前管理员(既有规范④)。
      *
      * @param array<string, int> $authorMap
      */

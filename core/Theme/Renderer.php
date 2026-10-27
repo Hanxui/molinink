@@ -34,10 +34,10 @@ use Twig\TwigFilter;
 use Twig\TwigFunction;
 
 /**
- * 渲染器:按页型选模板、注入《13》第 6 节的标准变量、经 Twig 受限子集输出。
+ * 渲染器:按页型选模板、注入既有规范的标准变量、经 Twig 受限子集输出。
  *
  * `theme/head/render` / `theme/footer/render` 的输出在这里汇总,交给模板变量
- * `head_output`、`footer_output`(《13》第 6.1 节)—— 内核算好,主题只负责放出去。
+ * `head_output`、`footer_output`—— 内核算好,主题只负责放出去。
  *
  * 正文的 `content/render/before|after` 不在这里做:它属于内容层,见 ContentRenderer。
  */
@@ -49,7 +49,7 @@ final class Renderer
     /**
      * 主题模板里允许调用的 Twig 函数名(白名单)。
      *
-     * 与《14》§3.3 及 `tests/Contract/TemplateSafetyContractTest::FUNCTIONS` 同一份口径:
+     * 与既有规范及 `tests/Contract/TemplateSafetyContractTest::FUNCTIONS` 同一份口径:
      * 这里增删一个名字,那份契约测试也要同步。
      * 上传校验(Uploader)靠它注册同名空实现,才能在不启动真容器的前提下编译模板 ——
      * 否则 `Unknown function: theme_setting` 这种误报会把所有真主题挡在门外。
@@ -150,7 +150,7 @@ final class Renderer
 
         $this->twig = new Environment($loader, [
             'cache' => MOLIN_ROOT . '/storage/cache/twig',
-            // 《14》第 2 节:自动转义永远不开关;开发期 strict_variables / debug / auto_reload 全开
+            // 自动转义永远不开关;开发期 strict_variables / debug / auto_reload 全开
             'autoescape' => 'html',
             'strict_variables' => APP_DEBUG,
             'debug' => APP_DEBUG,
@@ -169,13 +169,13 @@ final class Renderer
             return $settings->get($path, $default, $theme);
         }));
 
-        // 归档树数据源(《141》§15.4):数据由组装层注入,未注入给空数组,不抛异常
+        // 归档树数据源:数据由组装层注入,未注入给空数组,不抛异常
         $archiveTree = $this->archiveTree;
         $this->twig->addFunction(new TwigFunction('archive_tree', static function () use ($archiveTree): array {
             return $archiveTree === null ? [] : $archiveTree();
         }));
 
-        // i18n(《33》§3、《14》§5.4):__ 原样返回、_e 转义后返回(Markup 免二次转义),
+        // i18n:__ 原样返回、_e 转义后返回(Markup 免二次转义),
         // 日期与数字走本地化助手 —— 与 PHP 侧同名同源。
         $this->twig->addFunction(new TwigFunction('__', static fn (string $text, string $domain = 'molin', mixed ...$args): string => __($text, $domain, ...$args)));
         $this->twig->addFunction(new TwigFunction('_e', static fn (string $text, string $domain = 'molin', mixed ...$args): Markup => new Markup(Translator::instance()->escape($text, $domain, ...$args), 'UTF-8')));
@@ -184,15 +184,15 @@ final class Renderer
         $this->twig->addFunction(new TwigFunction('html_lang', static fn (): string => Translator::instance()->htmlLang()));
         $this->twig->addFunction(new TwigFunction('avatar', static fn (string $email, int $size = 48): string => avatar($email, $size)));
 
-        // 覆盖内置 |date:库里时间存的是 UTC,模板直接 date() 会整体偏几小时(《21》)
+        // 覆盖内置 |date:库里时间存的是 UTC,模板直接 date 会整体偏几小时
         $this->twig->addFilter(new TwigFilter('date', static fn (mixed $value, string $format = 'F j, Y H:i', ?string $timezone = null): string => site_datetime($value, $timezone)->format($format)));
 
-        // 权限判断(《14》§3.3、《32》§4):与 PHP 助手 current_user_can 同名同源,
+        // 权限判断:与 PHP 助手 current_user_can 同名同源,
         // 底下就是 Authorizer::can —— 能力名 + 可选对象(own 类能力据此再验"是不是他的")。
-        // 能力名没注册过、未登录、被封、待验证一律 false(《32》§4 默认拒绝)。
+        // 能力名没注册过、未登录、被封、待验证一律 false(既有规范默认拒绝)。
         $this->twig->addFunction(new TwigFunction('can', static fn (string $capability, ?object $target = null): bool => current_user_can($capability, $target)));
 
-        // 图片输出(《14》§5.2、《27》§5):把组装层给的缩略图数据落成 <img>,带 srcset 与懒加载。
+        // 图片输出:把组装层给的缩略图数据落成 <img>,带 srcset 与懒加载。
         //
         // source 收两种:① 图片数据数组(列表页由 index.php 的 $thumbsFor 组装);
         // ② 附件 id(主题设置的 image 字段,经组装层注入的 mediaLookup 现取,取不到就是空)。
@@ -246,7 +246,7 @@ final class Renderer
             );
         }));
 
-        // 自定义字段读取(《14》§5.2、《13》§6.3):模板按「文章 id + 字段键」取值,取不到回落默认。
+        // 自定义字段读取:模板按「文章 id + 字段键」取值,取不到回落默认。
         // 数据由组装层注入(渲染层不直接碰内容仓储);同一篇在一次请求里只查一遍(见 metaProvider)。
         // 谁登记过什么字段,主题作者自己知道键名(如插件字段 `my-plugin_seo_title`)。
         $metaLookup = $this->metaLookup;
@@ -260,7 +260,7 @@ final class Renderer
             return $value === '' ? $default : $value;
         }));
 
-        // 附件 id → 图片地址(《14》§5.2、《27》§5):分享卡片(og:image)要的是地址串,不是 <img>。
+        // 附件 id → 图片地址:分享卡片(og:image)要的是地址串,不是 <img>。
         // 与 image() 同一条取图通道,取不到给空串 —— 模板据此决定那个 meta 要不要出。
         // 入参收 mixed:模板里常是 postmeta 取出来的数字串,这里自己收口成 int。
         $this->twig->addFunction(new TwigFunction('media_url', static function (mixed $attachmentId) use ($mediaLookup): string {
@@ -270,7 +270,7 @@ final class Renderer
             return is_array($data) ? (string) ($data['url'] ?? '') : '';
         }));
 
-        // 《14》§5.1 / 《141》§9:主题静态资源的根相对路径 + 自动版本号(防缓存)。
+        // 既有规范/ 主题静态资源的根相对路径 + 自动版本号(防缓存)。
         // 版本号取资源文件自身的修改时间:文件一改即变,比"跟程序版本走"更准,发版忘了升号也不会留旧缓存。
         $this->twig->addFunction(new TwigFunction('asset', function (string $path): string {
             $url = '/themes/' . $this->theme->slug() . '/assets/' . ltrim(str_replace('\\', '/', $path), '/');
@@ -278,8 +278,8 @@ final class Renderer
             return $url . $this->assetQuery($path);
         }));
 
-        // 关键样式内联(《14》§5.6):把主题 assets 里的 CSS 原样落进 <head>。
-        // 外链样式表是阻塞渲染的,晚到会先画出"没有版式"的半成品(2026-10-09 第 65 轮复现)。
+        // 关键样式内联:把主题 assets 里的 CSS 原样落进 <head>。
+        // 外链样式表是阻塞渲染的,晚到会先画出"没有版式"的半成品(2026-10-09复现)。
         $this->twig->addFunction(new TwigFunction('inline_style', function (string $path): Markup {
             $file = $this->assetFile($path);
 
@@ -292,7 +292,7 @@ final class Renderer
             return new Markup('<style data-src="' . $path . '">' . "\n" . rtrim((string) file_get_contents($file)) . "\n</style>", 'UTF-8');
         }));
 
-        // 自定义过滤器 truncate(《14》§3.2、§5.5):按【字符】截断,不切坏 UTF-8;
+        // 自定义过滤器 truncate(既有规范):按【字符】截断,不切坏 UTF-8;
         // 超长补省略号,写法沿用仓内既有习惯(mb_substr(..., 0, N) . '…',见 Site/Feed.php:142)。
         // 长度非数字或非正一律原样返回 —— 模板传错值不该 500,也不该把整段文字吞成空。
         $this->twig->addFilter(new TwigFilter('truncate', static function (mixed $value, mixed $length = null): string {
@@ -312,7 +312,7 @@ final class Renderer
     }
 
     /**
-     * 按附件 id 取图片数据:主题设置里的 image 字段存的就是附件 id(《36》§2),
+     * 按附件 id 取图片数据:主题设置里的 image 字段存的就是附件 id,
      * 模板要按 id 出图,得有这条通道。仓储与盘的事由组装层注入 ——
      * 渲染层不直接碰内容仓储(与 pagesProvider / archiveProvider 同一条纪律)。
      *
@@ -328,10 +328,10 @@ final class Renderer
     }
 
     /**
-     * 自定义字段数据源(《34》§4、《21》§3):按文章 id 取该篇的全部 postmeta。
+     * 自定义字段数据源:按文章 id 取该篇的全部 postmeta。
      *
      * 渲染层不直接碰内容仓储(与 pagesProvider / mediaProvider 同一条纪律);
-     * 同一篇在一次请求里只查一遍 —— 模板里 `post_meta()` 会被调好几次(《57》§5 禁 N+1)。
+     * 同一篇在一次请求里只查一遍 —— 模板里 `post_meta` 会被调好几次(既有规范禁 N+1)。
      *
      * 收 id 列表 = 渲染器投递"这一页要画哪些文章",此时**不查库**;等模板第一次真的调
      * `post_meta()` 才用 many() 一条 SQL 把整页补齐 —— 模板不用 meta 的页面一次也不查。
@@ -405,7 +405,7 @@ final class Renderer
      * URL 直接取 `Post::$url`:仓储 hydrate 时已用 Router::generate('post') 算好,是绝对地址;
      * 本工厂按冻结签名只收 PostRepository 一个参数,不再为此把 Router 拉进来(模板里 <a href> 用绝对地址一样可用)。
      *
-     * 年份 / 月号降序,月份速览(preview)升序;分类名一次批量取,不逐篇查(《57》§5 禁 N+1)。
+     * 年份 / 月号降序,月份速览(preview)升序;分类名一次批量取,不逐篇查(既有规范禁 N+1)。
      *
      * @return Closure(): list<array{year: int, count: int, preview: string, months: list<array{month: int, count: int, rows: list<array{day: int, title: string, url: string, category: ?string, category_slug: string}>}>}>
      */
@@ -434,7 +434,7 @@ final class Renderer
 
             /** @var list<int> $ids */
             $ids = array_map(static fn (Post $post): int => $post->id, $found);
-            // 全量文章的分类名一次批量取:逐篇查就是 N+1(《57》§5)。TermAssigner 需要连接,
+            // 全量文章的分类名一次批量取:逐篇查就是 N+1。TermAssigner 需要连接,
             // 从 PostRepository 取出共享的那一份(静态工厂拿不到容器)。
             $categories = (new TermAssigner($posts->database()))->firstTermsFor($ids, TermAssigner::CATEGORY);
 
@@ -520,7 +520,7 @@ final class Renderer
     }
 
     /**
-     * 渲染一段列表片段(《23》第 4 节 `list.fragment`:列表翻页 / 切分类不再整页刷新)。
+     * 渲染一段列表片段(既有规范`list.fragment`:列表翻页 / 切分类不再整页刷新)。
      *
      * 与整页共用同一条回退链与模板 / partial —— 换的只是页型与变量,不另造一套标记;
      * 不过 withGlobals:片段没有 head / footer 倒出口,也不该触发那两个钩子。
@@ -552,7 +552,7 @@ final class Renderer
 
     /**
      * 把这一页要用的文章 id 交给 meta 数据源。列表页的模板可能对每一行调 post_meta(),
-     * 逐行查就是 N+1(《57》§5);投递清单后由数据源在首次取值时一次批量取完。
+     * 逐行查就是 N+1;投递清单后由数据源在首次取值时一次批量取完。
      * 每次渲染都投一遍(空也投),清掉上一趟留下的清单。
      *
      * @param array<string, mixed> $vars
@@ -591,8 +591,8 @@ final class Renderer
     /**
      * 选模板:页面模板白名单命中优先,否则走回退链;选中后再过 `theme/template/replace`。
      *
-     * 页面模板(《114》):该页 meta 选了主题里声明过的模板就用它,校验走主题白名单,命中即可安全交给 Twig。
-     * filter(《11》§7.3、《13》§9):返回值只认当前主题模板目录里的裸文件名(见 isPlainTemplateName),
+     * 页面模板:该页 meta 选了主题里声明过的模板就用它,校验走主题白名单,命中即可安全交给 Twig。
+     * filter:返回值只认当前主题模板目录里的裸文件名(见 isPlainTemplateName),
      * 带目录分隔符、`..`、空串、非 .twig 或不存在的名字一律忽略,退回原模板 —— 不抛异常把站点打挂,也不会误用到别的文件。
      *
      * @param array<string, string|int> $context
@@ -793,7 +793,7 @@ final class Renderer
     {
         $name = (string) ($this->options->get('site_name', '墨林'));
 
-        // 程序版权常显、不可手动关闭(2026-10-08 第 63 轮作者定;《13》§11.2)
+        // 程序版权常显、不可手动关闭(2026-10-08作者定;既有规范)
         $themeSettings = $this->theme->settingsDefaults();
         $themeSettings['show_credit'] = true;
 
@@ -804,23 +804,23 @@ final class Renderer
                 'url' => (string) $this->options->get('site_url', ''),
                 // 安装向导第 3 步的"搜索引擎可见"开关;关了主题要在 head 里给 noindex
                 'public' => $this->options->get('blog_public', '1') === '1',
-                // 站点 logo 未接存储,恒 null(默认主题走字标;2026-10-08 第 64 轮撤 header.logo 字段)
+                // 站点 logo 未接存储,恒 null(默认主题走字标;2026-10-08撤 header.logo 字段)
                 'logo' => null,
-                // 《13》第 11.2 节:默认 © {年} {站点名},年份动态;站长可改的那一份等设置项增量
+                // 默认 © {年} {站点名},年份动态;站长可改的那一份等设置项增量
                 'copyright' => '© ' . date('Y') . ' ' . $name,
             ],
             'current_user' => Auth::user(),
-            // 《13》第 6.1 节的全局变量:表单要带防跨站令牌,主题不该自己想办法弄
+            // 既有规范的全局变量:表单要带防跨站令牌,主题不该自己想办法弄
             'csrf_token' => Auth::csrfToken(),
             'csrf_field' => Csrf::FIELD,
             'query' => ['name' => $this->router->matchedName()],
-            // 前台导航数据源(《13》§11.1):配置过 `nav_menus` 就以站点存的为准;
+            // 前台导航数据源:配置过 `nav_menus` 就以站点存的为准;
             // 未配置时 primary 由注入的页面数据源补(站点的已发布页面),没有数据源就留空。
             'menus' => $this->menus(),
             // 能力开关(0.97):插件停用后主题据此隐藏社交/通知 UI;默认两个都关,由插件打开
             'features' => apply_filters('theme/features/collect', ['social' => false, 'notifications' => false]),
             'settings' => $themeSettings,
-            // head_output 是内核汇总后的可信 HTML(《13》第 6.1 节):站点图标在前,
+            // head_output 是内核汇总后的可信 HTML:站点图标在前,
             // 订阅发现链居中,SEO(2026-10-17 加:canonical / OG / Twitter / JSON-LD)随后,
             // 钩子输出在后,一起交给主题原样放出去。
             'head_output' => new Markup($this->iconLinks() . $this->feedLink($name) . $this->seoHead($vars) . $this->capture('theme/head/render'), 'UTF-8'),
@@ -882,7 +882,7 @@ final class Renderer
     }
 
     /**
-     * 给菜单项标"当前页"(《74》§2:归档页「文章」项高亮)。url 与当前路径都归一成
+     * 给菜单项标"当前页"(归档页「文章」项高亮)。url 与当前路径都归一成
      * 去尾斜杠的路径段再比;比不了(空串、纯锚点)就不标。CLI 渲染没有当前路径,一律不标。
      *
      * @param list<array<string, mixed>> $items
@@ -966,7 +966,7 @@ final class Renderer
     }
 
     /**
-     * 站点图标(《品牌视觉规格》§6 定稿:纸白底 + 墨色 M 素面)。与订阅发现链同理,
+     * 站点图标(既有规范设计稿:纸白底 + 墨色 M 素面)。与订阅发现链同理,
      * 内核给所有前台页统一供给,主题不必各管一套。地址根相对,和主题里的 /themes/… 静态资源
      * 同一套写法(vhost 走 try_files,真实文件直出)。
      */
@@ -980,7 +980,7 @@ final class Renderer
 
     /**
      * RSS 订阅发现链。内核给**所有**前台页统一提供这一条,故放在内核汇总 head_output 处算,
-     * 主题不用各自操心(《13》第 6.1 节:head_output 是内核汇总后的可信 HTML)。
+     * 主题不用各自操心(head_output 是内核汇总后的可信 HTML)。
      * 地址只经路由名 feed 生成,不拼字符串。
      */
     private function feedLink(string $name): string

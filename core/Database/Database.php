@@ -19,17 +19,17 @@ use PDOStatement;
 use Throwable;
 
 /**
- * 原生 PDO 薄查询层(《00-总览》第 5 节:不用 ORM,参数化由内核自己控)。
+ * 原生 PDO 薄查询层(不用 ORM,参数化由内核自己控)。
  *
  * 约定:SQL 里的值一律走参数占位符;$table / 列名只允许内核与插件代码传入,
  * 不接受用户输入(列名在写入前做标识符校验)。
  *
- * 本类同时是 `db.direct` 能力的拦截面(《62》第 6 节):查询、事务、原生句柄都从 pdo() 出去,
+ * 本类同时是 `db.direct` 能力的拦截面:查询、事务、原生句柄都从 pdo 出去,
  * 门卫落在那一处就一处不漏。
  */
 final class Database
 {
-    /** 《26》第 9 节默认阈值 200ms;《57》第 10 节写的是 100ms,口径待作者定,先按本节的日志规范走 */
+    /** 既有规范默认阈值 200ms;既有规范写的是 100ms,口径待作者定,先按本节的日志规范走 */
     public const SLOW_QUERY_MS = 200.0;
 
     private ?PDO $pdo = null;
@@ -39,14 +39,14 @@ final class Database
     private ?string $collation = null;
 
     /**
-     * @param array<string, mixed> $config 连接参数,键见 config.example.php(依据《42》第 3 节)
+     * @param array<string, mixed> $config 连接参数,键见 config.example.php(依)
      */
     public function __construct(private readonly array $config)
     {
     }
 
     /**
-     * 表前缀,默认 molin_(《21-数据模型》第 1 节)。
+     * 表前缀,默认 molin_。
      */
     public function prefix(): string
     {
@@ -73,7 +73,7 @@ final class Database
     }
 
     /**
-     * 加表前缀。前缀可配置(《21-数据模型》第 1 节)。
+     * 加表前缀。前缀可配置。
      */
     public function table(string $name): string
     {
@@ -244,7 +244,7 @@ final class Database
             return new PDO($dsn, (string) ($this->config['user'] ?? ''), (string) ($this->config['password'] ?? ''), [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                // 真预处理:值永不拼进 SQL(《61-安全基线清单》的第一条防线)
+                // 真预处理:值永不拼进 SQL(既有规范的第一条防线)
                 PDO::ATTR_EMULATE_PREPARES => false,
             ]);
         } catch (Throwable $e) {
@@ -253,7 +253,7 @@ final class Database
     }
 
     /**
-     * 执行一条参数化语句。数据库报错一律换成项目异常(《26》第 1 节),
+     * 执行一条参数化语句。数据库报错一律换成项目异常,
      * 调用方只需 catch DatabaseException,不必知道底层是 PDO。
      *
      * @param array<string|int, mixed> $params
@@ -279,7 +279,7 @@ final class Database
             throw new DatabaseException('SQL 执行失败: ' . $e->getMessage(), 0, $e);
         }
 
-        // 《26》第 9 节:慢查询进 db 通道。只记 SQL 模板,参数不进日志 —— 参数里可能是密码
+        // 慢查询进 db 通道。只记 SQL 模板,参数不进日志 —— 参数里可能是密码
         $elapsed = (microtime(true) - $started) * 1000;
 
         if ($elapsed > self::SLOW_QUERY_MS) {

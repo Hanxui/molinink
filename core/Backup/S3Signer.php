@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Backup;
 
 /**
- * AWS Signature V4 签名(《35》§4 ⑦:S3 兼容对象存储)。
+ * AWS Signature V4 签名(既有规范⑦:S3 兼容对象存储)。
  *
  * 只做签名这一步、不碰网络:密钥推导与规范化请求全部是纯函数,
  * 拿官方文档的那组测试向量就能钉死(见单元测试)。S3 的 PUT 直接用。

@@ -11,9 +11,9 @@ declare(strict_types=1);
 namespace Molin\Content;
 
 /**
- * 正文白名单过滤(《37》第 9 节)。
+ * 正文白名单过滤。
  *
- * 富文本编辑器和区块存的都是 HTML,主题模板按《14》3.5 节用 |raw 输出,
+ * 富文本编辑器和区块存的都是 HTML,主题模板节用 |raw 输出,
  * 所以入库前必须过一次白名单 —— 安全基调排第一位,这里没有"信任作者"这条路。
  *
  * 做法是解析成 DOM 后按白名单**重建**字符串,而不是把不合规矩的节点删掉:
@@ -23,8 +23,8 @@ namespace Molin\Content;
 final class HtmlSanitizer
 {
     /**
-     * 标签白名单。《37》第 9 节那七枚是行内底子;段落、列表、标题、代码块
-     * 是《41》第 6.2 节"富文本"路线和《79》第 4.6 节工具条自己要产出的结构,
+     * 标签白名单。既有规范那七枚是行内底子;段落、列表、标题、代码块
+     * 是既有规范"富文本"路线和既有规范工具条自己要产出的结构,
      * 不含它们等于把编辑器打出来的稿子拆散。
      */
     private const TAGS = [
@@ -32,7 +32,7 @@ final class HtmlSanitizer
         'ul', 'ol', 'li', 'h2', 'h3', 'img', 'figure', 'figcaption',
     ];
 
-    /** 评论区自己的白名单(《31》§11):比正文窄 —— 没有图、没有标题、没有列表 */
+    /** 评论区自己的白名单:比正文窄 —— 没有图、没有标题、没有列表 */
     public const COMMENT_TAGS = ['p', 'br', 'b', 'strong', 'i', 'em', 'a', 'code', 'blockquote'];
 
     /** 出现即整段丢弃的标签:留着正文等于把脚本内容当文章显示 */
@@ -56,7 +56,7 @@ final class HtmlSanitizer
     /**
      * 过滤一段正文。空正文返回空串,不补外壳。
      *
-     * @param list<string>|null $tags 白名单;评论等窄场景给自己的清单(《31》§11),不给就用正文这套
+     * @param list<string>|null $tags 白名单;评论等窄场景给自己的清单,不给就用正文这套
      */
     public static function clean(string $html, ?array $tags = null): string
     {

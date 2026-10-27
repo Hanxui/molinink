@@ -17,7 +17,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 产品版本与内核契约版本(《56》第 1 节:两者各自演进,不能混报)。
+ * 产品版本与内核契约版本(两者各自演进,不能混报)。
  */
 final class CoreVersion extends BaseCommand
 {

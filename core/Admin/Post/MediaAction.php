@@ -27,11 +27,11 @@ use Throwable;
  */
 final class MediaAction extends EditorScreen
 {
-    /** 编辑器存图只收图片(《27》§2 白名单里的图片那一列;pdf/zip/音视频归媒体屏) */
+    /** 编辑器存图只收图片(既有规范白名单里的图片那一列;pdf/zip/音视频归媒体屏) */
     private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     /**
-     * 设 / 撤特色图片(《79》§4.7 第 4 盒 + 媒体选择器)。
+     * 设 / 撤特色图片(既有规范盒 + 媒体选择器)。
      *
      * 只动 thumbnail_id 一格 —— 人在选择器里点图,不该顺手把正文也存一遍。
      *
@@ -80,7 +80,7 @@ final class MediaAction extends EditorScreen
             return $this->uploadFail(__('这篇文章你改不了,图也就存不上。'), 403);
         }
 
-        // 存的是媒体库的件,门槛与媒体屏同一条(《32》§3):没 media.upload 的人只能从库里挑
+        // 存的是媒体库的件,门槛与媒体屏同一条:没 media.upload 的人只能从库里挑
         if (!$this->can->can($user, 'media.upload')) {
             return $this->uploadFail(__('你的账号没有上传图片的能力,先从媒体库里挑一张。'), 403);
         }
@@ -127,7 +127,7 @@ final class MediaAction extends EditorScreen
     }
 
     /**
-     * 编辑器存图走媒体库同一条九步(《27》第 1 节),不另造一套取名 / 落盘 / 入库。
+     * 编辑器存图走媒体库同一条九步,不另造一套取名 / 落盘 / 入库。
      *
      * Uploader 由手上这几个零件现拼:它要的 Store 与 MediaRepository 本屏都已注入,
      * Options 从同一个 Database 取 —— 这样不必动构造签名(后台各屏与测试都按现签名装配)。

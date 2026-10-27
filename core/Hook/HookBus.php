@@ -15,17 +15,17 @@ use Molin\Logger\Log;
 use Throwable;
 
 /**
- * 钩子总线:注册与触发。对外契约见《11-钩子规范》,内部结构见《22-钩子API与懒加载》
- * (含 `withPlugin()` 作用域助手:给"内核直呼插件"的入口划归属,见《62》第 5 节)。
+ * 钩子总线:注册与触发。对外契约内部结构
+ * (含 `withPlugin` 作用域助手:给"内核直呼插件"的入口划归属,)。
  */
 final class HookBus
 {
-    /** 允许两段式的生命周期钩子(《11》1.1、《22》2.4),封闭集合 */
+    /** 允许两段式的生命周期钩子,封闭集合 */
     private const LIFECYCLE = ['system/init', 'system/shutdown'];
 
     private const PRIORITY_MIN = 1;
 
-    /** 100+ 为内核保留段位(《11》5.1),插件注册被夹回此处 */
+    /** 100+ 为内核保留段位,插件注册被夹回此处 */
     private const PRIORITY_PLUGIN_MAX = 99;
 
     private static ?self $instance = null;
@@ -133,7 +133,7 @@ final class HookBus
                     array_pop($this->executing);
                 }
 
-                // 《11》第 8 节第 3 条 + 《22》4.1:漏返回值在开发模式当场炸,
+                // 既有规范条 + 漏返回值在开发模式当场炸,
                 // 生产模式按"不改"容错,绝不让一个插件的 bug 白屏整站。
                 if (APP_DEBUG && $result === null && $value !== null) {
                     throw new HookTypeException("filter '{$hook}' 的回调未返回值");
@@ -212,7 +212,7 @@ final class HookBus
     }
 
     /**
-     * 注入插件拓扑序,让同优先级下的执行顺序可预测(《22》第 6 节)。
+     * 注入插件拓扑序,让同优先级下的执行顺序可预测。
      *
      * @param list<string> $order
      */
@@ -222,7 +222,7 @@ final class HookBus
     }
 
     /**
-     * 该插件实际注册了哪些钩子(《12》第 4.2 节 R2 漏声明检测的依据)。
+     * 该插件实际注册了哪些钩子(既有规范R2 漏声明检测的依据)。
      *
      * @return list<string>
      */
@@ -298,7 +298,7 @@ final class HookBus
     }
 
     /**
-     * 命中钩子时才拉起相关插件(《22》第 7.3 节)。必须早于读取回调列表,
+     * 命中钩子时才拉起相关插件。必须早于读取回调列表,
      * 否则本次触发会漏掉刚注册进来的回调。
      */
     private function loadLazy(string $hook): void
@@ -311,7 +311,7 @@ final class HookBus
      *
      * 为什么不一律兜住:`MolinException` 家族是**有意的控制流** —— 能力门卫拒权
      * (`CapabilityDeniedException`)、`user/login/before` 里抛校验异常中止登录、
-     * `plugin/activate/before` 里拦下依赖不满足的启用,《11》与《62》都要求它一路抛到调用方。
+     * `plugin/activate/before` 里拦下依赖不满足的启用,既有规范都要求它一路抛到调用方。
      * 把它们吞掉等于把安全闸和"可中止"语义一起废掉。
      *
      * 兜底只包插件注册的回调($plugin !== null):内核回调是内核自己的 bug,该炸在开发机与测试里,
@@ -376,7 +376,7 @@ final class HookBus
         }
     }
     /**
-     * 校验并归一化钩子名(《22》第 3 节)。
+     * 校验并归一化钩子名。
      */
     private function normalize(string $hook): string
     {

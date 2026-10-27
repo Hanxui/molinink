@@ -1,44 +1,52 @@
 <p align="center"><img src=".github/assets/logo.png" alt="MolinInk" width="320"></p>
 
-<p align="center">A small, contract-driven blogging engine. The kernel provides structure only — features arrive as plugins, appearance as themes.</p>
+<p align="center">MolinInk (墨林) is a blog engine written in PHP. Install it and start writing; everything else comes as plugins and themes.</p>
 
-<p align="center"><sub>PHP 8.2+ · MySQL 8 · single entry point · write a post right after installing</sub></p>
+<p align="center"><sub>PHP 8.2+ · MySQL 8 · single entry point · AGPL-3.0</sub></p>
 
 <p align="center"><a href="https://github.com/Hanxui/molinink/releases/latest"><strong>Download</strong></a> · <a href="https://www.molinink.com">Website</a> · <a href="https://demo.molinink.com">Live demo</a></p>
 
 <p align="center"><img src=".github/assets/screen-home.png" alt="Front page"></p>
 
-> **Read this first: which package to grab.** Use `molin-x.y.z.zip` from [Releases](https://github.com/Hanxui/molinink/releases/latest) — it bundles `vendor/`, so you unzip it into the site root and go.
->
-> **Code → Download ZIP** on the repo page gives you the **source archive**: `vendor/` (Composer dependencies) is not committed, so it dies with
-> `require(.../vendor/autoload.php): Failed to open stream`, and it always adds an extra `molinink-main/` folder. If you want the source route anyway, run `composer install --no-dev` in the site root first, then follow the steps below.
+## Three things that trip people up
+
+**1. Grab the right package.** The one you can actually install is `molin-x.y.z.zip` from Releases. It bundles `vendor/`, so you unzip it into the site root and you're done.
+
+The green `Code → Download ZIP` button gives you the source archive. `vendor/` isn't committed (Composer manages dependencies), so all you'll see is `require(.../vendor/autoload.php): Failed to open stream`, plus an extra `molinink-main/` folder. Running from source works too: run `composer install --no-dev` in the site root once, and the app picks it up from there.
+
+**2. This repo may not be the newest version.** It's a snapshot I sync during development — I usually build, fix and try things locally for a while before pushing. **Treat the version published on the website as the reference: <https://www.molinink.com>.** If the two disagree, trust the website.
+
+**3. Report problems in the group first.** QQ group **1109527088**. That's currently the only feedback channel (Issues works too, but I don't watch it closely; a better route is coming). For security issues, don't post publicly — see [SECURITY.md](SECURITY.md).
 
 ## Install
 
-Written for the BT panel (宝塔); other panels work the same way. About ten minutes. Want to see it running first: <https://demo.molinink.com>
+Written for the BT panel (宝塔); other panels are similar. Ten minutes if nothing goes wrong. Want to see it running first: <https://demo.molinink.com>
 
 **Requirements**: PHP 8.2+ (`pdo_mysql`, `mbstring`, `json`, `openssl`, `fileinfo`; `gd`, `zip`, `intl` recommended), MySQL 8 or MariaDB 10.5+, and a domain already pointing at the server.
 
-**1. Create site and database**
-BT panel → Website → Add site: enter your domain, pick **PHP 8.2 or newer**, choose MySQL as the database. Note the **database / user / password** it generates — you need them in step 3.
+### 1. Create the site and database
 
-**2. Upload and unzip**
-Website → your site → Files → open the site root (usually `/www/wwwroot/yourdomain`) → upload `molin-<version>.zip` **from Releases** → right-click → extract here.
-You should see `index.php`, `core/` and `install/` **directly** in the root. If everything landed inside a `molin-x.y.z/` folder, move its contents up to the root.
-**Do not point the panel's "run directory" at that subfolder instead** — the `/uploads/` alias and `/storage/` block are written against the site root, and they stop matching once the root moves.
+BT panel → Websites → Add site: enter the domain, pick **PHP 8.2 or higher**, choose MySQL. It hands you a database name, user and password — you'll need them in step 3, so note them down.
 
-**3. Paste two snippets**
+### 2. Upload and unzip
 
-Pretty URLs (Website → Settings → **Rewrite**) — so `/admin` and post URLs resolve. The program has a single entry point; there is no real `/admin` file on disk, so nginx has to hand unknown paths to `index.php`:
+Websites → click the site → Files → open the site root (usually `/www/wwwroot/your-domain`) → upload `molin-<version>.zip` from Releases → right-click, extract here.
+
+After extracting, you should see `index.php`, `core/` and `install/` **directly** in the root. If everything landed inside an extra `molin-x.y.z/` folder, go in, select all, and move it up to the root.
+
+One thing to avoid: don't point the panel's "run directory" at that subfolder. Rules for `/uploads/` and `/storage/` are written for the site root and will silently stop working if you do.
+
+### 3. Paste two config blocks
+
+First the rewrite rules (Websites → Settings → **URL rewrite**). There's a single entry point, so the disk has no `/admin` file; nginx has to hand unknown paths to `index.php`:
 
 ```nginx
 location / {
     try_files $uri $uri/ /index.php$is_args$args;
 }
 
-# The backend is a routed page: admin/ only holds static assets (css/js/templates)
-# and has no index file. Without these two lines nginx treats it as a directory
-# index and "go to dashboard" answers 403 Forbidden.
+# Admin is app-routed: admin/ only holds static assets (css/js/templates), no index file.
+# Without these two lines nginx treats it as a directory index and "go to admin" returns 403.
 location = /admin {
     try_files $uri /index.php$is_args$args;
 }
@@ -47,9 +55,9 @@ location = /admin/ {
 }
 ```
 
-Without it: the front page works, `/admin` and every post URL return 404. **With only the first block and without the two `/admin` lines** you get a different symptom: post URLs are fine, but opening the dashboard returns `403 Forbidden` — the root really does contain an `admin/` directory, and nginx tries to serve it as a directory index.
+Without the first block the home page works but `/admin` and every post page returns 404. If you add only the first block and skip the two `/admin` lines, the symptom changes: posts are fine, but logging in returns 403.
 
-Block `storage/` (Website → Settings → **Config**, inside `server { }`) — backups, logs and remote-backup credentials live there and are downloadable otherwise:
+Then block `storage/` (Websites → Settings → **Config file**, inside `server { }`). It holds backups, logs and remote backup credentials — left open, anyone can download them:
 
 ```nginx
 location ^~ /storage/ {
@@ -57,23 +65,24 @@ location ^~ /storage/ {
 }
 ```
 
-Images need no config — the program serves them. (`/uploads/` and `/themes/` snippets in `install/服务器配置.txt` are optional speedups.)
+Images need no extra rule; the app serves them itself. Letting nginx serve `/uploads/` and `/themes/` directly is a bit faster — the snippet is in `install/服务器配置.txt`.
 
-**4. Run the installer**
-Open your domain → "Start install": environment check → database credentials from step 1 → site name, site URL, admin account → write (rolls back on failure). Then delete `install/`.
+### 4. Run the installer
 
-**5. Check four URLs**
+Open your domain in a browser and click "Start installation": environment check → the database details from step 1 → site name, site URL, admin account → write. A failure rolls the whole thing back, so you never end up with a half-installed site. Delete `install/` when it's done.
+
+### 5. Check four URLs
 
 | Open | Expected |
 |---|---|
-| `yourdomain/` | front page loads |
-| `yourdomain/admin` | admin login (404 = rewrite rule missing) |
-| `yourdomain/storage/backups/` | 404 |
-| `yourdomain/uploads/some-image` | image displays |
+| `your-domain/` | Home page loads |
+| `your-domain/admin` | Admin login (404 = rewrite rules missing) |
+| `your-domain/storage/backups/` | 404 |
+| `your-domain/uploads/some-image` | Image displays |
 
-The long version (with a troubleshooting table) ships in `install/安装说明.txt` inside the zip.
+The longer version, with an error-to-cause table, is in `install/安装说明.txt` inside the package.
 
-Or run it from source (that is the Code → Download ZIP route above; the missing `vendor/` is what step one replaces):
+### Running from source instead
 
 ```bash
 composer install --no-dev
@@ -81,13 +90,13 @@ cp config.example.php config.php   # fill in your database
 php -S 127.0.0.1:8000              # or hand it to nginx / apache
 ```
 
-## Design
+## How it's put together
 
-**The kernel is a socket; contracts are the plug specs.**
+Short version: the kernel is the socket, contracts are the plug shape.
 
 - No business logic in the kernel. `core/` holds a hook bus, plugin loading, theme rendering, routing, caching and migrations — nothing else.
 - Hooks are named `domain/object/stage` (`post/save/before`); capabilities are `domain.action` (`post.create`). Two separate namespaces, additive only.
-- Schema changes live in exactly one place: `core/Migrations/`. There is no `schema.sql`.
+- Schema changes live in exactly one place: `core/Migrations/`. There is no `schema.sql`; a fresh install simply runs every migration, the same path upgrades take.
 - Templates are a restricted Twig subset with auto-escaping on by default; no logic in templates.
 - Standard building blocks only: fast-route, Twig, Monolog, symfony/mailer, symfony/console. No ORM, no full-stack framework.
 
@@ -104,7 +113,7 @@ php -S 127.0.0.1:8000              # or hand it to nginx / apache
 
 Code is under **AGPL-3.0-or-later**. Full text: [LICENSE](LICENSE).
 
-- Free to use and modify. Charging money is fine.
+- Free to use and modify. Charging for it is fine.
 - If you modify it and run it as a site for others, publish your changes.
 - Ship the LICENSE file along with any copy you give out.
 
@@ -114,4 +123,4 @@ The 墨林 / MolinInk names and the logo are trademarks and are not covered by t
 
 ---
 
-[简体中文](README.md) · QQ group: **1109527088** · Questions and bugs: [Issues](../../issues) · Security: read [SECURITY.md](SECURITY.md) first
+[简体中文](README.md) · QQ group **1109527088** · Security: read [SECURITY.md](SECURITY.md)

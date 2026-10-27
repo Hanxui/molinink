@@ -18,7 +18,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 导出主题设置(《36》第 8 节):`molin theme:export-settings --to=settings.json`。
+ * 导出主题设置:`molin theme:export-settings --to=settings.json`。
  * 与后台「导出设置」走同一套读写(ThemeSettings::export)。
  */
 final class ThemeExportSettings extends BaseCommand

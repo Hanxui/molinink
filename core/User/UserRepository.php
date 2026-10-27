@@ -16,14 +16,14 @@ use Molin\Exception\ValidationException;
 use Molin\Security\Password;
 
 /**
- * 用户仓储(《21》第 5 节 users / usermeta)。
+ * 用户仓储(既有规范users / usermeta)。
  *
  * 一个用户的完整面貌 = users 一行 + 若干 usermeta 内置键,所以读取一律两查合一,
- * 并且 meta 用一条 IN 查询批量取,不做"取一个键查一次"(《57》第 5 节)。
+ * 并且 meta 用一条 IN 查询批量取,不做"取一个键查一次"。
  */
 final class UserRepository
 {
-    /** 《32》第 9 节列出的内置 meta 键 */
+    /** 既有规范列出的内置 meta 键 */
     private const BUILT_IN_META = ['role', 'capabilities', 'first_name', 'last_name', 'bio', 'avatar', 'gravatar', 'locale', 'session_version', 'avatar_source', 'avatar_source_url'];
 
     public function __construct(
@@ -43,7 +43,7 @@ final class UserRepository
             throw new ValidationException('没有这个角色', ['role' => ['可用:' . implode(', ', Roles::all())]]);
         }
 
-        // 注册页的「昵称」留空时照旧用用户名顶上(《122》§7:昵称无星号,是可选项)
+        // 注册页的「昵称」留空时照旧用用户名顶上(昵称无星号,是可选项)
         $who = trim($nickname) === '' ? $username : trim($nickname);
         $now = gmdate('Y-m-d H:i:s');
 
@@ -122,7 +122,7 @@ final class UserRepository
     }
 
     /**
-     * 站点地图要列作者归档,只列真出过内容的作者。逐行查就是 N+1(《57》第 5 节),
+     * 站点地图要列作者归档,只列真出过内容的作者。逐行查就是 N+1,
      * 用 EXISTS 一次查全(有已发布 post/page 的作者,按用户名升序)。
      *
      * @return list<User>
@@ -147,7 +147,7 @@ final class UserRepository
     }
 
     /**
-     * 列表页要给每行标作者,逐行查就是 N+1(《57》第 5 节)。一次 IN 查询拿全。
+     * 列表页要给每行标作者,逐行查就是 N+1。一次 IN 查询拿全。
      *
      * @param list<int> $ids
      * @return array<int, string>  user_id => 显示名
@@ -184,7 +184,7 @@ final class UserRepository
     }
 
     /**
-     * 列表页每个列表项要标作者(《13》§6.3:显示名 + 头像)。逐行查作者就是 N+1(《57》§5 红线),
+     * 列表页每个列表项要标作者(显示名 + 头像)。逐行查作者就是 N+1(既有规范红线),
      * 这里按 post id 一次 JOIN 批量取:用户名 / 显示名 / 邮箱。
      *
      * 按 post id 而不是按 user id 收口 —— 搜索结果(Searcher)只回 post id、不回 author_id,
@@ -259,7 +259,7 @@ final class UserRepository
         $out = [];
 
         foreach ($rows as $row) {
-            // 同键多行时取最后写入的一条(usermeta 无唯一键,《21》第 5 节)
+            // 同键多行时取最后写入的一条(usermeta 无唯一键,既有规范)
             $out[(string) $row['meta_key']] = (string) ($row['meta_value'] ?? '');
         }
 
@@ -305,7 +305,7 @@ final class UserRepository
     }
 
     /**
-     * 额外能力(《32》第 4.1 节)。存 usermeta.capabilities 的 JSON 数组。
+     * 额外能力。存 usermeta.capabilities 的 JSON 数组。
      *
      * @param list<string> $capabilities
      */
@@ -341,7 +341,7 @@ final class UserRepository
     }
 
     /**
-     * 改密码:重哈希 + session_version+1(《32》第 8 节)。
+     * 改密码:重哈希 + session_version+1。
      * 旧会话不是"删掉",而是版本号对不上被拒 —— 这样即使有并发会话也不会误删新登录。
      *
      * 这里的令牌撤销是**唯一入口级**的:改密有网页重置、CLI、以后的资料页三条路,
@@ -386,7 +386,7 @@ final class UserRepository
     }
 
     /**
-     * 个人资料保存(《84》第 6 节):昵称、邮箱与几项用户自己的 meta 一次写完。
+     * 个人资料保存:昵称、邮箱与几项用户自己的 meta 一次写完。
      *
      * 校验在这一处收口:网页屏、以后的接口都从这里过,格式与唯一性不会各判各的。
      *
@@ -445,7 +445,7 @@ final class UserRepository
     }
 
     /**
-     * 头像这类单独落库的小动作也记进「上次保存于」(《84》第 4.7 节)。
+     * 头像这类单独落库的小动作也记进「上次保存于」。
      */
     public function touchProfile(int $userId): void
     {
@@ -453,7 +453,7 @@ final class UserRepository
     }
 
     /**
-     * 注册时间与上次保存时间(《84》第 4.4/4.7 节的「加入于」「上次保存于」)。
+     * 注册时间与上次保存时间(既有规范/4.7 节的「加入于」「上次保存于」)。
      *
      * @return array{registered_at:?string, updated_at:?string}
      */
@@ -471,7 +471,7 @@ final class UserRepository
     }
 
     /**
-     * 作者名下有多少篇文章(《84》第 9 节的「36 篇文章」)。只算 posts,页面与附件不算。
+     * 作者名下有多少篇文章(既有规范的「36 篇文章」)。只算 posts,页面与附件不算。
      */
     public function postCount(int $userId): int
     {
@@ -541,7 +541,7 @@ final class UserRepository
     }
 
     /**
-     * 用户名格式:《32》没给细则,这里定"字母数字开头,3–60 位,可含 . _ -"
+     * 用户名格式:既有规范没给细则,这里定"字母数字开头,3–60 位,可含 . _ -"
      * (上限对齐 users.username 的 VARCHAR(60))。
      */
     private function assertValidRegistration(string $username, string $email, string $password): void

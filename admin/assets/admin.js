@@ -18,7 +18,7 @@ var molinTf = function (s, a, b) {
     return t;
 };
 
-/* 右下角浮窗(《76》§5.7):服务端出首屏那两条(data-toast-auto),这里管自动消隐;
+/* 右下角浮窗:服务端出首屏那两条(data-toast-auto),这里管自动消隐;
    运行期还有话要说就调 molinToast(文本, 'ok' | 'err')。同屏最多留三条,多了从最旧挤掉 */
 var molinToast = function (text, kind) {
     var host = document.getElementById('toasts');
@@ -49,7 +49,7 @@ var molinToast = function (text, kind) {
     return box;
 };
 
-/* 复制按钮:写入剪贴板 + 短暂反馈(《80》§6)。片段换进来后要重新绑,故抽成可复用的一支 */
+/* 复制按钮:写入剪贴板 + 短暂反馈。片段换进来后要重新绑,故抽成可复用的一支 */
 var bindCopy = function (root) {
     [].forEach.call((root || document).querySelectorAll('[data-copy]'), function (button) {
         if (button.getAttribute('data-copy-bound') === '1') {
@@ -114,7 +114,7 @@ var bindCopy = function (root) {
     var bar = document.querySelector('.scrollbar');
     var thumb = document.querySelector('.scrollbar .thumb');
 
-    /* 叠加式滚动条:滚动时显,停 900ms 后隐(《76》§5.6) */
+    /* 叠加式滚动条:滚动时显,停 900ms 后隐 */
     if (content && bar && thumb) {
         var paint = function () {
             var view = content.clientHeight;
@@ -143,7 +143,7 @@ var bindCopy = function (root) {
     }
 
     /*
-     * 一个遮罩两用:窄屏当抽屉的背景,选中项要删除时当对话框的底(《80》§5、§10.3)。
+     * 一个遮罩两用:窄屏当抽屉的背景,选中项要删除时当对话框的底(既有规范)。
      * 谁开着由 DOM 决定 —— 抽屉看 .sidebar.open,对话框看 .dlg 是否 hidden。
      */
     var menuBtn = document.querySelector('.menu-btn');
@@ -184,7 +184,7 @@ var bindCopy = function (root) {
         });
     }
 
-    /* 焦点进对话框、背景不可 Tab;Esc 与点遮罩 = 取消(《41》§11 + 《80》§10.3) */
+    /* 焦点进对话框、背景不可 Tab;Esc 与点遮罩 = 取消 */
     var background = [content, sidebar].filter(Boolean);
 
     var shutDialog = function () {
@@ -223,7 +223,7 @@ var bindCopy = function (root) {
         });
 
         // 焦点进对话框就够了,不必抢某个钮:Tab 自然走到里面第一个控件,
-        // 而默认那张基准图上也没有哪个钮带着聚焦光环
+        // 而默认那张设计稿上也没有哪个钮带着聚焦光环
         first.setAttribute('tabindex', '-1');
         first.focus({ preventScroll: true });
     }
@@ -258,7 +258,7 @@ var bindCopy = function (root) {
         setDrawer(false);
     });
 
-    /* 复制文件地址(《80》§6):首屏绑定,片段换进来时 bindCopy 再补 */
+    /* 复制文件地址:首屏绑定,片段换进来时 bindCopy 再补 */
     bindCopy(document);
 
     /* 媒体库选中:点哪张看哪张,不整页刷新(无 JS 时退化成 .nm-link 的 GET)。
@@ -365,7 +365,7 @@ var bindCopy = function (root) {
         });
     })();
 
-    /* 详情文本域:失焦即保存(《80》§6)。无 JS 时 alt/标题按 Enter 也能交表 */
+    /* 详情文本域:失焦即保存。无 JS 时 alt/标题按 Enter 也能交表 */
     var fields = document.getElementById('meta-form');
 
     if (fields !== null && window.fetch) {
@@ -394,7 +394,7 @@ var bindCopy = function (root) {
         });
     }
 
-    /* 上传:选文件或拖到页面 → 队列行 + 真实进度(《80》§10.2、《27》§1) */
+    /* 上传:选文件或拖到页面 → 队列行 + 真实进度 */
     var form = document.getElementById('upload-form');
     var queue = document.getElementById('upq');
 
@@ -496,7 +496,7 @@ var bindCopy = function (root) {
         }
     }
     /*
-     * 编辑页(《79》§4.6 工具条、§10.3 两条带、《41》§6.2 自动保存与离开提醒)。
+     * 编辑页(既有规范工具条、§10.3 两条带、既有规范自动保存与离开提醒)。
      * 没 JS 时正文区退回同名 textarea,存的还是那一份 HTML,不另开一条路。
      */
     var ed = document.querySelector('.ed');
@@ -513,7 +513,7 @@ var bindCopy = function (root) {
         var edSaved = document.querySelector('.ed-head .saved');
         var dirty = false;
         var pending = '';
-        // 标签药丸与输入框的那份合并(《79》§4.7 第 3 盒):交表与自动保存都得先合一次,
+        // 标签药丸与输入框的那份合并(既有规范盒):交表与自动保存都得先合一次,
         // 否则自动保存读到的是被清空了的输入框,一存就把标签抹了
         var commitTags = function () {};
 
@@ -638,7 +638,7 @@ var bindCopy = function (root) {
             });
         });
 
-        /* 段落样式:按钮开一层小菜单,菜单里挑一档,标签跟着换字(《79》§4.6)。
+        /* 段落样式:按钮开一层小菜单,菜单里挑一档,标签跟着换字。
            菜单不用 <details> —— summary 上的样式会把开合吞掉,这里自己切 hidden 与 aria-expanded */
         var bpick = document.getElementById('ed-bpick');
         var bpickTog = document.getElementById('ed-bpick-tog');
@@ -755,7 +755,7 @@ var bindCopy = function (root) {
             });
         };
 
-        /* 《41》§6.2:间隔读设置里 autosave_interval(秒)——设置页把它写进 localStorage,
+        /* 间隔读设置里 autosave_interval(秒)——设置页把它写进 localStorage,
            兜底仍 30s;新文章还没有 id,不自动建草稿(否则半小时一堆孤儿) */
         var autosaveUrl = edForm.getAttribute('data-autosave');
         var autosaveSec = 30;
@@ -847,7 +847,7 @@ var bindCopy = function (root) {
             dirty = false;
         });
 
-        /* 标签:药丸是给人看的那一份,输入框只用来添新的;交表前再把药丸拼回输入框(《79》§4.7 第 3 盒) */
+        /* 标签:药丸是给人看的那一份,输入框只用来添新的;交表前再把药丸拼回输入框(既有规范盒) */
         var tagInput = document.getElementById('ed-tags');
         var chipBox = document.querySelector('.chips');
         var tags = [];
@@ -937,8 +937,8 @@ var bindCopy = function (root) {
             edForm.addEventListener('submit', commitTags);
         }
 
-        /* ＋ 新建分类:基准图里那一盒只有钮,输入格点了才露出来;回车当场落成一颗勾好的选项,
-           名字带 «new:» 头随表交上去,后端建了再挂 —— 不惊动整页(《79》§4.7 第 2 盒) */
+        /* ＋ 新建分类:设计稿里那一盒只有钮,输入格点了才露出来;回车当场落成一颗勾好的选项,
+           名字带 «new:» 头随表交上去,后端建了再挂 —— 不惊动整页(既有规范盒) */
         var newCat = document.getElementById('ed-new-cat');
         var newCatIn = document.getElementById('ed-new-cat-in');
         var catBox = document.querySelector('.cats');
@@ -1119,7 +1119,7 @@ var bindCopy = function (root) {
             });
         })();
 
-        /* ＋ 添加字段:再给一对空键值(《79》§4.7 第 6 盒) */
+        /* ＋ 添加字段:再给一对空键值(既有规范盒) */
         var addMeta = document.getElementById('ed-add-meta');
 
         if (addMeta !== null) {
@@ -1567,7 +1567,7 @@ var bindCopy = function (root) {
     }
 
     /*
-     * 注册页的密码强度条(《122》§5)。判分只用《32》§7 给的那两条尺子:
+     * 注册页的密码强度条。判分只用既有规范给的那两条尺子:
      * 长度够不够 8 位、字符类别有没有三类以上 —— 不另立档位。
      */
     var meterRow = document.querySelector('.meter-row');
@@ -1603,7 +1603,7 @@ var bindCopy = function (root) {
         });
     }
 
-    // 文章列表的勾选联动(《78》§6):表头全选 = 全选本页;部分选中时表头是半选横杠(§10.2)
+    // 文章列表的勾选联动:表头全选 = 全选本页;部分选中时表头是半选横杠(§10.2)
     var all = document.getElementById('cb-all');
     var boxes = Array.prototype.slice.call(document.querySelectorAll('.page-posts .tr .cb'));
 
@@ -1635,7 +1635,7 @@ var bindCopy = function (root) {
     }
 })();
 
-// 窄屏没有「筛选」那颗按钮(《78》§5 的移动端基准图里就没有),改用改完即提交
+// 窄屏没有「筛选」那颗按钮(既有规范的移动端设计稿里就没有),改用改完即提交
 (function () {
     var form = document.querySelector('form.filters');
     var narrow = window.matchMedia('(max-width: 768px)');
@@ -1654,7 +1654,7 @@ var bindCopy = function (root) {
 })();
 
 /*
- * 主题设置(《91》)。全是"增强":删掉这一层,字段照样能改能存,
+ * 主题设置。全是"增强":删掉这一层,字段照样能改能存,
  * 只是折叠、滑块读数、加行删行、选文件自动提交这些便捷动作会退回无 JS 的朴素行为。
  */
 (function () {
@@ -2224,7 +2224,7 @@ var bindCopy = function (root) {
         }
     })();
 
-    /* 日志(《112》§6):移动端没有「筛选」按钮 —— 两个下拉一变就提交;桌面仍走「筛选」 */
+    /* 日志:移动端没有「筛选」按钮 —— 两个下拉一变就提交;桌面仍走「筛选」 */
     var logsForm = document.getElementById('logs-filters');
 
     if (logsForm !== null && window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
@@ -2233,7 +2233,7 @@ var bindCopy = function (root) {
         });
     }
 
-    /* 用户新建与编辑(《106》§5.6):密码强度按四格亮。判分沿用注册页那两条尺子(《32》§7),
+    /* 用户新建与编辑:密码强度按四格亮。判分沿用注册页那两条尺子,
        只把档位映射成格数:—0 / 弱1 / 中3 / 强4;欢迎开关右侧的字跟着勾选态走 */
     (function () {
         var form = document.getElementById('user-form');
@@ -2432,7 +2432,7 @@ var bindCopy = function (root) {
 })();
 
 /*
- * 远端凭据「测试连接」(《109》§12):拿表单当前值探一次真写入(S3 / WebDAV / FTP)。
+ * 远端凭据「测试连接」:拿表单当前值探一次真写入(S3 / WebDAV / FTP)。
  * 不跳页 —— 结果就地写进 .rtest,所以填了一半也能先测;按钮自己是 type=button,不交表。
  */
 (function () {
@@ -2499,7 +2499,7 @@ var bindCopy = function (root) {
 })();
 
 /*
- * 设置页增强(《76》)。服务端已把每组分组的当前值画好;这里只补四类"看着没反应"的地方:
+ * 设置页增强。服务端已把每组分组的当前值画好;这里只补四类"看着没反应"的地方:
  * 固定链接三处联动、静态首页 / 自定义头像的展开、重置二次确认、清理缓存与检查更新。
  * 页面上没有 #settings-form 就整块不跑(别的屏不引这文件也进不来)。
  */
@@ -2528,7 +2528,7 @@ var bindCopy = function (root) {
     }
 
     /* 「选中即生效」的下拉:选了就提交整表,成功就刷新 —— 不等「保存更改」。
-       由头(《76》§216):设置页的分组页签是整页跳转,选完不保存就切页会丢改动;
+       由头:设置页的分组页签是整页跳转,选完不保存就切页会丢改动;
        而这类字段丢了还看不出来(页面照样显示旧值),所以必须走近路。
        现在两处:站点语言、更新通道 —— 后者尤其容易踩:那页上「检查更新」一颗按钮就跳去更新页,
        选完通道顺手点它 = 整页跳走,改动当场没了,到了更新页还以为是"存不上"。 */
@@ -2559,7 +2559,7 @@ var bindCopy = function (root) {
     immediateSelect('locale');
     immediateSelect('update_channel');
 
-    /* 固定链接:预设选中 → 写进结构输入框 → 示例现算;手改结构框则反推预设(《76》§12.5) */
+    /* 固定链接:预设选中 → 写进结构输入框 → 示例现算;手改结构框则反推预设 */
     (function () {
         var preset = document.querySelector('[data-permalink-preset]');
         var input = document.querySelector('[data-permalink-input]');
@@ -2615,7 +2615,7 @@ var bindCopy = function (root) {
         render();
     })();
 
-    /* 阅读组:首页显示选「静态页面」才露出选页下拉(《76》§12.2) */
+    /* 阅读组:首页显示选「静态页面」才露出选页下拉 */
     (function () {
         var select = document.querySelector('[data-front-page]');
         var picker = document.querySelector('[data-front-page-picker]');
@@ -2629,7 +2629,7 @@ var bindCopy = function (root) {
         });
     })();
 
-    /* 讨论组:头像来源选「自定义头像源」才露出地址输入(《76》§12.4) */
+    /* 讨论组:头像来源选「自定义头像源」才露出地址输入 */
     (function () {
         var select = document.querySelector('[data-avatar-source]');
         var custom = document.querySelector('[data-avatar-custom]');
@@ -2644,7 +2644,7 @@ var bindCopy = function (root) {
     })();
 
     /* 重置:只把当前分组换回默认再画一遍,不落库,故带 ?reset=1 走一次 GET。
-       取消 / 点遮罩 / Esc 都收框,文案与《80》删除框同口径(《76》§12.6) */
+       取消 / 点遮罩 / Esc 都收框,文案与既有规范删除框同口径 */
     (function () {
         var button = document.querySelector('[data-reset]');
 
@@ -2728,7 +2728,7 @@ var bindCopy = function (root) {
         });
     })();
 
-    /* 清理缓存:POST /admin/cache/clear,成不成各给一句浮窗(《76》§12.7) */
+    /* 清理缓存:POST /admin/cache/clear,成不成各给一句浮窗 */
     (function () {
         var button = document.querySelector('[data-clear-cache]');
 
@@ -2776,7 +2776,7 @@ var bindCopy = function (root) {
     })();
 
     /* 单选一改就提交(表单带 data-auto-submit):更新通道这类"选了立刻生效"的控件用它,
-       比另加一颗按钮更贴基准图 */
+       比另加一颗按钮更贴设计稿 */
     (function () {
         [].forEach.call(document.querySelectorAll('form[data-auto-submit]'), function (form) {
             [].forEach.call(form.querySelectorAll('input[type=radio]'), function (radio) {
@@ -2934,7 +2934,7 @@ var bindCopy = function (root) {
 })();
 
 /*
- * 编辑页自定义字段与控制增强(《34A》§4 控件映射 / §5 落位)。全是"增强":
+ * 编辑页自定义字段与控制增强(既有规范控件映射 / §5 落位)。全是"增强":
  * 删掉这一层,字段照旧能填能存(文本 / 下拉 / 数值原生可交表),只是抽屉、颜色滑块联动、
  * 加行删行、选图回填这些便捷动作会退回朴素行为。
  */
@@ -3196,7 +3196,7 @@ var bindCopy = function (root) {
 })();
 
 /*
- * 菜单编辑器(《107》):按住左侧三条短横拖动改顺序,拖到某一项的下半截就收作它的子项(最多两级)。
+ * 菜单编辑器:按住左侧三条短横拖动改顺序,拖到某一项的下半截就收作它的子项(最多两级)。
  * 「移除」在本地删掉这一行(父项连它那一支的子项一起删)。每次改完按 DOM 顺序重排字段名 ——
  * 服务端是照 items[i] / items[i][children][j] 前缀重建树的,名字错位就会把整棵树存歪。
  * 左栏分组标题的展开 / 收起只动 UI 态,不动数据。

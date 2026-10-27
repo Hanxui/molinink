@@ -91,7 +91,7 @@ final class LifecycleAction extends ListScreen
     }
 
     /**
-     * 批量操作(《78》§4.4、§6):移入回收站 / 移至草稿。
+     * 批量操作(既有规范):移入回收站 / 移至草稿。
      *
      * 逐条按各自的能力判(own 与 others 是两套),不合规的那条跳过而不是整批回滚 ——
      * 批量最忌讳"做了一半当全成";一条都没做成才说"没权限"。
@@ -111,7 +111,7 @@ final class LifecycleAction extends ListScreen
         $ids = $this->ints($request, 'ids');
 
         if ($ids === []) {
-            // 一行没勾(《78》§10.7 第 4 条:零行/空提交的行为,2026-10-03 定)
+            // 一行没勾(既有规范条:零行/空提交的行为,2026-10-03 定)
             return Response::redirect($this->url('posts') . '?done=nopick' . $this->tail($this->filters($request)));
         }
 
@@ -161,7 +161,7 @@ final class LifecycleAction extends ListScreen
     }
 
     /**
-     * 快速编辑(《78》§10.3):标题 / 别名 / 状态 / 分类四格,其余一律不动。
+     * 快速编辑:标题 / 别名 / 状态 / 分类四格,其余一律不动。
      * 落库仍走 PostWriter 这一条写入口(修订、钩子、白名单都在那条路上)。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
@@ -205,7 +205,7 @@ final class LifecycleAction extends ListScreen
                 'title' => $request->input('title'),
                 'slug' => $request->input('slug'),
                 'status' => $wanted,
-                // 基准图那格是单选下拉(《78》§10.3),而一篇文章可以挂多个分类:
+                // 设计稿那格是单选下拉,而一篇文章可以挂多个分类:
                 // 下拉给的是"主分类",其余的由隐藏域原样带回,免得改个标题就掉分类
                 'categories' => array_values(array_unique(array_merge(
                     $this->ints($request, 'categories'),
@@ -222,7 +222,7 @@ final class LifecycleAction extends ListScreen
     }
 
     /**
-     * 彻底删除:《41》第 12 节要求敏感操作二次确认,表单里那个勾就是确认;没勾什么都不做。
+     * 彻底删除:既有规范要求敏感操作二次确认,表单里那个勾就是确认;没勾什么都不做。
      *
      * @param list<array{title:string, path:string, active:bool}> $menu
      */

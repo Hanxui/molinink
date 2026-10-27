@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * `users` 表补一列 `updated_at`(《84-后台个人资料》§9:保存栏「上次保存于」取库里最后一次写入)。
+ * `users` 表补一列 `updated_at`(保存栏「上次保存于」取库里最后一次写入)。
  */
 final class AddUsersUpdatedAt20261003120000 extends AbstractMigration
 {

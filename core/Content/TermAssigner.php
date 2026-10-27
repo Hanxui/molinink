@@ -15,12 +15,12 @@ use Molin\Exception\ValidationException;
 use RuntimeException;
 
 /**
- * 分类法写入(《34》第 3 节:terms + term_taxonomy + term_relationships 三表)。
+ * 分类法写入(terms + term_taxonomy + term_relationships 三表)。
  *
  * 两个文档没定死的地方,这里各取一条明确规则并写下来:
  * - 分配语义 = **全量替换**(把这次给的集合当成该分类法的完整结果)。增删容易漏配,
  *   留下"以为删了其实还在"的脏关系,比多写几行更危险。
- * - 同名判定按 **slug**,不按 name。`terms` 表没有唯一键(《21》第 4 节),
+ * - 同名判定按 **slug**,不按 name。`terms` 表没有唯一键,
  *   靠 slug 收敏才不会因大小写差异攒出一堆同义 term。
  */
 final class TermAssigner
@@ -28,7 +28,7 @@ final class TermAssigner
     public const CATEGORY = 'category';
     public const TAG = 'post_tag';
 
-    /** 兜底分类的 slug:不挂子级、不可删(《87》§4)。管理屏与编辑器那颗「×」共用这一条 */
+    /** 兜底分类的 slug:不挂子级、不可删。管理屏与编辑器那颗「×」共用这一条 */
     public const UNCATEGORIZED = 'uncategorized';
 
     public function __construct(private readonly Database $db)
@@ -58,7 +58,7 @@ final class TermAssigner
     }
 
     /**
-     * 一屏列表里每行都要显示分类,逐行查就是 N+1(《57》第 5 节)。一次 IN 查询拿全。
+     * 一屏列表里每行都要显示分类,逐行查就是 N+1。一次 IN 查询拿全。
      *
      * @param list<int> $postIds
      * @return array<int, list<string>>  post_id => 名字列表
@@ -124,7 +124,7 @@ final class TermAssigner
     }
 
     /**
-     * 每篇取排序最靠前的那一个词条(《89》§2:标签页的元信息要回带分类名)。
+     * 每篇取排序最靠前的那一个词条(标签页的元信息要回带分类名)。
      * 一屏 N 行逐行查就是 N+1,一次 IN 查询拿全,排序口径与 termsOf 相同。
      *
      * @param list<int> $postIds
@@ -169,7 +169,7 @@ final class TermAssigner
     }
 
     /**
-     * 按 slug 读一个词条(《88》《89》的归档页头要 name 与 description)。不存在返回 null。
+     * 按 slug 读一个词条(既有规范的归档页头要 name 与 description)。不存在返回 null。
      *
      * @return array{term_taxonomy_id:int, term_id:int, name:string, slug:string, description:string}|null
      */
@@ -198,14 +198,14 @@ final class TermAssigner
     }
 
     /**
-     * 编辑页要列出可勾选的分类(《41》第 6.2 节的分类盒),count 是这一项下已发布的文章数。
+     * 编辑页要列出可勾选的分类(既有规范的分类盒),count 是这一项下已发布的文章数。
      * slug 是给列表页的筛选下拉用的 —— 那边的查询条件走 `PostQuery::category(slug)`。
      *
      * @return list<array{term_taxonomy_id:int, name:string, slug:string, count:int}>
      */
     public function choices(string $taxonomy): array
     {
-        // 计数是编辑页「分类」盒右边那个灰数字(《79》§4.7 第 2 盒),只数已发布的正经内容
+        // 计数是编辑页「分类」盒右边那个灰数字(既有规范盒),只数已发布的正经内容
         $rows = $this->db->select(
             'SELECT tt.term_taxonomy_id AS tt_id, t.name AS name, t.slug AS slug,'
             . ' (SELECT COUNT(*) FROM ' . $this->db->table('term_relationships') . ' tr'
@@ -323,7 +323,7 @@ final class TermAssigner
     }
 
     /**
-     * count 只数前台可见的文章(《34》第 5 节)。
+     * count 只数前台可见的文章。
      */
     public function recount(int $termTaxonomyId): void
     {
@@ -343,7 +343,7 @@ final class TermAssigner
     }
 
     /**
-     * 管理屏(《87》)的左列表:分类按树序展平、标签平铺。行序照基准图 ——
+     * 管理屏的左列表:分类按树序展平、标签平铺。行序照设计稿 ——
      * 顶层按文章数降序、同数按名称,子行紧跟父后;
      * (图右边的注写着「按名称排序」,图里的行序却是文章数降序:取图,注挂待办清单待裁。)
      * 计数口径与 choices() 相同:只数前台可见的 post/page,编辑页与本屏的数字对得上。
@@ -409,7 +409,7 @@ final class TermAssigner
     }
 
     /**
-     * 页签上的两枚计数(《87》§3:分类 5 / 标签 12)。键是 taxonomy 原值。
+     * 页签上的两枚计数(分类 5 / 标签 12)。键是 taxonomy 原值。
      *
      * @return array{category:int, post_tag:int}
      */
@@ -464,7 +464,7 @@ final class TermAssigner
     }
 
     /**
-     * 父分类候选(《87》§6):到第二层为止、不含兜底项、不含自己与后代,树序展平。
+     * 父分类候选:到第二层为止、不含兜底项、不含自己与后代,树序展平。
      * 在 listAll 的树序输出上过滤 —— 与列表的行序天然一致。
      *
      * @return list<array{term_taxonomy_id:int, name:string, depth:int}>
@@ -554,7 +554,7 @@ final class TermAssigner
     }
 
     /**
-     * 删一个词条(《87》§6):分类把子级提升到上一层,标签与分类都只解除归属,内容不动。
+     * 删一个词条:分类把子级提升到上一层,标签与分类都只解除归属,内容不动。
      * 兜底项「未分类」不在这里挡,由调用方(后台屏)先拦。
      */
     public function remove(int $termTaxonomyId): void
@@ -644,7 +644,7 @@ final class TermAssigner
     }
 
     /**
-     * $root 及其全部后代(含自己)。新父级不能从这里面挑(《87》§6:禁止选自己或自己的后代)。
+     * $root 及其全部后代(含自己)。新父级不能从这里面挑(禁止选自己或自己的后代)。
      *
      * @param list<array{term_taxonomy_id:int, parent:int}> $items
      * @return list<int>

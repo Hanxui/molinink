@@ -15,7 +15,7 @@ use Molin\Http\Response;
 use Throwable;
 
 /**
- * 开发模式(APP_DEBUG=true)的完整堆栈页,见《26》第 3、8 节。
+ * 开发模式(APP_DEBUG=true)的完整堆栈页。
  * 生产路径永远不会走到这里。
  */
 final class DebugRenderer

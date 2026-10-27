@@ -15,7 +15,7 @@ use Molin\Exception\DatabaseException;
 use Throwable;
 
 /**
- * 基础搜索(《28-搜索规范》第 2、3 节:LIKE 起步,标题命中优先)。
+ * 基础搜索(LIKE 起步,标题命中优先)。
  *
  * 全文是**可选加速**而不是唯一依赖:config.php 里 `search.fulltext` 打开、且这次匹配在库里
  * 真能返回结果时走 `MATCH ... AGAINST`;开关关闭、索引缺失、语法不被接受、或者返回 0 行,
@@ -28,14 +28,14 @@ use Throwable;
  */
 final class Searcher
 {
-    /** 每页条数(《28》未给数值,与后台列表一致) */
+    /** 每页条数(既有规范未给数值,与后台列表一致) */
     public const PER_PAGE = 10;
 
     /** 列表与 COUNT 共用的列清单:两处口径必须一致,少一列就是卡片缺一块 */
     private const COLUMNS = 'p.id, p.title, p.slug, p.excerpt, p.content, p.published_at,'
         . ' p.comment_count, p.thumbnail_id, p.view_count';
 
-    /** 前台可见性三条件(《28》§2.1):类型、状态、软删除。两条路径共用,免得口径走偏 */
+    /** 前台可见性三条件:类型、状态、软删除。两条路径共用,免得口径走偏 */
     private const VISIBLE = "p.type IN ('post', 'page') AND p.status = 'publish' AND p.deleted_at IS NULL";
 
     /** config.php 的 search.fulltext 在本进程内只读一次(配置是进程常量,不必每次请求读盘) */
@@ -58,7 +58,7 @@ final class Searcher
         $started = microtime(true);
 
         if ($keyword === '') {
-            // 空关键词不落全表扫描(《28》§2.1)
+            // 空关键词不落全表扫描
             return ['items' => [], 'total' => 0, 'ms' => 0.0, 'page' => 1, 'pages' => 1, 'keyword' => ''];
         }
 
@@ -222,7 +222,7 @@ final class Searcher
     }
 
     /**
-     * LIKE 路的条件:关键词只转义、不解释成模式(《28》§2.1)。
+     * LIKE 路的条件:关键词只转义、不解释成模式。
      *
      * @return array{where: string, whereParams: array<string, string>, order: string, orderParams: array<string, string>}
      */
@@ -282,7 +282,7 @@ final class Searcher
     }
 
     /**
-     * LIKE 通配符转义(% _ 与反斜杠本身),防 LIKE 注入(《28》§2.1)。
+     * LIKE 通配符转义(% _ 与反斜杠本身),防 LIKE 注入。
      */
     private static function escapeLike(string $keyword): string
     {
@@ -314,7 +314,7 @@ final class Searcher
                 'excerpt' => $excerpt,
                 'published_at' => (string) ($row['published_at'] ?? ''),
                 'comments' => (int) $row['comment_count'],
-                // 特色图由渲染层按这个 id 去媒体库取(《27》§5);0 = 没配图
+                // 特色图由渲染层按这个 id 去媒体库取;0 = 没配图
                 'thumbnail_id' => (int) ($row['thumbnail_id'] ?? 0),
                 'views' => (int) ($row['view_count'] ?? 0),
                 'title_hit' => stripos((string) $row['title'], $keyword) !== false,

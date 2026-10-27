@@ -21,7 +21,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 发一把 API 密钥(《25》第 2 节;发放路径按"命令行是运维正门"落在这里)。
+ * 发一把 API 密钥(既有规范;发放路径按"命令行是运维正门"落在这里)。
  */
 final class ApiKeyIssue extends BaseCommand
 {

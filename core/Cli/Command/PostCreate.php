@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 新建文章(《58》第 1 节的 post:create)。后台编辑页落地前,这是内容的正门。
+ * 新建文章(既有规范的 post:create)。后台编辑页落地前,这是内容的正门。
  */
 final class PostCreate extends BaseCommand
 {

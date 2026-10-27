@@ -11,13 +11,13 @@ declare(strict_types=1);
 namespace Molin\Http;
 
 /**
- * 响应对象。前台页面与接口共用一个形状,便于《23》第 2 节"输出前过钩子"。
+ * 响应对象。前台页面与接口共用一个形状,便于既有规范"输出前过钩子"。
  */
 final class Response
 {
     /**
      * @param array<string, string> $headers
-     * @param string|null $file 非 null 时不走内存 body,直接流式发这个文件(备份下载《35》§11)
+     * @param string|null $file 非 null 时不走内存 body,直接流式发这个文件(备份下载既有规范)
      */
     public function __construct(
         private readonly string $body = '',
@@ -53,7 +53,7 @@ final class Response
     }
 
     /**
-     * 接口层的统一出口(《25》§1):内容类型固定,斜杠不转义,中文原样。
+     * 接口层的统一出口:内容类型固定,斜杠不转义,中文原样。
      *
      * @param array<string, mixed> $payload
      */
@@ -111,7 +111,7 @@ final class Response
     }
 
     /**
-     * 只许站内跳转:绝对地址会沦为开放重定向(《23》第 9 节)。
+     * 只许站内跳转:绝对地址会沦为开放重定向。
      */
     public static function redirect(string $path, int $status = 302): self
     {

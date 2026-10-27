@@ -14,15 +14,15 @@ use GdImage;
 use Molin\Exception\ConfigException;
 
 /**
- * GD 驱动(《27-媒体库规范》第 5.1、6、7 节)。
+ * GD 驱动。
  *
  * 两条与隐私/质量有关的取舍照文档办:
  * ① 先按 EXIF Orientation 把图转正,再输出 —— 输出副本天生不带 EXIF(GD 只重画像素),
- *    手机照片里的 GPS、设备信息因此不会跟着公开出去(《27》第 6 节);
- * ② 等比缩放不裁剪;质量 JPEG 82 / WebP 80(《27》第 7 节)。
+ *    手机照片里的 GPS、设备信息因此不会跟着公开出去;
+ * ② 等比缩放不裁剪;质量 JPEG 82 / WebP 80。
  *
  * Imagick 驱动本轮不做:这台机器与测试环境都没有它,写了就是一条没人跑过的分支
- * (核验数遍的规矩不允许)。等能实测时再补,接口已按《27》第 5.1 节留好。
+ * (核验数遍的规矩不允许)。等能实测时再补,接口已留好。
  */
 final class GdDriver implements Driver
 {
@@ -63,7 +63,7 @@ final class GdDriver implements Driver
     }
 
     /**
-     * 等比缩放到不超过 w×h(不裁剪,《27》第 5 节)。传 0 表示这条边不约束。
+     * 等比缩放到不超过 w×h(不裁剪,既有规范)。传 0 表示这条边不约束。
      */
     public function resize(int $w, int $h): static
     {
@@ -148,7 +148,7 @@ final class GdDriver implements Driver
     }
 
     /**
-     * 《27》第 7 节:JPEG 82、WebP 80。别的格式退回传进来的值。
+     * JPEG 82、WebP 80。别的格式退回传进来的值。
      */
     public static function qualityFor(string $extension, int $fallback = 85): int
     {
@@ -160,7 +160,7 @@ final class GdDriver implements Driver
     }
 
     /**
-     * 按 EXIF Orientation 先转正(《27》第 6 节),免得公开出去的图"躺着"。
+     * 按 EXIF Orientation 先转正,免得公开出去的图"躺着"。
      *
      * 对应关系是 EXIF 规范里的 2–8:先旋转,再镜像。
      * `imageflip()` 是原地翻转、返回 bool,所以不能当 `imagerotate()` 那样串在表达式里 ——

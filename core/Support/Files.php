@@ -23,7 +23,7 @@ final class Files
     private const DELETE_WAIT_US = 80_000;
 
     /**
-     * 写文件。文件系统抽象层是 file.write 能力的拦截面(《62》第 6 节):
+     * 写文件。文件系统抽象层是 file.write 能力的拦截面:
      * 调用方是插件且未声明即被门卫拦下;内核自身(无插件上下文)照常写。
      */
     public static function write(string $path, string $contents): bool

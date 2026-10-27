@@ -30,7 +30,7 @@ use Molin\User\UserRepository;
  */
 class ListScreen extends PostScreen
 {
-    /** 《41》第 6.1 节:分页默认 20/页 */
+    /** 分页默认 20/页 */
     private const PER_PAGE = 20;
 
     /** 回收站单成一栏,"全部"里不许混进来 */
@@ -83,7 +83,7 @@ class ListScreen extends PostScreen
 
         $isPage = $this->managedType === 'page';
         $isCpt = $this->isCpt();
-        // 层级型:页面天然是,hierarchical 的 CPT 也算(《34》§2.2)。列表照《86》口径 —— 平铺
+        // 层级型:页面天然是,hierarchical 的 CPT 也算。列表照既有规范口径 —— 平铺
         // 一行一列「层级」,而不是把子行缩进挪到父行下面。
         $hierarchical = $this->isHierarchical();
 
@@ -131,7 +131,7 @@ class ListScreen extends PostScreen
                 StatusMachine::DRAFT => __('草稿'),
                 StatusMachine::PUBLISH => __('已发布'),
             ] : [
-                // 四档与整页编辑的状态列同源(《78》§10.7 第 6 条已定,2026-10-03)
+                // 四档与整页编辑的状态列同源(既有规范条已定,2026-10-03)
                 StatusMachine::DRAFT => __('草稿'),
                 StatusMachine::PENDING => __('待审'),
                 StatusMachine::PUBLISH => __('已发布'),
@@ -150,14 +150,14 @@ class ListScreen extends PostScreen
             'pagination' => $this->pagination($page, $total, $filters),
             'notice' => $this->flash($request),
             'new_url' => $this->can->can($user, $this->cap('create')) ? $this->url('posts/new') : '',
-            // 分类与标签的管理入口(《87》):只给有 category.manage 的人;页面 / CPT 列表不渲染它
+            // 分类与标签的管理入口:只给有 category.manage 的人;页面 / CPT 列表不渲染它
             'categories_url' => $this->url('categories'),
             'can_manage_categories' => $this->can->can($user, 'category.manage'),
         ], $menu);
     }
 
     /**
-     * 列表页的查询条件(《78》§4.2 页签 + §4.3 筛选;《86》§4 页面多一个「父页面」)。
+     * 列表页的查询条件(既有规范页签 + §4.3 筛选;既有规范页面多一个「父页面」)。
      * 认不过的值一律回落到空,不留"看着像筛选其实没生效"的状态。
      *
      * @return array{status:string,q:string,cat:string,author:int,month:string,parent:string,order:string}
@@ -176,7 +176,7 @@ class ListScreen extends PostScreen
             'author' => max(0, (int) $request->input('author')),
             'month' => preg_match('#\A\d{4}-\d{2}\z#', $month) === 1 ? $month : '',
             'parent' => $parent === '' ? '' : (string) max(0, (int) $parent),
-            // 层级型列表的排序入口(《86》口径的补充):menu = 按序号(menu_order),空 = 按最近修改
+            // 层级型列表的排序入口(既有规范口径的补充):menu = 按序号(menu_order),空 = 按最近修改
             'order' => $order === 'menu' ? 'menu' : '',
         ];
     }
@@ -186,7 +186,7 @@ class ListScreen extends PostScreen
      */
     private function listQuery(array $filters): PostQuery
     {
-        // 层级型内容(页面 / hierarchical 的 CPT)天然是按序号组织的目录(《34》§2.2):
+        // 层级型内容(页面 / hierarchical 的 CPT)天然是按序号组织的目录:
         // 选了「按序号」就按 menu_order 升序、并列按创建先后;其余(含默认)维持最近修改在前。
         $query = $this->isHierarchical() && $filters['order'] === 'menu'
             ? $this->posts->query()->type($this->managedType)->orderBy('menu_order', 'asc', 'asc')
@@ -206,13 +206,13 @@ class ListScreen extends PostScreen
             return $query->statuses(self::VISIBLE);
         }
 
-        // 回收站这一栏要看得见被软删的行,否则还原与真删都没有入口(《41》第 6.1 节)
+        // 回收站这一栏要看得见被软删的行,否则还原与真删都没有入口
         return $query->status($filters['status'])->trashed($filters['status'] === StatusMachine::TRASH);
     }
 
     /**
-     * 页签计数一次查完(《78》§9)。"全部"不含回收站,私密算在"全部"里但不单开页签 ——
-     * 基准图上就是五档(§4.2)。
+     * 页签计数一次查完。"全部"不含回收站,私密算在"全部"里但不单开页签 ——
+     * 设计稿上就是五档(§4.2)。
      *
      * @return array<string, int>
      */
@@ -297,8 +297,8 @@ class ListScreen extends PostScreen
     }
 
     /**
-     * 时间下拉按文章实际分布的月份给(《78》§9),最多回溯 24 个月。
-     * 标签写成「2026 年 9 月」是基准图上的字样。
+     * 时间下拉按文章实际分布的月份给,最多回溯 24 个月。
+     * 标签写成「2026 年 9 月」是设计稿上的字样。
      *
      * @return list<array{value:string, label:string}>
      */
@@ -401,7 +401,7 @@ class ListScreen extends PostScreen
     }
 
     /**
-     * 页面的父页面标题(《125》配套基准 后台页面列表 的层级列)。
+     * 页面的父页面标题(既有规范配套设计稿后台页面列表的层级列)。
      *
      * @param list<int> $postIds
      *
@@ -425,7 +425,7 @@ class ListScreen extends PostScreen
     }
 
     /**
-     * 每个页面挂着的直接子页数(《86》§4 副行「N 个子页面」)。
+     * 每个页面挂着的直接子页数(既有规范副行「N 个子页面」)。
      *
      * @param list<int> $postIds
      *
@@ -450,7 +450,7 @@ class ListScreen extends PostScreen
     }
 
     /**
-     * 「全部父页面」下拉的候选(《86》§4)。回收站里的页不做候选:
+     * 「全部父页面」下拉的候选。回收站里的页不做候选:
      * 挂到一个看不见的父页下面,列表里就再也找不到它了。
      *
      * @return list<array{id:int, title:string}>
@@ -526,11 +526,11 @@ class ListScreen extends PostScreen
             || $this->can->can($user, $this->cap('edit.own'), $post);
         $deletable = $this->can->can($user, $this->cap('delete.others'))
             || $this->can->can($user, $this->cap('delete.own'), $post);
-        // 《34》第 5 节只画了 `publish → trash`,而《41》第 6.1 节把"回收站"列成每行的通用操作 ——
+        // 既有规范只画了 `publish → trash`,而既有规范把"回收站"列成每行的通用操作 ——
         // 两份文档对不上。这里先按状态机(数据层的权威)办事:不该出现的按钮就不出现,
         // 差异已写进待办清单的待拍板清单,等作者定"草稿/待审怎么删"。
         $inTrash = $post->status === StatusMachine::TRASH;
-        // 《78》§4.5:回收站行的行内操作"替换为"还原 + 删除,编辑/快速编辑/查看/回收站都不出现。
+        // 回收站行的行内操作"替换为"还原 + 删除,编辑/快速编辑/查看/回收站都不出现。
         // canGo(from===to) 为真是给"保存但不改状态"用的,不能当"还能再进一次回收站"(2026-10-03 真跑抓出)。
         $movable = $deletable && !$inTrash && StatusMachine::canGo($post->status, StatusMachine::TRASH);
         $stamp = strtotime($post->updated_at . ' UTC');
@@ -581,8 +581,8 @@ class ListScreen extends PostScreen
             'count' => $counts['all'],
         ]];
 
-        // 页签顺序钉死《78》§4.2:全部 / 已发布 / 草稿 / 待审 / 回收站(私密不单开)。
-        // 页面没有 pending 态(《34》§1、《86》§4),那一档就不摆出来。
+        // 页签顺序钉死全部 / 已发布 / 草稿 / 待审 / 回收站(私密不单开)。
+        // 页面没有 pending 态,那一档就不摆出来。
         $kinds = $this->managedType === 'page'
             ? [StatusMachine::PUBLISH, StatusMachine::DRAFT, StatusMachine::TRASH]
             : [StatusMachine::PUBLISH, StatusMachine::DRAFT, StatusMachine::PENDING, StatusMachine::TRASH];
@@ -610,7 +610,7 @@ class ListScreen extends PostScreen
         $first = max(1, min($page - 2, $pages - 9));
         $links = [];
 
-        // 上一页 / 下一页是基准图上的两件(《78》§4.6)。到头那一侧不给 href,
+        // 上一页 / 下一页是设计稿上的两件。到头那一侧不给 href,
         // 但保留同一个 <a> 的样子 —— 少一件会让这一排的高度与间距跟着变。
         $links[] = [
             'page' => __('上一页'),
@@ -644,7 +644,7 @@ class ListScreen extends PostScreen
     }
 
     /**
-     * 「最后修改于 2 小时前」那种说法(《78》§4.5 副行)。基准图上出现过 昨天 / 1 周前 / 2 周前,
+     * 「最后修改于 2 小时前」那种说法(既有规范副行)。设计稿上出现过昨天 / 1 周前 / 2 周前,
      * 再往后就退回具体日期 —— 不编造"几个月前"这种没人画过的档。
      */
     private static function ago(int $timestamp): string

@@ -18,7 +18,7 @@ use Throwable;
 /**
  * 正文渲染链:库里的原始正文 → 空白段自动成段 → 过 content/render/before|after → 模板可 |raw 的 HTML。
  *
- * 《13》6.4 规定模板看到的 `post.content` 是"渲染后 HTML",所以这一步必须发生在
+ * 既有规范规定模板看到的 `post.content` 是"渲染后 HTML",所以这一步必须发生在
  * 交给主题之前;放在仓储层会把列表页每一行都过一遍钩子,故由展示层按模式显式调用。
  */
 final class ContentRenderer

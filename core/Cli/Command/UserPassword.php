@@ -20,9 +20,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 改口令(《58》第 1 节的 user:password)。
+ * 改口令(既有规范的 user:password)。
  *
- * 改完 session_version 会 +1,该用户手上的会话当场失效(《32》第 8 节)。
+ * 改完 session_version 会 +1,该用户手上的会话当场失效。
  */
 final class UserPassword extends BaseCommand
 {

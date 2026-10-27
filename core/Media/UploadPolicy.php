@@ -13,7 +13,7 @@ namespace Molin\Media;
 use Molin\Exception\ValidationException;
 
 /**
- * 上传校验(《27-媒体库规范》第 2、3 节)。安全基调下这是最硬的一道闸:
+ * 上传校验。安全基调下这是最硬的一道闸:
  * **永远不信前端给的文件名与 MIME**。
  *
  * 逐条对应文档的校验清单:扩展名白名单 → 真实 MIME(finfo)→ 图片可解析(getimagesize)
@@ -21,7 +21,7 @@ use Molin\Exception\ValidationException;
  */
 final class UploadPolicy
 {
-    /** 《27》第 2 节的默认白名单:扩展名 => 允许的 MIME 前缀/值 */
+    /** 既有规范的默认白名单:扩展名 => 允许的 MIME 前缀/值 */
     private const ALLOWED = [
         'jpg' => ['image/jpeg', 'image/pjpeg'],
         'jpeg' => ['image/jpeg', 'image/pjpeg'],
@@ -36,12 +36,12 @@ final class UploadPolicy
     ];
 
     /**
-     * svg 默认关(《27》第 2 节:可含脚本,是 XSS 载体)。
+     * svg 默认关(可含脚本,是 XSS 载体)。
      * 真要开必须显式配置,且落盘后按附件下载或先净化 —— 那套归 SVG 增量,这里只拒。
      */
     private const DENIED_BY_DEFAULT = ['svg', 'html', 'htm', 'xhtml', 'php', 'php5', 'phtml', 'phar', 'sh', 'py', 'pl', 'cgi', 'asp', 'aspx', 'jsp', 'htaccess', 'htpasswd'];
 
-    /** 《27》第 3 节:像素上限,防"解压炸弹"。转码口复核同一把尺子,故对外可见 */
+    /** 像素上限,防"解压炸弹"。转码口复核同一把尺子,故对外可见 */
     public const MAX_PIXELS = 8000;
 
     /**
@@ -105,7 +105,7 @@ final class UploadPolicy
             throw new ValidationException('文件读不到', ['file' => ['临时文件不存在或不可读']]);
         }
 
-        // 空字节:老式截断攻击的签名,一律拒(《27》第 3 节)
+        // 空字节:老式截断攻击的签名,一律拒
         if (str_contains($upload->originalName, "\0")) {
             throw new ValidationException('文件名不合法:含空字节', ['file' => ['文件名里有非法字符']], 'null_byte');
         }
@@ -163,7 +163,7 @@ final class UploadPolicy
                 $rule = 'mime_mismatch';
             }
         } elseif (!$this->inDocumentedCategory($mime)) {
-            // 插件通过 `media/upload/before` 加的扩展名,内容仍要落在《27》第 2 节那四类里 ——
+            // 插件通过 `media/upload/before` 加的扩展名,内容仍要落在既有规范那四类里 ——
             // 白名单可以谈,可执行/可脚本的内容一律不行
             $why = "类型不在许可的类别里:读到的是 {$mime},墨林只收图片、文档、压缩、音视频四类";
             $rule = 'mime_unlisted';
@@ -213,7 +213,7 @@ final class UploadPolicy
     }
 
     /**
-     * 《27》第 2 节的四类:图片 / 文档 / 压缩 / 音视频。插件追加扩展名时按类放行。
+     * 既有规范的四类:图片 / 文档 / 压缩 / 音视频。插件追加扩展名时按类放行。
      */
     private function inDocumentedCategory(string $mime): bool
     {
@@ -227,7 +227,7 @@ final class UploadPolicy
     }
 
     /**
-     * 只认文件内容,不认前端给的 type(《27》第 3 节约定)。
+     * 只认文件内容,不认前端给的 type(既有规范约定)。
      */
     private function realMime(string $path): string
     {

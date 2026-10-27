@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 撤回一把 API 密钥(《25》第 2 节)。不删行,留痕(撤回了哪把、什么时候)。
+ * 撤回一把 API 密钥。不删行,留痕(撤回了哪把、什么时候)。
  */
 final class ApiKeyRevoke extends BaseCommand
 {

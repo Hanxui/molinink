@@ -14,10 +14,10 @@ use Molin\Exception\ConfigException;
 use Molin\Support\Files;
 
 /**
- * config.php 的生成与写入(《42-安装向导》第 5 节)。
+ * config.php 的生成与写入。
  *
  * 写文件走"临时文件 + rename",避免半截配置被下一个请求读到;
- * 装失败时这个文件也要跟着回滚(《42》第 5 节明令),所以删除只允许删自己写的那份。
+ * 装失败时这个文件也要跟着回滚(既有规范明令),所以删除只允许删自己写的那份。
  */
 final class ConfigWriter
 {
@@ -36,7 +36,7 @@ final class ConfigWriter
     }
 
     /**
-     * @param array<string, mixed> $database 键照 config.example.php(《42》第 3 节字段表)
+     * @param array<string, mixed> $database 键照 config.example.php(既有规范字段表)
      * @return array<string, mixed>
      */
     public function build(array $database, bool $debug = false, ?string $timezone = null): array
@@ -68,7 +68,7 @@ final class ConfigWriter
             throw new ConfigException('写入 config.php 失败(临时文件阶段)');
         }
 
-        // 0640:比《42》第 7 节提示的 644 更严一档 —— 同机其他用户不该读到数据库口令
+        // 0640:比既有规范提示的 644 更严一档 —— 同机其他用户不该读到数据库口令
         @chmod($temp, 0o640);
 
         if (!rename($temp, $path)) {
@@ -81,7 +81,7 @@ final class ConfigWriter
     }
 
     /**
-     * 回滚用。真删掉了才回 true —— 回滚结论必须与事实一致(《42》第 5 节)。
+     * 回滚用。真删掉了才回 true —— 回滚结论必须与事实一致。
      */
     public function remove(): bool
     {
@@ -99,7 +99,7 @@ final class ConfigWriter
             . " * @author Kira\n"
             . " * @link   https://www.molinink.com\n"
             . " *\n"
-            . " * 由安装向导生成(《42-安装向导》第 5 节)。含数据库凭据与站点密钥,\n"
+            . " * 由安装向导生成。含数据库凭据与站点密钥,\n"
             . " * 已在 .gitignore 中排除,任何情况下不得入库、不得外发。\n"
             . " */\n\n"
             . "declare(strict_types=1);\n\n"

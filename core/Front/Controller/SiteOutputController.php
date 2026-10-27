@@ -22,7 +22,7 @@ use Molin\Site\Sitemap;
 use Molin\User\UserRepository;
 
 /**
- * 站点输出三件(《23》§4 表内最后三格):订阅两式、站点地图、爬虫规则。
+ * 站点输出三件(既有规范表内最后三格):订阅两式、站点地图、爬虫规则。
  *
  * 口径(2026-10-05 更新,记录在案):订阅条数走选项 posts_per_rss、摘要/全文走 rss_use_excerpt;
  * sitemap = 首页 + 文章 + 页面 + 归档页(分类/标签/作者,只收有已发布内容的);blog_public=0 时
@@ -54,7 +54,7 @@ final class SiteOutputController
     /** @param array<string, string> $vars 路由变量 */
     public function sitemap(Request $request, array $vars = []): Response
     {
-        // 不欢迎搜索引擎时不给地图(与模板的 noindex 同一个开关,《125》§6.3)
+        // 不欢迎搜索引擎时不给地图(与模板的 noindex 同一个开关,既有规范)
         if ((string) $this->options->get('blog_public', '1') !== '1') {
             return $this->context->notFound();
         }

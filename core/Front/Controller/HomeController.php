@@ -17,7 +17,7 @@ use Molin\Http\Response;
 use Molin\Theme\Renderer;
 
 /**
- * 首页与全站文章页(《71/72》《88》):hero + 编号列表。
+ * 首页与全站文章页:hero + 编号列表。
  *
  * 条目与分页由 ListSource 装配(与归档族、片段端点同源),这里只决定页型与变量。
  * 首页还要处理两条分派:查询式固定链接(?p= / ?page_id=)与「首页显示 = 静态页面」。
@@ -41,7 +41,7 @@ final class HomeController
 
         $options = $this->context->options();
 
-        // 阅读组「首页显示 = 静态页面」(《76》§12.2):挑中的那篇页面顶到首页;
+        // 阅读组「首页显示 = 静态页面」:挑中的那篇页面顶到首页;
         // 页面没挑、已删或不可见时回落博客流,不留 404 首页
         if ((string) $options->get('show_on_front', 'posts') === 'page') {
             $frontId = (int) $options->get('page_on_front', 0);
@@ -91,7 +91,7 @@ final class HomeController
 
         return $view->render('home', [
             'items' => $result['items'],
-            // 首页分页与归档同一套版式(单页时模板不渲染,基准图上也没有这一块)
+            // 首页分页与归档同一套版式(单页时模板不渲染,设计稿上也没有这一块)
             'pager' => $result['pager'],
             // 旧变量名保留给第三方主题,内核自带的 home.twig 用 items/pager
             'posts' => $result['posts'],
@@ -114,7 +114,7 @@ final class HomeController
             // 旧变量名保留给第三方主题,内核自带的模板用 items/pager
             'posts' => $result['posts'],
             'pagination' => $result['pagination'],
-            // 筛选条的分类与计数:与后台分类盒同一份口径(《79》§4.7),count 只数已发布
+            // 筛选条的分类与计数:与后台分类盒同一份口径,count 只数已发布
             'categories' => $this->terms->choices(TermAssigner::CATEGORY),
             'archive_total' => (int) $result['pagination']['total'],
         ]);

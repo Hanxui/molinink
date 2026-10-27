@@ -1,7 +1,7 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  外观页(《90》,基准 后台主题-定稿-2026-09-30):主题卡片墙 + 三档页签 + 上传。
+  外观页(设计稿):主题卡片墙 + 三档页签 + 上传。
   卡上四颗钮:启用/预览/设置/删除;启用中的卡只有 预览/设置(不可自删)。
 #}
 {% extends "layout.twig" %}
@@ -48,7 +48,7 @@
                         <div class="par">{{ __('父主题：') }}<b>{{ theme.parent_title }}</b>　{{ __('未覆盖的模板自动沿用父主题') }}</div>
                     {% endif %}
                 </div>
-                {# 桌面悬浮在截图下沿、移动端落在卡片末尾:位置交给 CSS,DOM 顺序照移动端基准 #}
+                {# 桌面悬浮在截图下沿、移动端落在卡片末尾:位置交给 CSS,DOM 顺序照移动端设计稿 #}
                 <div class="acts">
                     {% if not theme.active %}
                         <form method="post" action="{{ theme.switch_url }}">
@@ -60,7 +60,7 @@
                     <a href="{{ theme.preview_url }}" target="_blank" rel="noopener">{{ __('预览') }}</a>
                     {% if theme.has_settings %}<a href="{{ theme.settings_url }}">{{ __('设置') }}</a>{% endif %}
                     {% if not theme.active %}
-                        {# 二次确认走内联展开,不用浏览器弹窗(《90》§10);真删不可恢复,措辞如实 #}
+                        {# 二次确认走内联展开,不用浏览器弹窗;真删不可恢复,措辞如实 #}
                         <details class="delp">
                             <summary class="danger">{{ __('删除') }}</summary>
                             <form method="post" action="{{ theme.delete_url }}">

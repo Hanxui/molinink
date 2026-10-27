@@ -19,7 +19,7 @@ use Molin\User\Capabilities;
 use Molin\User\User;
 
 /**
- * 后台一级菜单的组装(《41》第 2、4 节):内核页 + 自定义内容类型 + 插件加菜单。
+ * 后台一级菜单的组装:内核页 + 自定义内容类型 + 插件加菜单。
  */
 final class MenuBuilder
 {
@@ -33,8 +33,8 @@ final class MenuBuilder
     }
 
     /**
-     * 一级菜单(按能力过滤,《41》第 2、4 节)。`$active` 是这一屏的路径首段,
-     * 侧栏要靠它画出那条 2px 暖赭竖条 —— 基准图里"当前项"就是这个样子。
+     * 一级菜单(按能力过滤,既有规范)。`$active` 是这一屏的路径首段,
+     * 侧栏要靠它画出那条 2px 暖赭竖条 —— 设计稿里"当前项"就是这个样子。
      *
      * @return list<array{title:string, path:string, active:bool, badge?:string, icon?:string}>
      */
@@ -42,7 +42,7 @@ final class MenuBuilder
     {
         $activeTitle = $this->pages[$active]['menu'] ?? $this->pages[$active]['title'] ?? null;
         $user = Auth::user();
-        // 待审数量同时驱动侧栏徽标(《77》§9);零待审就不打扰(《77》§10.1)
+        // 待审数量同时驱动侧栏徽标;零待审就不打扰
         $pending = $user !== null && $this->can->can($user, 'comment.moderate') ? $this->dashboard->pendingCount() : 0;
         $items = [];
 
@@ -51,7 +51,7 @@ final class MenuBuilder
                 continue;
             }
 
-            // URL 由路由名生成(《23》第 1 节第 4 条:禁止拼字符串)。
+            // URL 由路由名生成(既有规范条:禁止拼字符串)。
             // 根路径的键是空串,菜单指向 dashboard —— 同一屏,两个入口。
             // 菜单标题在这里才过 __():active 判定用原文比,不受语言影响
             $item = [
@@ -75,7 +75,7 @@ final class MenuBuilder
     }
 
     /**
-     * 自定义内容类型的后台入口(《34》§10):只认公开且非内置的已登记类型,一段一个。
+     * 自定义内容类型的后台入口:只认公开且非内置的已登记类型,一段一个。
      * 返回它的能力清单 —— 用类型的 capability_type 映射到既有能力,未登记的前缀回落 post.*。
      *
      * @return array{label:string, capabilities:list<string>}|null
@@ -93,7 +93,7 @@ final class MenuBuilder
 
     /**
      * 一个 CPT 的后台门控能力:按 capability_type 拼六个动作能力,没登记的前缀回落内核 post.*
-     * (《62》是插件申报词表,后台门控用内核已登记名;不新造能力名)。
+     * (既有规范是插件申报词表,后台门控用内核已登记名;不新造能力名)。
      *
      * @return list<string>
      */
@@ -166,7 +166,7 @@ final class MenuBuilder
     }
 
     /**
-     * 插件加菜单(《11》§7.9 admin/menu/collect):逐条归一,形状不合的丢。
+     * 插件加菜单(既有规范admin/menu/collect):逐条归一,形状不合的丢。
      * 钩子层的类型校验只在开发环境跑,生产环境全靠这道闸 —— 一条坏数据不能把侧栏打崩。
      *
      * @param list<array{title:string, path:string, active:bool, badge?:string, icon?:string}> $items

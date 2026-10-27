@@ -13,7 +13,7 @@ namespace Molin\Hook;
 use Molin\Plugin\Plugin;
 
 /**
- * 懒加载倒排索引(《22-钩子API与懒加载》第 7 节)。
+ * 懒加载倒排索引。
  *
  * 索引文件 storage/cache/hookmap.php 在插件启停/更新时重建;运行时一次 include。
  * 装几十个插件,首页也只加载命中钩子的那几个 —— 这是"轻"的地基。
@@ -79,7 +79,7 @@ final class HookMap
      * 每次请求都调(=Loader::boot),但**只在插件集合真的变了时**才写盘:
      * 指纹(启用的插件名 + 版本 + 入口路径 + plugin.json 的 mtime/size)与缓存文件里那份一致,
      * 就直接沿用缓存 —— 否则每个请求都要 var_export 一份索引再 file_put_contents,
-     * 白烧磁盘与 CPU,还让 opcache 里那份索引每次请求都失效(《22》第 7 节)。
+     * 白烧磁盘与 CPU,还让 opcache 里那份索引每次请求都失效。
      *
      * 入口绝对路径也进指纹:整个站点目录搬过家时 mtime/size 一个都不变,
      * 但缓存里存的 bootstrap 路径已经指空 —— 不把它算进去就永远修不回来。
@@ -107,7 +107,7 @@ final class HookMap
             $name = $plugin->name();
             $this->plugins[$name] = $plugin;
             $bootstraps[$name] = $plugin->manifest->main();
-            // 不声明 hooks = 只关心启动加载(《12》第 4 节),因此挂在 system/init 上
+            // 不声明 hooks = 只关心启动加载,因此挂在 system/init 上
             $declared = $plugin->manifest->hooks() === [] ? ['system/init'] : $plugin->manifest->hooks();
 
             foreach ($declared as $pattern) {
@@ -139,7 +139,7 @@ final class HookMap
     }
 
     /**
-     * 命中钩子时才把相关插件拉起来(《22》第 7.3 节)。
+     * 命中钩子时才把相关插件拉起来。
      */
     public function loadFor(string $hook): void
     {
@@ -152,7 +152,7 @@ final class HookMap
 
             $this->done[$name] = true;
 
-            // 标记"正在加载哪个插件",让插件里的 add_filter() 自动带上归属(《22》第 3 节 currentPlugin)
+            // 标记"正在加载哪个插件",让插件里的 add_filter 自动带上归属(既有规范currentPlugin)
             $bus = HookBus::instance();
             $bus->beginLoading($name);
 
@@ -203,7 +203,7 @@ final class HookMap
     }
 
     /**
-     * 通配展开(《12》第 4 节:`*` 匹配任意多段,`shop/*` 表示整个 shop 域)。
+     * 通配展开(`*` 匹配任意多段,`shop/*` 表示整个 shop 域)。
      *
      * @param list<string> $universe
      * @return list<string>

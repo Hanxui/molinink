@@ -1,6 +1,6 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   文章详情样式(源件:assets/ui/文章详情-定稿-2026-09-29.html 与
-   文章详情-移动端-定稿-2026-09-29.html)。评论区另见 comments.css。
+   文章详情样式(源件:设计稿与
+   设计稿)。评论区另见 comments.css。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
 
 /* 文章头:内容栏居中(width:100% 是给 .page 的 flex 列用的 —— 没有它,auto 外边距会把块收成内容宽,#56 页脚钉底时踩过) */
@@ -19,7 +19,7 @@
 .body p{margin-top:1.7em;}
 .body p:first-child{margin-top:0;}
 .body h2{margin-top:2.4em;font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
-/* 三级标题(编辑器的第三档,《79》§12)。桌面字号取主题里既有的次级标题档(与 .pager .name 同款 24px),
+/* 三级标题(编辑器的第三档,既有规范)。桌面字号取主题里既有的次级标题档(与 .pager .name 同款 24px),
    不另造新的级差;字重必须写 400 —— 浏览器给 h3 的默认是加粗,不压掉就破了"衬线不加粗" */
 .body h3{margin-top:2em;font-size:24px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
 .body a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--rule);}
@@ -41,7 +41,7 @@
 /* 编辑器直插的图片(#56 报障):等比限宽 + 发丝边框,与 figure 里的同款;不裁不改原文件 */
 .body img{max-width:100%;height:auto;border:1px solid var(--rule);display:block;cursor:zoom-in;}
 
-/* 口令锁态(私密正文,P0-2):无独立基准,沿用正文栏与评论区的既有部件(《73》口径) */
+/* 口令锁态(私密正文,P0-2):无独立设计稿,沿用正文栏与评论区的既有部件(既有规范口径) */
 .unlock-box h2{margin-top:0;font-size:34px;font-weight:400;line-height:1.3;}
 .unlock-box .note{margin-top:14px;font-family:var(--font-sans);font-size:12px;
   letter-spacing:.06em;color:var(--muted);line-height:1.7;}
@@ -58,7 +58,7 @@
 .pager a:hover .name{color:var(--accent);}
 .pager .next{text-align:right;margin-left:auto;}
 
-/* 文末标签(《73》§12,2026-10-11 增):分类在眉标里,这里只列标签 —— 读完正文给"更细的入口"。
+/* 文末标签(既有规范-11 增):分类在眉标里,这里只列标签 —— 读完正文给"更细的入口"。
    版式照上/下篇那一档(发丝线 + 30px 内距 + 96px 上距),字号/字距/颜色全部取自既有档位,不新增;
    没打标签的篇章整块不渲染,版面与从前逐像素一样 */
 .tags{margin:96px auto 0;max-width:720px;width:100%;padding-top:30px;border-top:1px solid var(--rule);

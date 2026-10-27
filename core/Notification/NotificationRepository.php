@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Notification;
 
 /**
- * 站内通知的存取口（《31》§4）。
+ * 站内通知的存取口。
  *
  * 2026-10-22（0.97.0）：实现搬到内置插件 molin-social，内核只留这张接口。
  * 写入口在 Notifier，读/改/删在控制器与 NotificationFeed。

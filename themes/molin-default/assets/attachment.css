@@ -1,6 +1,6 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   附件页样式(《117》;源件:assets/ui/附件页-定稿-2026-09-30.html 与
-   附件页-移动端-定稿-2026-09-30.html)。
+   附件页样式(既有规范;源件:设计稿与
+   设计稿)。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
 
 /* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(#56 页脚钉底) */

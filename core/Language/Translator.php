@@ -17,18 +17,18 @@ use NumberFormatter;
 use Throwable;
 
 /**
- * 界面文字翻译器(《33-多语言与多站点决策》§3/§4)。
+ * 界面文字翻译器(既有规范/§4)。
  *
  * 语言包是 JSON:键 = 源文案,值 = 译文。内核的源语言是简体中文(源文案就是中文),
  * 回退链:当前 locale → 语言变体(zh_Hant → zh)→ zh_CN → 原文 —— 缺词回落简体中文,
- * 和《84》§4.3 说的一致。域(domain)决定去哪找包:'molin' 走 core/Language,
+ * 和既有规范说的一致。域(domain)决定去哪找包:'molin' 走 core/Language,
  * 'theme' 走当前主题,其他名字按插件目录 plugins/{domain}/languages 找。
  */
 final class Translator
 {
     public const DEFAULT_LOCALE = 'zh_CN';
 
-    /** 个人资料「跟随浏览器」的取值(《84》§4.3) */
+    /** 个人资料「跟随浏览器」的取值 */
     public const AUTO = 'auto';
 
     /** 个人资料「跟随站点」的取值:等同"没表过态",判定链往下走(2026-10-09 加) */
@@ -176,7 +176,7 @@ final class Translator
     }
 
     /**
-     * locale 检测链(《33》§4):① 用户设置(「跟随浏览器」当场查 Accept-Language;
+     * locale 检测链:① 用户设置(「跟随浏览器」当场查 Accept-Language;
      * 「跟随站点」= 没表过态,继续往下)② 会话/请求开关 ③ 站点默认 ④ 浏览器(站级开关,默认关)。全不落地就 zh_CN。
      *
      * 站点默认与浏览器开关由调用方从 options 取好传进来 —— 这一层不碰数据库。
@@ -238,7 +238,7 @@ final class Translator
     }
 
     /**
-     * 《33》§3.1 签名定死:第 2 参数永远是域,占位符实参从第 3 参起(走 sprintf)。
+     * 既有规范签名定死:第 2 参数永远是域,占位符实参从第 3 参起(走 sprintf)。
      */
     public function translate(string $text, string $domain = 'molin', mixed ...$args): string
     {
@@ -277,7 +277,7 @@ final class Translator
     }
 
     /**
-     * 《33》§5:日期本地化。intl 在就用 IntlDateFormatter;不在用内置模板,
+     * 日期本地化。intl 在就用 IntlDateFormatter;不在用内置模板,
      * 模板可由语言包以 `date:long` 这类键覆盖。
      */
     public function formatDate(mixed $value, string $style = 'long'): string
@@ -339,7 +339,7 @@ final class Translator
     }
 
     /**
-     * 《33》§5:数字本地化。
+     * 数字本地化。
      */
     public function formatNumber(int|float $value, int $decimals = 0): string
     {
@@ -444,7 +444,7 @@ final class Translator
     }
 
     /**
-     * Accept-Language 里挑第一个装得上的语言(《33》§4 的 ④)。
+     * Accept-Language 里挑第一个装得上的语言(既有规范的 ④)。
      */
     private function browserLocale(string $acceptLanguage): ?string
     {

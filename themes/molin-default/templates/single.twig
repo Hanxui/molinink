@@ -1,6 +1,6 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
-{# 单篇(《73》):文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
-   post.content 是内核已处理的正文(可信富文本),按《14》第 3.5 节允许 |raw,该位置由契约测试登记复核。
+{# 单篇:文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
+   post.content 是内核已处理的正文(可信富文本),允许 |raw,该位置由契约测试登记复核。
    category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。 #}
 <!DOCTYPE html>
 <html lang="{{ html_lang() }}">
@@ -44,7 +44,7 @@
     {% else %}
         <section class="body">{{ post.content|raw }}</section>
 
-        {# 文末标签(《73》§12):分类在眉标里,这里只列标签 —— 读完正文就有"更细的入口"。
+        {# 文末标签:分类在眉标里,这里只列标签 —— 读完正文就有"更细的入口"。
            没打标签整块不渲染,版面与从前一样;标签由内核在 post 路由补齐,第三方主题不必提供 #}
         {% if tags is defined and tags %}
             <div class="tags">
@@ -53,7 +53,7 @@
             </div>
         {% endif %}
 
-        {# 评论区(《31》§2/§3/§7;版式照 文章详情-评论区-2026-09-30)。content 在提交时已过白名单,按《14》3.5 允许 |raw #}
+        {# 评论区(既有规范/§3/§7;版式照设计稿)。content 在提交时已过白名单,允许 |raw #}
     {% if comment_action is defined and comment_action %}
         <section class="comments" id="comments">
             <h2>{{ __('评论 %s', 'theme', comment_total) }}</h2>

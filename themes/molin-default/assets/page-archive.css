@@ -1,6 +1,6 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   归档页页面模板样式(《74》;源件:assets/ui/归档-定稿-2026-09-29.html、
-   归档-移动端-定稿-2026-09-29.html 与 归档-桌面展开态-2026-09-30.html)。
+   归档页页面模板样式(既有规范;源件:设计稿、
+   设计稿)。
    年 → 月 → 文章三级折叠,默认全收起。页头/页脚/浮层与其它页共用一套壳。
    配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
 
@@ -29,7 +29,7 @@
 .year-head:hover .y{color:var(--accent);}
 .year-head .meta{margin-left:auto;display:flex;align-items:baseline;gap:22px;}
 .year-head .months{font-family:var(--font-sans);font-size:11px;letter-spacing:.16em;color:var(--muted);}
-/* 速览展开即隐去,但保留占位,否则右侧组会左移(《74》§8.2) */
+/* 速览展开即隐去,但保留占位,否则右侧组会左移 */
 .year.open .year-head .months{opacity:0;}
 .year-head .count{font-family:var(--font-sans);font-size:12px;letter-spacing:.18em;color:var(--muted);}
 .year-body{display:none;padding-bottom:22px;}

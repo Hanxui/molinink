@@ -20,7 +20,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 缺译检测(《33》第 6 节):扫描代码里的源文案,列出语言包里还缺的条目。
+ * 缺译检测:扫描代码里的源文案,列出语言包里还缺的条目。
  * 查缺就是非零退出(GENERIC),方便接 CI;全齐才回 0。
  */
 final class I18nCheck extends BaseCommand

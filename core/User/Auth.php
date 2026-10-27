@@ -18,14 +18,14 @@ use Molin\Security\LoginThrottle;
 use Molin\Security\Password;
 
 /**
- * 登录与会话(《32》第 8 节、《61》第 2.2–2.6 节)。
+ * 登录与会话(既有规范–2.6 节)。
  *
  * 登录成功后一定换一个全新会话 id(防会话固定),旧 id 直接作废;
  * 改密靠 usermeta.session_version 递增让手上的旧令牌一起失效。
  */
 final class Auth
 {
-    /** 会话 cookie 名。《61》没给名字,这里定一个并当对外口径使用 */
+    /** 会话 cookie 名。既有规范没给名字,这里定一个并当对外口径使用 */
     public const COOKIE = 'molin_session';
 
     private static ?User $current = null;
@@ -123,7 +123,7 @@ final class Auth
      */
     private function bind(Session $session): void
     {
-        // user_id=0 是访客会话:只用来挂防跨站令牌(《61》第 3 节,登录页也要有令牌),
+        // user_id=0 是访客会话:只用来挂防跨站令牌(既有规范登录页也要有令牌),
         // 不代表身份。查不到用户不等于会话无效。
         if ($session->userId === 0) {
             self::$session = $session;
@@ -139,7 +139,7 @@ final class Auth
             return;
         }
 
-        // 改过密码的用户,旧会话一律作废(《32》第 8 节)
+        // 改过密码的用户,旧会话一律作废
         if ((int) ($session->data['session_version'] ?? 0) !== $user->sessionVersion) {
             $this->sessions->destroy($session->id);
 
@@ -154,7 +154,7 @@ final class Auth
     }
 
     /**
-     * 只校验账号口令,不发会话也不发 cookie —— App 登录拿它换令牌(《25》§3.3),
+     * 只校验账号口令,不发会话也不发 cookie —— App 登录拿它换令牌,
      * 后台登录在其上再补会话。限速、防枚举、失败钩子与成功后的重哈希/touchLogin 都在这里,
      * 两种入口的安全行为因此一致。
      *
@@ -164,7 +164,7 @@ final class Auth
     {
         $account = trim($account);
 
-        // 《11》第 7 节:before 是 filter —— 可归一化账号,也可抛异常直接中止(强制验证码)
+        // before 是 filter —— 可归一化账号,也可抛异常直接中止(强制验证码)
         $attempt = apply_filters('user/login/before', ['account' => $account], $ip);
 
         if (is_array($attempt) && isset($attempt['account']) && (string) $attempt['account'] !== '') {
@@ -202,7 +202,7 @@ final class Auth
 
         $this->throttle->clear($key);
 
-        // 参数升级过就顺手重哈希(《61》第 2.1 节)
+        // 参数升级过就顺手重哈希
         if (Password::needsRehash($hash)) {
             $this->users->storeHash($user->id, Password::hash($password));
         }
@@ -227,7 +227,7 @@ final class Auth
         self::$current = $user;
         self::$session = $session;
 
-        // 「记住我（30 天）」签的是独立令牌(《61》2.7):库里只存哈希,cookie 用一次换一枚
+        // 「记住我（30 天）」签的是独立令牌:库里只存哈希,cookie 用一次换一枚
         if ($remember) {
             self::$cookies[] = [
                 'name' => RememberTokens::COOKIE,
@@ -243,7 +243,7 @@ final class Auth
     }
 
     /**
-     * 登出:服务端销毁(《61》第 2.6 节)。带着「记住我」cookie 来的,顺手撤掉这一台设备的令牌。
+     * 登出:服务端销毁。带着「记住我」cookie 来的,顺手撤掉这一台设备的令牌。
      */
     public function logout(?string $rememberCookie = null): void
     {

@@ -17,9 +17,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 生成 SECRET_KEY(《61-安全基线清单》第 7 节)。
+ * 生成 SECRET_KEY。
  *
- * 只打印、不写文件 —— 配置文件的写入归安装向导(《42》第 4 步),
+ * 只打印、不写文件 —— 配置文件的写入归安装向导(既有规范步),
  * 免得两处都能改 config.php 而互相覆盖。
  */
 final class KeyGenerate extends BaseCommand
@@ -35,7 +35,7 @@ final class KeyGenerate extends BaseCommand
         $key = bin2hex(random_bytes(32));
         $replacing = (string) ($this->config()['secret_key'] ?? '') !== '';
 
-        // 密钥操作必须审计(《26》第 7 节)。此处只记"生成过",绝不记密钥本身
+        // 密钥操作必须审计。此处只记"生成过",绝不记密钥本身
         Audit::record('key.generate', 'secret_key' . ($replacing ? ' (替换旧值)' : ''));
 
         if ($this->isJson($input)) {

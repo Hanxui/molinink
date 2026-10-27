@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Media;
 
 /**
- * 尺寸档(《27-媒体库规范》第 5 节)。这张表是尺寸档的唯一权威定义,
+ * 尺寸档。这张表是尺寸档的唯一权威定义,
  * 其他文档提到档位一律引用这里;站点可用 option `media_sizes`(JSON)增删档位。
  *
  * `0` 表示不缩放(原图)。改档位只影响**新上传**,已上传的要重新生成
@@ -19,7 +19,7 @@ namespace Molin\Media;
  */
 final class Sizes
 {
-    /** 《27》第 5 节的默认档 */
+    /** 既有规范的默认档 */
     private const DEFAULTS = [
         'thumb' => 300,
         'medium' => 768,

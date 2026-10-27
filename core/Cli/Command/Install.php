@@ -19,9 +19,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 命令行安装(《42-安装向导》第 9 节)。与 Web 向导共用 Installer,两条路的装法不许分叉。
+ * 命令行安装。与 Web 向导共用 Installer,两条路的装法不许分叉。
  *
- * 口令优先读环境变量(《58》第 7 节:别把密码写进 shell 历史),命令行参数只作兜底。
+ * 口令优先读环境变量(别把密码写进 shell 历史),命令行参数只作兜底。
  */
 final class Install extends BaseCommand
 {

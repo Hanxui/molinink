@@ -11,11 +11,11 @@ declare(strict_types=1);
 namespace Molin\Logger;
 
 /**
- * 日志读取(《112-后台日志查看器实现规格》):把 storage/logs/ 的文件读成页面行。
+ * 日志读取:把 storage/logs/ 的文件读成页面行。
  *
- * 《21》没有 logs 表,读取来源就是内核正在写的文件(《26》§5 的通道与轮转):
+ * 既有规范没有 logs 表,读取来源就是内核正在写的文件(既有规范的通道与轮转):
  * 常规通道 `{channel}-YYYY-MM-DD.log` 按天轮转,审计 `audit/audit-YYYY-MM.log` 单独存放;
- * 行格式同《26》§5.4:`[2026-09-28 16:33:12] app.INFO: 正文 {"k":"v"} []`。
+ * 行格式:`[2026-09-28 16:33:12] app.INFO: 正文 {"k":"v"} []`。
  * 只读、永不删改 —— 审计"不可清空、不可编辑"在这一层就是不提供任何写方法。
  *
  * 两段式:先轻扫(时间/级别/原行,一次遍历),窗口内的 20 行才做完整解析(正文分段 / 上下文)。
@@ -25,13 +25,13 @@ final class LogReader
 {
     public const PER_PAGE = 20;
 
-    /** 级别序(《26》§5.2) */
+    /** 级别序 */
     private const LEVELS = ['DEBUG', 'INFO', 'NOTICE', 'WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'];
 
-    /** 级别→暖赭的分档(《112》§7 张表反推;《112》§11-1 映射未定,先只分"要留意"一档) */
+    /** 级别→暖赭的分档(既有规范张表反推;既有规范映射未定,先只分"要留意"一档) */
     private const HOT = ['WARNING', 'ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'];
 
-    /** 摘要里的文件名(《112》§5.6 文件名走 code):认扩展名的常见档 */
+    /** 摘要里的文件名(既有规范文件名走 code):认扩展名的常见档 */
     private const FILE = '#^[A-Za-z0-9][A-Za-z0-9_.-]*\.(?:tar\.gz|tgz|zip|gz|sql|json|log|txt|csv|xml|html|md|png|jpe?g|gif|webp|svg|pdf)$#i';
 
     private readonly string $root;
@@ -68,7 +68,7 @@ final class LogReader
     }
 
     /**
-     * 窗口内某动作出现几次(《111》慢查询那格要计数,不要全量读)。
+     * 窗口内某动作出现几次(既有规范慢查询那格要计数,不要全量读)。
      * 只认正文首词:行如 `[ts] db.WARNING: slow_query {"ms":...} []`,
      * 词界收口,正文里提一嘴 slow_query 的句子不算。
      */
@@ -252,10 +252,10 @@ final class LogReader
     }
 
     /**
-     * 摘要列的分段(《112》§5.6):正文按 ` · ` 拆段、分段符渲染成 dim 中点;
+     * 摘要列的分段:正文按 ` · ` 拆段、分段符渲染成 dim 中点;
      * 段内动作名与文件名走等宽 code,`•••` / `***@` 脱敏段走 mask。
      *
-     * 审计行若是"纯动作名"正文(《26》§7 的机器写法,《26》行如 `audit.INFO: user.login`),
+     * 审计行若是"纯动作名"正文(既有规范的机器写法,既有规范行如 `audit.INFO: user.login`),
      * 再把对象 / 结果 / 操作者摆出来;散文正文自带事实,不再补以免重复。
      *
      * @param array<string, mixed> $context
@@ -314,9 +314,9 @@ final class LogReader
     }
 
     /**
-     * 分段符:两个空格留在 dim span 外面,与基准源件的包裹方式逐字对齐。
+     * 分段符:两个空格留在 dim span 外面,与设计稿源件的包裹方式逐字对齐。
      * 空格在 span 内还是外,会影响后续字形的亚像素相位 —— 拉开就会整段文字相移一格,
-     * 截图比对里表现为 1px 的笔画差异(《112》基准重渲 0 差异,比拼的正是这层)。
+     * 截图比对里表现为 1px 的笔画差异(重渲 0 差异,比拼的正是这层)。
      *
      * @return list<array{t: string, x: string}>
      */

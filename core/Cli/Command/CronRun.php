@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 跑到期的定时任务(《58-CLI工具》第 5 节)。
+ * 跑到期的定时任务。
  *
  * 系统计划任务每隔几分钟调一次即可 —— 谁到点由 Cron 按 cron.json 自己判,
  * 不必给每个任务单独挂一条 crontab。

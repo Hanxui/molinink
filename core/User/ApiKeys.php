@@ -13,7 +13,7 @@ namespace Molin\User;
 use Molin\Database\Database;
 
 /**
- * API 密钥仓储(《25-接口规范》第 2 节)。
+ * API 密钥仓储。
  *
  * 明文 key 只在 `issue()` 返回一次;库里存 sha256,认证按哈希查行 ——
  * 不用明文比对,翻库也拿不到可用凭据。

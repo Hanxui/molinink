@@ -23,9 +23,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
 /**
- * 创建备份(《35》§4、《58》§1 的 backup:create)。
+ * 创建备份(既有规范的 backup:create)。
  *
- * 加密走提示或环境变量(《58》§7:密码不写进 shell 历史);远端推送需要
+ * 加密走提示或环境变量(密码不写进 shell 历史);远端推送需要
  * `storage/backups/remote.json` 里的凭证,配置口径见 Remote 类。
  */
 final class BackupCreate extends BaseCommand

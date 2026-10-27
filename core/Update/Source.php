@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Update;
 
 /**
- * 升级源地址(《29》§2 的两条通道 → 两个源)。
+ * 升级源地址(既有规范的两条通道 → 两个源)。
  *
  * 程序内置官方源;管理员可以在设置里填自定义源(私有部署),留空就用内置的。
  * 通道只有两种:**正式版 stable** 与**开发版 dev** —— 2026-10-10 作者定,去掉预发版。
@@ -19,7 +19,7 @@ namespace Molin\Update;
 final class Source
 {
     /**
-     * 官方源(同一台机器上分两条目录,见《29》§4"更新清单可由官方源或自定义源提供")。
+     * 官方源(同一台机器上分两条目录,"更新清单可由官方源或自定义源提供")。
      *
      * @var array<string, string>
      */
@@ -28,7 +28,7 @@ final class Source
         'dev' => 'https://update.molinink.com/dev',
     ];
 
-    /** 内置信得过的几个主机(《29》§5"仅允许 https;可配域名白名单") */
+    /** 内置信得过的几个主机(既有规范"仅允许 https;可配域名白名单") */
     public const OFFICIAL_HOSTS = ['update.molinink.com'];
 
     /** @return list<string> */
@@ -61,7 +61,7 @@ final class Source
         return rtrim($base, '/') . '/manifest.json';
     }
 
-    /** 只走 https(《29》§5)。自定义源也不例外。 */
+    /** 只走 https。自定义源也不例外。 */
     public static function isHttps(string $url): bool
     {
         return strtolower((string) (parse_url($url, PHP_URL_SCHEME) ?? '')) === 'https';

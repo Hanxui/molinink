@@ -17,7 +17,7 @@ use Symfony\Component\Console\Exception\ExceptionInterface as ConsoleExceptionIn
 use Throwable;
 
 /**
- * 统一退出码(《58-CLI工具》第 4 节)。脚本靠它分支,所以映射必须稳定、可测。
+ * 统一退出码。脚本靠它分支,所以映射必须稳定、可测。
  */
 final class ExitCode
 {

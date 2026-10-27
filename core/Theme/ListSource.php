@@ -29,27 +29,27 @@ use Molin\User\UserRepository;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * 列表数据装配(《13》第 6.3 节、《34》第 7 节):同一条列表,整页与片段端点共用一份取数与组项逻辑。
+ * 列表数据装配:同一条列表,整页与片段端点共用一份取数与组项逻辑。
  *
  * 首页 / 分类 / 标签 / 作者 / 日期 / 自定义类型归档 / 搜索各是一个 context;
  * build() 按 context 走既有的 PostQuery / Searcher 与分页链,返回 items + pager + 页头所需数据。
  * index.php 的整页处理器与 ListFragmentController 的片段端点都只调这一支 ——
- * 查询与组项只此一处,不复制第二套。《88》第 4 节:分页地址一律由 path() 生成,不拼字符串。
+ * 查询与组项只此一处,不复制第二套。分页地址一律由 path 生成,不拼字符串。
  */
 final class ListSource
 {
-    /** 支持的列表上下文(与《23》路由族一一对应),片段端点入参 context 的取值域 */
+    /** 支持的列表上下文(与既有规范路由族一一对应),片段端点入参 context 的取值域 */
     public const CONTEXTS = ['home', 'category', 'tag', 'author', 'date', 'archive', 'search'];
 
     /**
-     * 作者取不到时的占位(《13》§6.3):键始终在,值全空串 —— 与 views 同口径,模板不必做 defined 猜谜。
+     * 作者取不到时的占位:键始终在,值全空串 —— 与 views 同口径,模板不必做 defined 猜谜。
      * 作者被禁用 / 已删除 / author_id=0 都落这里。
      *
      * @var array{name: string, initial: string, avatar_url: string}
      */
     private const EMPTY_AUTHOR = ['name' => '', 'initial' => '', 'avatar_url' => ''];
 
-    /** 每篇文章带几条评论预览(《13》§6.3 items[].comments_preview):卡片上就一小行,3 条够看 */
+    /** 每篇文章带几条评论预览(既有规范items[].comments_preview):卡片上就一小行,3 条够看 */
     private const COMMENT_PREVIEW_LIMIT = 3;
 
     /** 自动摘要上限(字):作者没写摘要时从正文取这么多字,超了截断加省略号 */
@@ -97,7 +97,7 @@ final class ListSource
     }
 
     /**
-     * 首页取哪些内容类型(《34》§2.2):内置 `post` 恒在,其余看登记表声明了 `in_main_list` 的类型。
+     * 首页取哪些内容类型:内置 `post` 恒在,其余看登记表声明了 `in_main_list` 的类型。
      *
      * 只影响首页那一条流;分类 / 标签 / 作者 / 日期 / 说说归档仍各自只取自己的类型。
      *
@@ -142,7 +142,7 @@ final class ListSource
     private function home(int $page, string $route = 'home'): array
     {
         $perPage = $this->perPage();
-        // 首页 = post + 声明了 in_main_list 的类型(《34》§2.2);归档族不受这条影响
+        // 首页 = post + 声明了 in_main_list 的类型;归档族不受这条影响
         $query = $this->posts->query()->types($this->homeTypes())->status('publish');
 
         if ($this->listingFull()) {
@@ -210,7 +210,7 @@ final class ListSource
 
         return self::ok($context, [
             'term' => $term,
-            // 标签跨分类,行元信息回带分类名;分类页自身不回带(《89》第 2 节)
+            // 标签跨分类,行元信息回带分类名;分类页自身不回带
             'items' => $this->items($found, $page, $perPage, $taxonomy === TermAssigner::TAG),
             'pager' => $this->pager($context, ['slug' => $slug], $page, $totalPages, $total, $perPage, $totalPages > 1, true, 'full'),
         ]);
@@ -279,7 +279,7 @@ final class ListSource
             ],
             'categories' => $categories,
             'items' => $this->items($found, $page, $perPage, true),
-            // 作者页只有页码、没有上/下页;计数两个断点都带「每页 N 篇」(《115》第 6.2 节)
+            // 作者页只有页码、没有上/下页;计数两个断点都带「每页 N 篇」
             'pager' => $this->pager('author', ['slug' => $user->username], $page, $totalPages, $total, $perPage, true, false, 'numbers'),
         ]);
     }
@@ -316,7 +316,7 @@ final class ListSource
         return self::ok('date', [
             'term' => ['name' => $year . ' 年 ' . $month . ' 月', 'slug' => '', 'description' => '这个月发出的 ' . $total . ' 篇。'],
             'items' => $this->items($found, $page, $perPage, false),
-            // 日期页单页只留计数;计数两个断点都带「每页 N 篇」(《116》第 5 节)
+            // 日期页单页只留计数;计数两个断点都带「每页 N 篇」
             'pager' => $this->pager('date', ['year' => $year, 'month' => sprintf('%02d', $month)], $page, $totalPages, $total, $perPage, true, false, 'plain'),
         ]);
     }
@@ -331,7 +331,7 @@ final class ListSource
         $registry = PostTypeRegistry::instance();
         $meta = $type === '' ? null : $registry->get($type);
 
-        // 与前台一致:非 public / 不做重写 / 没归档的类型没有前台地址(《34》第 2.2 节)
+        // 与前台一致:非 public / 不做重写 / 没归档的类型没有前台地址
         if ($meta === null || !$meta['public'] || !$meta['has_archive'] || $registry->rewriteSlug($type) === null) {
             return self::fail('archive', 404, '内容类型没有前台归档');
         }
@@ -370,7 +370,7 @@ final class ListSource
         $perPage = Searcher::PER_PAGE;
         $seq = ($found['page'] - 1) * $perPage;
         $thumbs = $this->thumbs(array_map(static fn (array $item): int => (int) ($item['thumbnail_id'] ?? 0), $found['items']));
-        // 搜索项同样整页批量取作者(《57》§5):Searcher 不回 author_id,这里按 post id 收口
+        // 搜索项同样整页批量取作者:Searcher 不回 author_id,这里按 post id 收口
         $authors = $this->authors(array_map(static fn (array $item): int => (int) ($item['id'] ?? 0), $found['items']));
 
         $items = [];
@@ -392,7 +392,7 @@ final class ListSource
             $items[] = $item;
         }
 
-        // 无结果态两条建议的落点(《104》第 4.1/10 节):最近一篇文章的分类 / 所属月归档;给不了就 null
+        // 无结果态两条建议的落点(既有规范/10 节):最近一篇文章的分类 / 所属月归档;给不了就 null
         $suggestCategory = null;
         $suggestDate = null;
 
@@ -432,7 +432,7 @@ final class ListSource
     }
 
     /**
-     * 列表行的统一形状(《13》第 6.3 节):编号 / 标题 / 日期 / 评论数 / 特色图 / 浏览量 / 分类 / 作者。
+     * 列表行的统一形状:编号 / 标题 / 日期 / 评论数 / 特色图 / 浏览量 / 分类 / 作者。
      *
      * @param list<Post> $found
      * @return list<array<string, mixed>>
@@ -443,11 +443,11 @@ final class ListSource
         $ids = array_map(static fn (Post $post): int => $post->id, $found);
         $categories = $withCategory ? $this->terms->firstTermsFor($ids, TermAssigner::CATEGORY) : [];
         $thumbs = $this->thumbs($found);
-        // 作者也整页批量取(《57》§5 红线),不逐行查
+        // 作者也整页批量取(既有规范红线),不逐行查
         $authors = $this->authors($ids);
-        // 卡片上的评论预览同理:整页一次窗口查询,不逐篇查(《13》§6.3)
+        // 卡片上的评论预览同理:整页一次窗口查询,不逐篇查
         $previews = $this->comments->previewsFor($ids, self::COMMENT_PREVIEW_LIMIT);
-        // 自动摘要要读正文,而列表查询不带 content —— 本页"没写摘要"的行按 id 补一次(《57》§5)
+        // 自动摘要要读正文,而列表查询不带 content —— 本页"没写摘要"的行按 id 补一次
         $bodies = $this->listingFull() ? [] : $this->bodies($found);
         $items = [];
         $seq = ($page - 1) * $perPage;
@@ -482,9 +482,9 @@ final class ListSource
     }
 
     /**
-     * 每个列表项的 author 键(《13》§6.3):显示名 / 首字 / 头像 URL。
+     * 每个列表项的 author 键:显示名 / 首字 / 头像 URL。
      *
-     * 名与邮箱一次批量取这一页所有作者(《57》§5:列表不许 N+1);头像复用 Avatar 那套按邮箱取图的逻辑。
+     * 名与邮箱一次批量取这一页所有作者(列表不许 N+1);头像复用 Avatar 那套按邮箱取图的逻辑。
      * 取不到的行整组给空串(不编默认头像),键始终在。
      *
      * @param list<int> $postIds
@@ -633,7 +633,7 @@ final class ListSource
     }
 
     /**
-     * 一次批量取特色图(《27》第 5 节):一页最多 100 篇,不给每行单开查询。
+     * 一次批量取特色图:一页最多 100 篇,不给每行单开查询。
      *
      * @param list<Post|int> $source
      * @return array<int, array<string, mixed>> 键 = 附件本体 id
@@ -690,7 +690,7 @@ final class ListSource
     }
 
     /**
-     * 行内摘要(《76》第 12.2 节):全文模式取渲染后的正文;
+     * 行内摘要:全文模式取渲染后的正文;
      * 摘要模式优先用作者写的摘要字段 —— 没写就从正文取一段($body 由 bodies() 补)。
      * (不兜底的话,导入的老文章没有摘要字段,列表行就是一行空白,主题再想截字也没得截。)
      *
@@ -736,7 +736,7 @@ final class ListSource
     }
 
     /**
-     * 归档分页条的数据,三种版式按各页基准图走(见 index.php 同款实现)。
+     * 归档分页条的数据,三种版式按各页设计稿走(见 index.php 同款实现)。
      *
      * @param array<string, string|int> $params 路由参数(slug 或 year+month)
      * @return array{prev: ?string, next: ?string, pages: list<array{n: int, url: string, current: bool}>, count: string, count_compact: string}

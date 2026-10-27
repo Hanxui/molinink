@@ -13,7 +13,7 @@ namespace Molin\Cache;
 use Molin\Support\Files;
 
 /**
- * 页面静态缓存(《24-缓存抽象层规范》第 7 节,分层里的第 3 层"整页 HTML")。
+ * 页面静态缓存(既有规范分层里的第 3 层"整页 HTML")。
  *
  * 只缓存 **GET + 未登录 + 200 + text/html** 的页面;后台 / 接口 / 登录注册 / 搜索等入口一律不缓存
  * (§7.2)。命中时由入口 index.php 直接吐 HTML、不再查内容与渲染。

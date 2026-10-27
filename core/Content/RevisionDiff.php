@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Content;
 
 /**
- * 修订比对渲染(《113》§9-5:左列 deletion、右列 insertion)。
+ * 修订比对渲染(左列 deletion、右列 insertion)。
  *
  * 库里的正文是过白名单的 HTML(见 HtmlSanitizer),直接按字符比对会把标签拆碎、还会
  * 把 HTML 原样输出成 XSS。这里的做法:先把正文拆成"块"(段落 / 标题),块内取**纯文本**,

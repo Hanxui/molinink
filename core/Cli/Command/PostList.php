@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 列文章(《58》第 1 节的 post:list)。走的是"列表不取正文"的查询路径(《57》第 5 节)。
+ * 列文章(既有规范的 post:list)。走的是"列表不取正文"的查询路径。
  */
 final class PostList extends BaseCommand
 {

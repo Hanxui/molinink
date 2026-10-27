@@ -1,8 +1,8 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
 
 /*
- * 后台样式。数值逐字取自 assets/ui/后台*-定稿-*.html 与 docs/70-界面/80 号规格,
- * 约定:配色、排版、文案以定稿图为准,不得在此"优化"或新增颜色。
+ * 后台样式。数值逐字取自设计稿,
+ * 约定:配色、排版、文案以设计稿为准,不得在此"优化"或新增颜色。
  * 新增 rgba 只有对话框/遮罩用的 rgba(27,28,30,.42) 与滚动条滑块 .2 —— 都是墨色的alpha形态。
  */
 
@@ -197,7 +197,7 @@ body {
 }
 .content::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
-/* 叠加式自动隐藏滚动条(《76》§5.6) */
+/* 叠加式自动隐藏滚动条 */
 .scrollbar {
     position: absolute;
     top: 4px;
@@ -219,15 +219,15 @@ body {
 }
 
 /*
- * 两屏共用一套外壳,但《80》与《79》给同名类定了不同数值(`.inner` 1120 vs 1180、
+ * 两屏共用一套外壳,但既有规范给同名类定了不同数值(`.inner` 1120 vs 1180、
  * `.cols` 1fr+320/gap32 vs 1fr+296/gap36)。谁都不许"统一"掉谁 —— 按屏作用域隔开,
- * 两边各自与自己的定稿图逐像素对齐。
+ * 两边各自与自己的设计稿逐像素对齐。
  */
 .inner { max-width: 1120px; }
 .page-editor .inner { max-width: 1180px; }
 
 /*
- * 内核自己发的提示(如"install/ 还没删")。基准图里没有这一件,只给它一条不抢版面的间距,
+ * 内核自己发的提示(如"install/ 还没删")。设计稿里没有这一件,只给它一条不抢版面的间距,
  * 颜色沿用全站那枚暖赭 —— 不加新色、不做卡片。
  */
 .inner > p[role="alert"] {
@@ -407,9 +407,9 @@ select {
 .meta .hint { font-size: 12px; letter-spacing: .03em; color: #74736F; }
 .meta .spacer { flex: 1 1 auto; }
 
-/* ── 两栏:网格 + 详情(《80》§4)── */
+/* ── 两栏:网格 + 详情── */
 .cols { margin-top: 26px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: start; }
-/* 列表视图没有右栏,文件表通栏(《80》第 10.1 节);.cols 已经给了 26px 上距,别再叠一层 */
+/* 列表视图没有右栏,文件表通栏;.cols 已经给了 26px 上距,别再叠一层 */
 .cols-one { grid-template-columns: minmax(0, 1fr); }
 .cols-one .table { margin-top: 0; }
 
@@ -594,7 +594,7 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 }
 .saved { display: flex; align-items: center; gap: 7px; font-size: 12px; letter-spacing: .03em; color: var(--muted); }
 .saved i { width: 5px; height: 5px; border-radius: 50%; background: var(--ink); flex: 0 0 auto; }
-/* 详情栏"已保存"那一句是瞬时反馈,不在基准图里(《80》§6 失焦即保存) */
+/* 详情栏"已保存"那一句是瞬时反馈,不在设计稿里(既有规范失焦即保存) */
 .save-note { margin-top: 6px; font-size: 11px; letter-spacing: .04em; color: var(--muted); visibility: hidden; }
 .save-note.show { visibility: visible; }
 .refs { display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; letter-spacing: .02em; }
@@ -605,7 +605,7 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 .detail .acts .del { color: var(--accent); border-color: var(--rule); background: transparent; }
 .detail .acts .del:hover { color: #fff; background: var(--accent); border-color: var(--accent); }
 
-/* ── 列表视图(《80》§10.1)── */
+/* ── 列表视图── */
 .table { margin-top: 26px; }
 .thead, .tr {
     display: grid;
@@ -653,7 +653,7 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
     line-height: 1.25;
     text-transform: uppercase;
 }
-/* 复选框(《80》第 10.1 节):列表视图靠它选中,与网格的墨色对勾同一套口径 */.cb {
+/* 复选框:列表视图靠它选中,与网格的墨色对勾同一套口径 */.cb {
     width: 15px;
     height: 15px;
     border: 1.3px solid #C9C6BF;
@@ -698,7 +698,7 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 .qedit { background: #fff; padding: 12px 0 14px 116px; border-bottom: 1px solid var(--rule); }
 .qe-top { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 28px; }
 .qedit .sub-h { margin: 0 0 8px; font-size: 11px; letter-spacing: .2em; color: var(--muted); }
-/* 展开块里同样三件控件比右栏详情栏紧一号,数值取自列表视图基准 */
+/* 展开块里同样三件控件比右栏详情栏紧一号,数值取自列表视图设计稿 */
 .qedit .sizechip { padding: 3px 9px; }
 .qedit .sizechip b { color: var(--ink); }
 .qedit .urlbox { margin-top: 0; }
@@ -727,10 +727,10 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 .qe-acts .del { color: var(--accent); border-color: var(--rule); background: transparent; }
 .qe-acts .del:hover { color: #fff; background: var(--accent); border-color: var(--accent); }
 .qedit form { display: block; }
-/* 列表基准的分页上距比网格窄一号(22px vs 30px) */
+/* 列表设计稿的分页上距比网格窄一号(22px vs 30px) */
 .table + .pager { margin-top: 22px; }
 
-/* ── 编辑页(《79》§4;数值逐字取自 后台编辑页-定稿-2026-09-29.html)── */
+/* ── 编辑页(既有规范;数值逐字取自设计稿)── */
 .page-editor .cols { grid-template-columns: minmax(0, 1fr) 296px; gap: 36px; }
 .ed-head { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .crumb { font-size: 12.5px; letter-spacing: .03em; color: var(--muted); }
@@ -764,7 +764,7 @@ a.sizechip.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
     border-bottom: 1px solid var(--rule);
     flex-wrap: wrap;
 }
-/* 段落样式:一颗跟着光标走的钮,点开是一层小菜单(《79》§4.6) */
+/* 段落样式:一颗跟着光标走的钮,点开是一层小菜单 */
 .bpick { position: relative; flex: 0 0 auto; }
 .bpick-tog {
     display: flex;
@@ -935,7 +935,7 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
 .cats { display: flex; flex-direction: column; gap: 11px; }
 .cats label { display: flex; align-items: center; gap: 9px; font-size: 13px; letter-spacing: .02em; cursor: pointer; }
 .cats .n { margin-left: auto; font-size: 11.5px; color: #74736F; }
-/* 分类盒头那条「管理分类与标签」(《87》管理屏的入口):只给有 category.manage 的人渲染。
+/* 分类盒头那条「管理分类与标签」(既有规范管理屏的入口):只给有 category.manage 的人渲染。
    h3 单开 flex,不动 .box h3 的公共度量 —— 只多一个右对齐的次要链接 */
 #box-cats h3 { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 #box-cats h3 .manage { font-family: var(--font-sans); font-size: 11.5px; letter-spacing: .03em; color: var(--muted); text-decoration: none; white-space: nowrap; }
@@ -1053,13 +1053,13 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
 
 .cf { display: flex; gap: 8px; margin-bottom: 9px; }
 .cf .mini-in { margin-top: 0; }
-/* 「时间」那格是可点的输入(《79》§4.7 第 1 盒):在 prow 里跟下拉同高,不吃 mini-in 的上边距 */
+/* 「时间」那格是可点的输入(既有规范盒):在 prow 里跟下拉同高,不吃 mini-in 的上边距 */
 .prow .mini-in { margin-top: 0; font-size: 12.5px; padding: 6px 10px; }
 
-/* 底部保存栏只在移动端出现(《79》§1:桌面端发布动作收在右栏「发布」盒内) */
+/* 底部保存栏只在移动端出现(桌面端发布动作收在右栏「发布」盒内) */
 .actionbar { display: none; }
 
-/* 自动保存与离开提示两条带(《79》§10.3):不进 .content,不随内容滚 */
+/* 自动保存与离开提示两条带:不进 .content,不随内容滚 */
 .autosave {
     flex: 0 0 auto;
     display: none;
@@ -1096,7 +1096,7 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
     cursor: pointer;
 }
 
-/* 媒体选择器:复用模态件,里面装媒体库那套网格(《79》§11.2) */
+/* 媒体选择器:复用模态件,里面装媒体库那套网格 */
 .dlg.wide { max-width: 900px; padding: 22px 24px 18px; }
 .dlg.wide .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 16px; }
 .dlg.wide .tag { font-size: 11px; letter-spacing: .2em; color: var(--muted); }
@@ -1106,7 +1106,7 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
 .pick-pager .info { font-size: 12.5px; letter-spacing: .03em; color: var(--muted); }
 .dlg.wide .foot { margin-top: 18px; }
 
-/* ── 上传队列(《80》§10.2)── */
+/* ── 上传队列── */
 .upq { padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .uq { display: grid; grid-template-columns: minmax(0, 1fr) 420px 76px; gap: 6px 16px; align-items: center; padding: 7px 0; }
 .uq .un { font-size: 12.5px; letter-spacing: .02em; color: var(--ink); min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1120,7 +1120,7 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
 .uq .ua { display: flex; justify-content: flex-end; }
 .btn-xs { font-size: 11.5px; letter-spacing: .04em; padding: 5px 12px; }
 
-/* ── 二次确认对话框(《80》§10.3)── */
+/* ── 二次确认对话框── */
 .scrim {
     position: fixed;
     inset: 0;
@@ -1171,7 +1171,7 @@ select.mini:focus { outline: 0; border-color: var(--accent); box-shadow: 0 0 0 3
 .btn-danger { background: var(--accent); color: var(--paper); border-color: var(--accent); }
 .btn-danger:hover { color: #fff; }
 
-/* 焦点可见(《41》§11) */
+/* 焦点可见 */
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, .cell:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -1191,8 +1191,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .skip:focus { left: 12px; top: 12px; }
 
 /*
- * ── 仪表盘(《77》§1–§4)──
- * 与《76》《80》同一套外壳,但本页没有保存栏:.content 直接铺满剩余高度。
+ * ── 仪表盘──
+ * 与既有规范同一套外壳,但本页没有保存栏:.content 直接铺满剩余高度。
  * .head / .cols / .meta 这几个名字在别的屏里另有数值,所以整段挂在 .page-dashboard 下 ——
  * 按屏作用域隔开,谁都不许"统一"掉谁(见上面第 199 行那段)。
  */
@@ -1222,7 +1222,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
 .page-dashboard .cols { margin-top: 38px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 32px; align-items: start; }
 .page-dashboard .panel { min-width: 0; }
-/* 插件卡片(《11》§7.9 admin/dashboard/collect):没有卡片时整段不渲染,不动基准 */
+/* 插件卡片(既有规范admin/dashboard/collect):没有卡片时整段不渲染,不动设计稿 */
 .page-dashboard .plugin-card { margin-top: 30px; }
 .page-dashboard .plugin-card .pbody { padding-top: 14px; font-size: 13px; line-height: 1.75; color: var(--ink-soft); }
 .page-dashboard .panel-hd {
@@ -1313,12 +1313,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .page-dashboard .hcell .s { margin-top: 5px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
 .page-dashboard .hcell .s.warn { color: var(--accent); }
 
-/* 空态件与《78》同一套(《77》§10.2):一句事实,不写鼓励语、不放插画 */
+/* 空态件与既有规范同一套:一句事实,不写鼓励语、不放插画 */
 .page-dashboard .empty { padding: 64px 0 66px; border-bottom: 1px solid var(--rule); text-align: center; }
 .page-dashboard .empty .et { font-size: 14px; letter-spacing: .03em; color: var(--muted); }
 .page-dashboard .empty .btn-clear { margin-top: 20px; font-size: 12.5px; padding: 9px 18px; letter-spacing: .05em; }
 
-/* 内核自己发的轻提示(清理缓存之后那句)。基准图里没有这一件,沿用 alert 那一档的度量,只换颜色 */
+/* 内核自己发的轻提示(清理缓存之后那句)。设计稿里没有这一件,沿用 alert 那一档的度量,只换颜色 */
 .inner > p[role="status"] {
     margin: 0 0 18px;
     font-size: 12.5px;
@@ -1328,13 +1328,13 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 /*
- * ── 文章列表(《78》§1–§5、§10)──
- * 这一屏与《80》媒体屏撞名撞得最狠(.table/.thead/.tr/.cell/.tabs/.filters/.search/
+ * ── 文章列表(既有规范)──
+ * 这一屏与既有规范媒体屏撞名撞得最狠(.table/.thead/.tr/.cell/.tabs/.filters/.search/
  * .pager/.pages/.cb/.qedit/.btn-sm 两边都有,数值还各不相同),所以整段一律挂在
  * .page-posts 下面 —— 列模板也在这里就地改一个值,不动 :root 那个。
  */
 .page-posts { --rowcols: 40px minmax(0, 2.4fr) 92px 116px 60px 96px 112px; }
-/* 页面列表(《86》§4):同壳,只把「分类 + 评论」两列换成「层级」一列 */
+/* 页面列表:同壳,只把「分类 + 评论」两列换成「层级」一列 */
 .page-pages { --rowcols: 40px minmax(0, 2.4fr) 92px 148px 96px 112px; }
 .page-pages .pager { margin-top: 26px; }
 .page-comments { --rowcols: 40px minmax(0, 2.8fr) 168px 104px 112px; }
@@ -1374,7 +1374,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     letter-spacing: .03em;
     color: var(--muted);
 }
-/* 行内操作:桌面默认藏着,悬停或展开快速编辑才浮现(《78》§4.5 硬指标) */
+/* 行内操作:桌面默认藏着,悬停或展开快速编辑才浮现(既有规范硬指标) */
 .page-posts .tr .ttl .acts { display: none; gap: 14px; margin-top: 7px; align-items: center; }
 .page-posts .tr:hover .ttl .acts, .page-posts .tr.qe .ttl .acts { display: flex; }
 .page-posts .tr .ttl .acts form { display: inline-flex; align-items: center; gap: 8px; }
@@ -1439,7 +1439,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     border-bottom: 1.6px solid #fff;
     transform: rotate(42deg);
 }
-/* 半选是横杠不是勾(《78》§10.2) */
+/* 半选是横杠不是勾 */
 .page-posts .cb.indet { background: var(--ink); border-color: var(--ink); }
 .page-posts .cb.indet::after {
     content: "";
@@ -1453,7 +1453,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .page-posts .cb:focus { outline: 0; box-shadow: 0 0 0 3px rgba(185, 106, 46, .13); }
 
 .page-posts .qedit { background: #fff; padding: 2px 0 20px 56px; border-bottom: 1px solid var(--rule); }
-/* 媒体屏的 .qe-grid/.qe-acts 自带 margin 与分隔线,《78》的快速编辑没有这几件,显式清零 */
+/* 媒体屏的 .qe-grid/.qe-acts 自带 margin 与分隔线,既有规范的快速编辑没有这几件,显式清零 */
 .page-posts .qe-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 330px)); gap: 14px 28px; margin-top: 0; }
 .page-posts .qe-f { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 10px; }
 .page-posts .qe-f > label { font-size: 12px; letter-spacing: .04em; color: var(--muted); }
@@ -1492,10 +1492,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .page-comments .pages a[aria-disabled="true"] { color: #74736F; pointer-events: none; }
 
 /*
- * ── 独立壳:登录 / 注册 / 找回 / 邮箱验证四页(《121》§1–§5、《122》§1–§5)──
+ * ── 独立壳:登录 / 注册 / 找回 / 邮箱验证四页──
  * 与上面的后台侧栏壳无关:无侧栏、无顶栏,整页铺满一屏(内容超高时整页滚动),只一张卡片 + 底部双版权条。
- * 数值抄 assets/ui/后台登录-定稿-2026-09-30.html 与 后台注册-定稿-2026-09-30.html;唯一例外是列的位置:
- * 定稿源件给 .auth 挂了 margin-right:140px,列中心因此比页面中心左偏 70px;2026-10-25 起取消,整列居中。
+ * 数值抄设计稿;唯一例外是列的位置:
+ * 设计稿给 .auth 挂了 margin-right:140px,列中心因此比页面中心左偏 70px;2026-10-25 起取消,整列居中。
  */
 .auth-body { height: 100%; }
 /* 100dvh 兜住手机浏览器地址栏收起/展开时视口高度的跳变(不支持的浏览器仍用上面的 100vh) */
@@ -1625,11 +1625,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .auth-body .pagefoot span { white-space: nowrap; }
 
-/* 登录锁定态:主句暖赭、说明行中灰(§6.2);注册页那条 .note 是中灰说明(《122》§5),两页同名不同色 */
+/* 登录锁定态:主句暖赭、说明行中灰(§6.2);注册页那条 .note 是中灰说明,两页同名不同色 */
 .auth-body .card .note { margin-top: 18px; font-size: 12px; line-height: 1.75; letter-spacing: .02em; color: var(--accent); }
 .auth-body .card .note .sub { display: block; margin-top: 5px; color: var(--muted); }
 
-/* 注册页差异(《122》§5):中区上移、字段更紧、多一段引导语与强度条 */
+/* 注册页差异:中区上移、字段更紧、多一段引导语与强度条 */
 .auth-register .mid { padding: 32px 22px 0; }
 .auth-register .pagefoot { padding: 20px 24px 28px; }
 .auth-register .back { margin-top: 20px; }
@@ -1643,14 +1643,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth-body .meter i { display: block; height: 2px; background: var(--accent); transition: width .18s ease; }
 .auth-body .meter-txt { flex: 0 0 auto; font-size: 11.5px; letter-spacing: .04em; color: var(--muted); }
 
-/* 注册关闭态:表单整块不渲染,一句中灰陈述,不加警示感(《122》§6.2) */
+/* 注册关闭态:表单整块不渲染,一句中灰陈述,不加警示感 */
 .auth-off .mid { padding: 56px 22px 0; }
 .auth-off .card { margin-top: 32px; padding: 30px 28px 30px; }
 .auth-off .back { margin-top: 24px; }
 .auth-off .pagefoot { padding: 26px 24px 34px; }
 .off { margin-top: 16px; font-size: 13px; line-height: 1.7; letter-spacing: .03em; color: var(--muted); }
 
-/* 找回密码 / 重置密码(《123》§5):同一件、本页节奏与另两页不同,照图不互相靠拢 */
+/* 找回密码 / 重置密码:同一件、本页节奏与另两页不同,照图不互相靠拢 */
 .auth-recover .mid { padding: 32px 22px 0; }
 .auth-recover .pagefoot { padding: 20px 24px 28px; }
 .auth-recover .back { margin-top: 20px; }
@@ -1675,7 +1675,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .auth .btn-ghost:hover { color: var(--ink); border-color: var(--rule-2); }
 a.btn { text-align: center; text-decoration: none; }
 
-/* ── 移动端(基准 390×844)── */
+/* ── 移动端(设计稿 390×844)── */
 @media (max-width: 768px) {
     .admin { grid-template-columns: 1fr; }
 
@@ -1786,7 +1786,7 @@ a.btn { text-align: center; text-decoration: none; }
     .detail .acts .btn, .qedit .acts .btn { flex: 1 1 auto; padding: 9px 14px; }
 
     .table { margin-top: 18px; }
-    /* 窄屏九列装不下,只留 复选框 / 预览 / 名称 / 大小(基准:列表视图-移动端-2026-10-01) */
+    /* 窄屏九列装不下,只留复选框 / 预览 / 名称 / 大小(设计稿) */
     .thead, .tr { gap: 9px; grid-template-columns: 20px 44px minmax(0, 1fr) 72px; }
     .h-type, .h-size, .h-up, .h-ref, .h-ops { display: none; }
     .tr .pv { width: 44px; height: 33px; }
@@ -1803,7 +1803,7 @@ a.btn { text-align: center; text-decoration: none; }
     .uq .why { grid-column: 1 / -1; }
     .uq .ua { grid-column: 2; grid-row: 1; }
 
-    /* 编辑页(数值取自 后台编辑页-移动端-定稿-2026-09-29.html) */
+    /* 编辑页(数值取自设计稿) */
     .page-editor .cols { display: block; margin-top: 0; }
     .ed-head { gap: 12px; }
     .crumb { font-size: 12px; }
@@ -1851,7 +1851,7 @@ a.btn { text-align: center; text-decoration: none; }
     }
     .actionbar .btn { flex: 1; padding: 11px 18px; font-size: 13px; letter-spacing: .05em; }
     .pub-acts { display: none; }
-    /* 选择器:移动首屏只画得下 2×2,其余两张在对话框内滚(《79》§11.3) */
+    /* 选择器:移动首屏只画得下 2×2,其余两张在对话框内滚 */
     .scrim { padding: 0 14px; }
     .dlg.wide { max-width: 100%; padding: 18px 16px 14px; }
     .dlg.wide .tag { font-size: 10.5px; }
@@ -1868,7 +1868,7 @@ a.btn { text-align: center; text-decoration: none; }
     .pick-pager .info { font-size: 11.5px; }
     .pages a { min-width: 28px; height: 28px; padding: 0 7px; font-size: 12px; }
 
-    /* 独立壳移动态(《121》§5.1、《122》§5.1):列回到页面正中,字号按基准降一档 */
+    /* 独立壳移动态:列回到页面正中,字号按设计稿降一档 */
     .auth-body .mid { padding: 14px 22px 0; }
     .auth-body .auth { width: 100%; max-width: 340px; }
     .auth-body .mark { font-size: 24px; }
@@ -1901,13 +1901,13 @@ a.btn { text-align: center; text-decoration: none; }
     .auth-register .meter-txt { font-size: 11px; letter-spacing: .03em; }
     .auth-register .btn { margin-top: 16px; }
 
-    /* 找回密码 / 重置的移动节奏(《123》§5.1);三态未出移动基准,只有默认态能验收 */
+    /* 找回密码 / 重置的移动节奏;三态未出移动设计稿,只有默认态能验收 */
     .auth-recover .lede { margin-top: 9px; font-size: 12px; line-height: 1.7; }
     .auth-recover .fld { margin-top: 18px; }
     .auth-recover .btn { margin-top: 18px; letter-spacing: .1em; }
     .auth-recover form .btn { margin-top: 18px; }
 
-    /* 仪表盘移动态(《77》§5):概况 2×2、双栏堆叠、健康两列(h1 / .lede / .btn 已由上面通用段接住) */
+    /* 仪表盘移动态:概况 2×2、双栏堆叠、健康两列(h1 / .lede / .btn 已由上面通用段接住) */
     .page-dashboard .quick { margin-top: 20px; gap: 9px; }
     .page-dashboard .stats { margin-top: 26px; grid-template-columns: 1fr 1fr; gap: 12px; }
     .page-dashboard .stat { padding: 16px 17px; gap: 7px; }
@@ -1938,7 +1938,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-dashboard .hcell .v { margin-top: 7px; font-size: 13.5px; }
     .page-dashboard .hcell .s { margin-top: 4px; font-size: 11px; }
 
-    /* 文章列表移动态(《78》§5):表格降卡片、状态前置、操作常显、筛选分行、新建通栏 */
+    /* 文章列表移动态:表格降卡片、状态前置、操作常显、筛选分行、新建通栏 */
     .page-posts .head { display: block; }
     .page-posts .head .acts { display: block; }
     .page-posts .head .acts .manage { display: inline-block; }
@@ -1975,7 +1975,7 @@ a.btn { text-align: center; text-decoration: none; }
         color: var(--muted);
     }
     .page-posts .tr .mmeta .sep { color: #D5D2CB; }
-    /* 页面的别名在移动端另起一行(《86》§5);文章屏没有这一件,不受影响 */
+    /* 页面的别名在移动端另起一行;文章屏没有这一件,不受影响 */
     .page-posts .tr .lvl { display: block; margin-top: 5px; font-size: 11px; letter-spacing: .02em; color: var(--muted); }
     .page-posts .tr .ttl .acts { display: flex; margin-top: 9px; gap: 16px; }
     .page-posts .tr .ttl .acts a, .page-posts .tr .ttl .acts button { font-size: 11.5px; }
@@ -1990,7 +1990,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-posts .bulk .count, .page-comments .bulk .count { font-size: 11.5px; }
 }
 
-/* ── 评论管理行(后台评论管理-定稿-2026-09-30)── */
+/* ── 评论管理行(设计稿)── */
 .page-comments .tr { align-items: flex-start; }
 .page-comments .tr .body { min-width: 0; }
 .page-comments .tr .body .q { font-family: var(--font-serif); font-size: 14.5px; letter-spacing: .01em; line-height: 1.6; }
@@ -1998,7 +1998,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-comments .tr .body .sub .sep { color: #D5D2CB; }
 /* 移动端卡片的两行(状态前置 + 作者行)只在窄屏出现,桌面这五列已经带出同样信息 */
 .page-comments .tr .mmeta, .page-comments .tr .mwho { display: none; }
-/* 行内操作(《82》§6):纯文字钮 —— summary 与 button 同款复位;点击区靠 pad/负 margin 撑大,视觉间距仍是原来的 14px。
+/* 行内操作:纯文字钮 —— summary 与 button 同款复位;点击区靠 pad/负 margin 撑大,视觉间距仍是原来的 14px。
    注:R56/R57 判的「安卓系统外观(框贴着字)」是误诊,真根因 = details 的 .ed 类名撞上编辑页编辑器壳(见下方复位) */
 .page-comments .tr .body .acts { display: none; gap: 14px; margin-top: 9px; align-items: center; flex-wrap: wrap; }
 .page-comments .tr:hover .body .acts { display: flex; }
@@ -2025,7 +2025,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-comments .tr .body .acts button:hover,
 .page-comments .tr .body .acts summary:hover { color: var(--ink); }
 .page-comments .tr .body .acts button.danger:hover { color: var(--accent); }
-/* 行内「回复 / 编辑」(《82》§6):summary 长成同级文字钮,展开后整行让给文本框 */
+/* 行内「回复 / 编辑」:summary 长成同级文字钮,展开后整行让给文本框 */
 /* details 的类名 ed 与编辑页编辑器容器撞名(.ed = 白底+描边+圆角壳,移动端还带 margin-top:18px),
    不复位的话行内钮被连壳画成「贴字小框」——整壳复位,只留布局 */
 .page-comments .tr .body .acts details.ed { background: none; border: 0; border-radius: 0; overflow: visible; margin: 0; }
@@ -2041,7 +2041,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-comments .tr .body .acts details .edb:hover { background: var(--ink-soft, #2A2B2E); color: var(--paper); }
 .page-comments .tr .cell .who { display: block; color: var(--ink); }
 .page-comments .tr .cell .mail { display: block; margin-top: 5px; font-size: 11.5px; color: #A9A7A1; }
-/* 评论基准图(09-30)的复选框带 3px 上边距,表头因此比文章基准图(09-29)高 3px;两张图各自为准 */
+/* 评论设计稿(09-30)的复选框带 3px 上边距,表头因此比文章设计稿(09-29)高 3px;两张图各自为准 */
 .page-comments .thead .cb { margin-top: 3px; }
 /* 表体行同一口径:行是 grid 顶对齐,而标题首行文字的内容盒比框顶低 3px(行高 1.6 的余白),
    不补的话复选框看着比标题高一截 */
@@ -2053,7 +2053,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-comments .st.trash { color: var(--muted); }
 .page-comments .st.trash i { background: #C9C6BF; }
 
-/* ── 外观页(后台主题-定稿-2026-09-30)── */
+/* ── 外观页(设计稿)── */
 .page-appearance .grid { margin-top: 26px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .page-appearance .tcard { display: grid; grid-template-columns: 1fr; grid-template-rows: auto 1fr; background: #fff; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; transition: border-color .18s ease; }
 .page-appearance .tcard.on { border-color: var(--accent); }
@@ -2076,7 +2076,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-appearance .note { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 12px; line-height: 1.75; color: var(--muted); max-width: 760px; }
 .page-appearance .upf { flex: 0 0 auto; }
 
-/* ── 主题设置 = 主题配置器(后台主题设置-定稿-2026-09-30,《91》§4/§5)──
+/* ── 主题设置 = 主题配置器(设计稿,既有规范/§5)──
    整段挂在 .theme-settings 下;保存栏在 .inner 之外(整页不滚的固定件),单独写。 */
 .theme-settings .ctx { margin-top: 10px; font-size: 12.5px; letter-spacing: .02em; color: var(--muted); }
 .theme-settings .ctx b { color: var(--ink); font-weight: 400; }
@@ -2147,7 +2147,7 @@ a.btn { text-align: center; text-decoration: none; }
 .theme-settings .radd { align-self: flex-start; margin-top: 4px; }
 .theme-settings textarea.codebox { font-family: Consolas, Menlo, monospace; font-size: 12px; line-height: 1.7; resize: vertical; }
 
-/* 校验错误态:只用暖赭,不引入红色(《品牌视觉规格》§2) */
+/* 校验错误态:只用暖赭,不引入红色 */
 .theme-settings .field.err input, .theme-settings .field.err select, .theme-settings .field.err textarea { border-color: var(--accent); }
 .theme-settings .errtx { margin-top: 8px; font-size: 12px; line-height: 1.65; color: var(--accent); }
 /* 校验汇总条:左边说几处错、右边是「跳到第一个错误」,无脚本时锚点也成立 */
@@ -2188,7 +2188,7 @@ a.btn { text-align: center; text-decoration: none; }
 /* 右栏「实时预览」已在 2026-10-25 整块撤掉(字段区通栏,见上方 .theme-settings .split);
    原 .pvw / .frame / .pv-lock / .skel 一套样式与手机端的隐藏规则一并删除,别再往回加 */
 
-/* ── 底部保存栏(《76》§5.7、《91》§5.6):flex 占位,不随内容滚 ── */
+/* ── 底部保存栏:flex 占位,不随内容滚 ── */
 .savebar { position: relative; flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px 40px; background: var(--paper); border-top: 1px solid var(--rule); box-shadow: 0 -1px 0 rgba(27, 28, 30, .02); }
 .savebar .status { font-size: 12.5px; letter-spacing: .03em; color: var(--muted); }
 .savebar .status b { color: var(--ink); font-weight: 500; }
@@ -2200,7 +2200,7 @@ a.btn { text-align: center; text-decoration: none; }
 .savebar .rsc p { font-size: 12.5px; line-height: 1.7; color: var(--muted); }
 .savebar .rsc form { margin-top: 10px; display: flex; align-items: center; gap: 12px; }
 
-/* ── 工具页 = 备份与恢复(后台备份与恢复-定稿-2026-09-30,《109》§4/§5)── */
+/* ── 工具页 = 备份与恢复(设计稿,既有规范/§5)── */
 .page-tools .split { margin-top: 24px; display: grid; grid-template-columns: 372px minmax(0, 1fr); gap: 44px; align-items: start; }
 .page-tools .col h2 { font-family: var(--font-serif); font-size: 19px; font-weight: 400; letter-spacing: .02em; }
 .page-tools .col .gdesc { margin-top: 7px; font-size: 12.5px; line-height: 1.7; color: var(--muted); }
@@ -2244,7 +2244,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-tools .btn-warn { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
 .page-tools .btn-warn:hover { background: var(--accent); color: #fff; }
 
-/* 远端凭据对话框(《109》§12,基准 后台备份与恢复-远端凭据-2026-10-03;模态件照《品牌视觉规格》§4.7) */
+/* 远端凭据对话框(设计稿;模态件照既有规范) */
 .page-tools .f .hint .inline { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--rule); white-space: nowrap; transition: color .18s ease, border-color .18s ease; }
 .page-tools .f .hint .inline:hover { color: var(--accent); border-color: var(--accent); }
 .dlg.remote { max-height: calc(100vh - 56px); overflow-y: auto; }
@@ -2267,7 +2267,7 @@ a.btn { text-align: center; text-decoration: none; }
 .dlg.remote .foot button.danger { background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--font-sans); font-size: 12.5px; letter-spacing: .03em; color: var(--muted); transition: color .18s ease; }
 .dlg.remote .foot button.danger:hover { color: var(--accent); }
 
-/* 外观页移动态(后台主题-移动端-定稿-2026-09-30):卡片单列、操作条从悬浮变常显。
+/* 外观页移动态(设计稿):卡片单列、操作条从悬浮变常显。
    写在桌面段之后 —— 同名同权重,靠源序压过上面的桌面规则。 */
 @media (max-width: 768px) {
     .page-appearance .tabs { display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; white-space: nowrap; }
@@ -2287,7 +2287,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-appearance .tcard .meta .par { margin-top: 7px; padding-top: 0; border-top: 0; font-size: 11px; }
     .page-appearance .note { margin-top: 20px; padding-top: 14px; font-size: 11px; line-height: 1.7; }
 
-    /* 工具页移动态(《109》§4/§6 @mobile):两栏改单列;列表由表格改卡片流,表头五列消失 */
+    /* 工具页移动态(既有规范/§6 @mobile):两栏改单列;列表由表格改卡片流,表头五列消失 */
     .page-tools .split { grid-template-columns: minmax(0, 1fr); gap: 26px; }
     .page-tools .lhead { display: none; }
     .page-tools .lrow { display: block; padding: 13px 0; }
@@ -2307,7 +2307,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-tools .cbtns .btn, .page-tools .cbtns form { flex: 1 1 0; }
     .page-tools .cbtns .btn { justify-content: center; }
 
-    /* 评论屏移动态(《82》§5):五列降卡片 —— 状态前置一行 + 作者一行;操作常显,危险项直接暖赭 */
+    /* 评论屏移动态:五列降卡片 —— 状态前置一行 + 作者一行;操作常显,危险项直接暖赭 */
     .page-comments .tr > .cell, .page-comments .tr > span:not(:first-child) { display: none; }
     .page-comments .tr .body .sub { display: none; }
     .page-comments .tr .mmeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 6px; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
@@ -2319,7 +2319,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-comments .tr .body .acts button.danger { color: var(--accent); }
     .page-comments .tr .body .acts details textarea { min-height: 72px; margin-top: 9px; }
 
-    /* 主题设置移动态(后台主题设置-移动端-定稿-2026-09-30):字段单列、导入导出并排通栏、保存栏仍固定底部。
+    /* 主题设置移动态(设计稿):字段单列、导入导出并排通栏、保存栏仍固定底部。
        原「手机不出预览」那几条随预览一起撤了(2026-10-25) */
     .theme-settings .ctx { margin-top: 8px; font-size: 11.5px; }
     .theme-settings .head .btns { margin-top: 16px; display: flex; gap: 9px; }
@@ -2365,7 +2365,7 @@ a.btn { text-align: center; text-decoration: none; }
 }
 
 
-/* ── 个人资料(《84》,基准 后台个人资料-定稿-2026-09-30)── */
+/* ── 个人资料(设计稿)── */
 .page-profile .form { max-width: 780px; padding-bottom: 12px; }
 .page-profile .group { padding-top: 34px; }
 .page-profile .group h2 { font-family: var(--font-serif); font-size: 19px; font-weight: 400; letter-spacing: .02em; }
@@ -2426,10 +2426,10 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar-profile .status .d { display: none; }
 }
 
-/* 个人资料的基准给内容区收了底距(桌面 24 / 移动 24);:has 收在页面级,不动别的屏的外壳数值 */
+/* 个人资料的设计稿给内容区收了底距(桌面 24 / 移动 24);:has 收在页面级,不动别的屏的外壳数值 */
 .content:has(> .inner.page-profile) { padding-bottom: 24px; }
 
-/* ── 日志查看器(《112》§5;基准 后台日志查看器-定稿-2026-09-30 / 移动端)── */
+/* ── 日志查看器(既有规范;设计稿设计稿 / 移动端)── */
 .page-logs .head .tx { max-width: 700px; }
 .page-logs .tabs { gap: 24px; }
 .page-logs .tabs .ch { font-family: var(--font-mono); font-size: 12.5px; letter-spacing: 0; }
@@ -2521,7 +2521,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-logs .pages .gap { padding: 0; }
 }
 
-/* ── 站点健康(《111》§5/§6;基准 后台站点健康-定稿-2026-09-30 / 移动端)── */
+/* ── 站点健康(既有规范/§6;设计稿设计稿 / 移动端)── */
 /* ---------- 还没检测过的空态(2026-10-17:健康屏改成"按了才测") ---------- */
 .page-health .hv-empty { margin-top: 26px; padding: 46px 32px; border: 1px solid var(--rule); border-radius: 10px; background: #fff; text-align: center; }
 .page-health .hv-empty .et { font-family: var(--font-serif); font-size: 19px; letter-spacing: .02em; color: var(--ink); }
@@ -2530,7 +2530,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-health .hv-empty .btn:hover { opacity: .85; color: var(--paper); }
 .page-health .head .tx { max-width: 760px; }
 
-/* 基准给这一屏的移动态收了底距(28;桌面 48 沿用外壳);:has 收在页面级,不动别的屏的外壳数值 */
+/* 设计稿给这一屏的移动态收了底距(28;桌面 48 沿用外壳);:has 收在页面级,不动别的屏的外壳数值 */
 @media (max-width: 768px) {
     .content:has(> .inner.page-health) { padding-bottom: 28px; }
 }
@@ -2587,7 +2587,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-health .group.g-d .fx.none { color: #C9C6BF; }
 
 @media (max-width: 1180px) { /* 2026-10-17:健康页五列在 769–1180 会被挤成竖排(「当前值」列塌掉),这一档就换成堆叠版 */
-    /* 页头重排:eyebrow+h1 与按钮同排、lede 全宽(基准 .hwrap + 独立 .lede;单 DOM 用网格等效)。
+    /* 页头重排:eyebrow+h1 与按钮同排、lede 全宽(设计稿 .hwrap + 独立 .lede;单 DOM 用网格等效)。
        桌面 .head 的 gap:24px 在网格里会变行距,这里收掉 —— 行距只走 h1/lede 自己的上边距 */
     .page-health .head { display: grid; grid-template-columns: minmax(0, 1fr) auto; row-gap: 0; column-gap: 12px; }
     .page-health .head .tx { display: contents; }
@@ -2626,8 +2626,8 @@ a.btn { text-align: center; text-decoration: none; }
     .page-health .l3 a.warn { color: var(--accent); }
 }
 
-/* ── 用户新建与编辑(《106》,基准 后台用户新建与编辑-定稿-2026-09-30)──
-   表单骨架与《84》《76》同一套数值;本页新增件三个:.metaline / .caps / .meter */
+/* ── 用户新建与编辑(设计稿)──
+   表单骨架与既有规范同一套数值;本页新增件三个:.metaline / .caps / .meter */
 .page-user-edit .head { display: block; max-width: 780px; }
 .page-user-edit .metaline { margin-top: 14px; font-size: 12.5px; letter-spacing: .03em; color: var(--muted); }
 .page-user-edit .metaline b { color: var(--ink); font-weight: 500; }
@@ -2678,7 +2678,7 @@ a.btn { text-align: center; text-decoration: none; }
 
 .page-user-edit .switch { gap: 12px; padding-top: 7px; color: var(--muted); }
 
-/* 本页基准给内容区收的底距:桌面 40、移动 24(媒体块在后,移动值压桌面值) */
+/* 本页设计稿给内容区收的底距:桌面 40、移动 24(媒体块在后,移动值压桌面值) */
 .content:has(> .inner.page-user-edit) { padding-bottom: 40px; }
 
 @media (max-width: 768px) {
@@ -2709,10 +2709,10 @@ a.btn { text-align: center; text-decoration: none; }
 }
 
 /*
- * ── 分类与标签(《87》,基准 后台分类与标签-定稿桌面分类态 / 标签态 / 移动端)──
+ * ── 分类与标签(后台分类与标签-设计稿桌面分类态 / 标签态 / 移动端)──
  * 桌面:左表单 328 + 右列表;移动:单列堆叠。两端各挂一份、CSS 显隐,行底发丝线各认各的。
- * 移动端添加按钮的 #F0F0F0 底是照移动基准的采样值 —— 源件漏了 .btn-primary 的移动定义
- * (渲染落回 UA 默认按钮底色),图即基准,照图落样式。
+ * 移动端添加按钮的 #F0F0F0 底是照移动设计稿的采样值 —— 源件漏了 .btn-primary 的移动定义
+ * (渲染落回 UA 默认按钮底色),图即设计稿,照图落样式。
  * 全局 .add(编辑器屏的"添加一项"文字链)是不带作用域的,会把 .btn 砸掉一半,
  * 这里把按钮的属性整套写回。
  */
@@ -2754,7 +2754,7 @@ a.btn { text-align: center; text-decoration: none; }
     padding-right: 34px;
 }
 .page-categories .hint { margin-top: 7px; font-size: 11.5px; line-height: 1.6; color: var(--muted); }
-/* 地址片段照源件:字号随文、颜色随 hint(基准图上它比正文深是错觉,采样就是 muted) */
+/* 地址片段照源件:字号随文、颜色随 hint(设计稿上它比正文深是错觉,采样就是 muted) */
 .page-categories .hint code { font-family: var(--font-mono); color: var(--muted); }
 .page-categories .btn.add {
     display: inline-flex;
@@ -2835,7 +2835,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-categories .mrow .acts a { background: none; border: 0; padding: 0; font-family: var(--font-sans); font-size: 11.5px; color: var(--muted); text-decoration: none; }
     .page-categories .mrow .acts a.del { color: var(--accent); }
 
-    /* 添加按钮:源件漏了 .btn-primary 的移动定义,基准图为 UA 默认渲染 —— 照图:浅灰底 + 黑字 */
+    /* 添加按钮:源件漏了 .btn-primary 的移动定义,设计稿为 UA 默认渲染 —— 照图:浅灰底 + 黑字 */
     .page-categories .btn.add {
         margin-top: 16px;
         width: 100%;
@@ -2853,7 +2853,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-categories .btn.add-cancel { margin-top: 10px; margin-left: 0; width: 100%; justify-content: center; }
 }
 
-/* ── 角色能力矩阵(《105》§5/§6;基准 后台角色能力矩阵-定稿-2026-09-30 / 移动端)── */
+/* ── 角色能力矩阵(既有规范/§6;设计稿设计稿 / 移动端)── */
 .page-roles .head .tx { max-width: 660px; }
 .page-roles .lede a { color: var(--ink); text-decoration: none; transition: color .18s ease; }
 .page-roles .lede a:hover { color: var(--accent); }
@@ -2875,7 +2875,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-roles .hcap { font-size: 11.5px; letter-spacing: .08em; color: var(--muted); }
 .page-roles .rc { text-align: center; }
 .page-roles .rc .zh { font-size: 12.5px; letter-spacing: .02em; color: var(--ink); }
-/* slug 会被列表屏的全站 .thead span 规则带上 .08em 字距;基准里是正常字距,按图收平 */
+/* slug 会被列表屏的全站 .thead span 规则带上 .08em 字距;设计稿里是正常字距,按图收平 */
 .page-roles .rc .en { font-family: var(--font-mono); font-size: 10.5px; color: #A9A7A1; margin-left: 5px; letter-spacing: 0; }
 .page-roles .rc .se { margin-top: 4px; font-size: 10.5px; line-height: 1.45; color: var(--muted); }
 .page-roles .mgroup { display: flex; align-items: baseline; gap: 10px; padding: 9px 0 6px; }
@@ -2892,7 +2892,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-roles .foot { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 12px; line-height: 1.7; color: var(--muted); }
 .page-roles .foot b { font-weight: 500; color: var(--ink); }
 .page-roles .foot code { font-family: var(--font-mono); font-size: 11.5px; color: var(--ink); }
-/* 源件移动端漏了 .foot a;实装补上(《105》§11-9) */
+/* 源件移动端漏了 .foot a;实装补上 */
 .page-roles .foot a { color: var(--ink); text-decoration: none; transition: color .18s ease; }
 .page-roles .foot a:hover { color: var(--accent); }
 
@@ -2908,7 +2908,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-roles .thead, .page-roles .mrow { gap: 6px; }
     .page-roles .thead { padding: 0 0 8px; }
     .page-roles .hcap { font-size: 10.5px; }
-    /* 桌面 .rc 的居中会把竖排字形推到列中段;基准的列里没有居中,字形贴顶 */
+    /* 桌面 .rc 的居中会把竖排字形推到列中段;设计稿的列里没有居中,字形贴顶 */
     .page-roles .rc { height: 52px; display: flex; justify-content: center; text-align: start; }
     /* 竖排的只有 .zh;桌面 .zh 规则级同,靠后胜出,别让它把 12.5px 字号带进移动 */
     .page-roles .rc span, .page-roles .rc .zh { writing-mode: vertical-rl; font-size: 10px; letter-spacing: .08em; color: var(--ink); }
@@ -2928,7 +2928,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-roles .foot code { font-size: 10.5px; }
 }
 
-/* ── 修订版本比对(《113》§5/§6;基准 后台修订版本比对-定稿-2026-09-30 / 移动端)──
+/* ── 修订版本比对(既有规范/§6;设计稿设计稿 / 移动端)──
    两列对照:左「选中修订」右「当前版本」;下拉、图例、行内 ins/del 标记与保存栏,
    全挂 .page-revisions 与 .savebar-revisions 下。 */
 
@@ -2991,7 +2991,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-revisions .txt del { text-decoration: line-through; text-decoration-color: var(--muted); color: var(--muted); }
 .page-revisions .gapline { margin-top: 18px; font-size: 11.5px; letter-spacing: .03em; color: #74736F; }
 
-/* 空态(无基准图,照同类屏兜底;《113》§11 已记「空态缺图」) */
+/* 空态(无设计稿,照同类屏兜底;既有规范已记「空态缺图」) */
 .page-revisions .empty { margin-top: 26px; padding: 64px 0 66px; border-bottom: 1px solid var(--rule); text-align: center; font-size: 14px; letter-spacing: .03em; color: var(--muted); }
 
 /* 保存栏(在外壳里,按 .savebar-revisions 挂) */
@@ -3034,7 +3034,7 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar-revisions .btn .m { display: inline; }
 }
 
-/* ── 菜单编辑器(《107》§5/§6;基准 后台菜单编辑器-定稿 / 移动端)──
+/* ── 菜单编辑器(既有规范/§6;设计稿后台菜单编辑器-设计稿 / 移动端)──
    桌面与移动共用同一份 DOM,差异全在段末 @media;全挂 .page-menus 与 .savebar-menus 下。 */
 
 /* ── 菜单位选择条 ── */
@@ -3155,7 +3155,7 @@ a.btn { text-align: center; text-decoration: none; }
 
 /* ── 右栏 · 当前菜单 ── */
 .page-menus .tree { --mcols: 18px minmax(0, 1fr) minmax(0, 1.35fr) 52px; }
-/* 「链接到」可选列:?pick=链接 时多一列(基准无此态,列宽自定) */
+/* 「链接到」可选列:?pick=链接时多一列(设计稿无此态,列宽自定) */
 .page-menus .tree.pick { --mcols: 18px minmax(0, 1fr) 132px minmax(0, 1.35fr) 52px; }
 
 .page-menus .tree .thd { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
@@ -3308,7 +3308,7 @@ a.btn { text-align: center; text-decoration: none; }
 /* 左栏某一组还没有内容时的替代文案 */
 .page-menus .pempty { padding: 6px 0 2px; font-size: 12px; letter-spacing: .03em; color: var(--muted); }
 
-/* ── 后台导入与导出(《110》§1–§11;基准 后台导入与导出-定稿-2026-09-30 / 移动端)──
+/* ── 后台导入与导出(既有规范;设计稿设计稿 / 移动端)──
    工具组下一屏,左右两栏:左「导出」右「导入」。数值逐条取自两份源件,
    只写本屏新类(.split / .col / .fields / .f / .radios / .drop / .picked / .st / .prog / .fails),
    复用全站的 .head / .eyebrow / .lede;不动 :root,也不碰 sidebar / topbar。 */
@@ -3392,7 +3392,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-import-export .st.ok { color: var(--ink); }
 .page-import-export .st.ok i { background: var(--ink); }
 
-/* 进度与失败行(《110》§5/§7;进行中态 POST 后按真实数据渲染) */
+/* 进度与失败行(既有规范/§7;进行中态 POST 后按真实数据渲染) */
 .page-import-export .prog { margin-top: 14px; }
 .page-import-export .prog .pt { display: flex; align-items: baseline; justify-content: space-between; font-size: 11.5px; letter-spacing: .03em; color: var(--muted); }
 .page-import-export .prog .pt b { color: var(--ink); font-weight: 500; font-variant-numeric: tabular-nums; }
@@ -3434,7 +3434,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-import-export .done .dl { flex: 0 0 auto; padding: 6px 14px; font-size: 12px; }
 
 @media (max-width: 768px) {
-    /* 移动态(《110》§6):两栏改单列、单选两列、已选文件与失败行折行 */
+    /* 移动态:两栏改单列、单选两列、已选文件与失败行折行 */
     .page-import-export .split { margin-top: 0; grid-template-columns: minmax(0, 1fr); gap: 0; }
     .page-import-export section { margin-top: 26px; }
     .page-import-export .col h2 { font-size: 17px; }
@@ -3477,13 +3477,13 @@ a.btn { text-align: center; text-decoration: none; }
     .page-import-export .foot { margin-top: 12px; font-size: 11px; }
 }
 
-/* ── 插件列表页:页头「＋ 上传插件」走离线上传 zip(《92》§8),
+/* ── 插件列表页:页头「＋ 上传插件」走离线上传 zip,
    表单契约同主题屏(data-progress + .upbar + .uperr)。
    插件市场整屏已按作者决定暂撤(2026-10-15):.page-market 旧样式随屏一并摘下,
-   设计留档见 docs/70-界面/92-后台插件市场实现规格.md。 ── */
+   设计留档见设计稿 ── */
 .page-plugins .upf { flex: 0 0 auto; }
 
-/* ── 内核更新(《93》§5/§12;基准 后台更新-定稿 / 后台更新-体检未过态 / 移动端)──
+/* ── 内核更新(既有规范/§12;设计稿后台更新-设计稿 / 后台更新-体检未过态 / 移动端)──
    版本与通道两卡 + 七项体检 + 九步进度;全挂 .page-update 下。 */
 
 /* ── 桌面 ── */
@@ -3592,7 +3592,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-update .upd-bk:hover span { color: var(--ink); }
 .page-update .upd-bk.m { display: none; }
 
-/* 更新日志(折叠,基准展开) */
+/* 更新日志(折叠,设计稿展开) */
 .page-update .fold { margin-top: 16px; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
 .page-update .fold-h { display: flex; align-items: center; gap: 11px; width: 100%; background: none; border: 0; padding: 16px 0; cursor: pointer; text-align: left; font-family: var(--font-sans); }
 .page-update .fold-h .chev { width: 6px; height: 6px; border-right: 1.4px solid var(--muted); border-bottom: 1.4px solid var(--muted); transform: rotate(45deg); flex: 0 0 auto; transition: transform .2s ease; }
@@ -3663,7 +3663,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-update .rb .btn { margin-top: 12px; width: 100%; justify-content: center; }
 }
 
-/* ══ 用户与插件两屏(《83》《85》):骨架用文章屏那一套,这里补栏宽与各屏小件 ══ */
+/* ══ 用户与插件两屏:骨架用文章屏那一套,这里补栏宽与各屏小件 ══ */
 .page-users { --rowcols: 64px minmax(0, 1.5fr) minmax(0, 2fr) 128px 96px; }
 .page-users .table { margin-top: 0; }
 .page-users .thead { padding: 12px 0; border-bottom: 1px solid var(--rule); }
@@ -3686,7 +3686,7 @@ a.btn { text-align: center; text-decoration: none; }
     letter-spacing: .03em;
     color: var(--muted);
 }
-/* 行内「编辑」:桌面悬停浮现(《83》§4.5),窄屏常显;灰字,悬停转墨 */
+/* 行内「编辑」:桌面悬停浮现,窄屏常显;灰字,悬停转墨 */
 .page-users .tr .who .acts { display: none; gap: 14px; margin-top: 7px; }
 .page-users .tr:hover .who .acts, .page-users .tr.qe .who .acts { display: flex; }
 .page-users .tr .who .acts a {
@@ -3705,7 +3705,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-users .tr .cell.num, .page-plugins .tr .cell.num { font-variant-numeric: tabular-nums; }
 .page-users .tr .cell.ink, .page-plugins .tr .cell.ink { color: var(--ink); }
 
-/* 角色标记:6px 方块,墨—灰—浅灰三档深浅(《83》§4.5),不用圆点、不引入新色 */
+/* 角色标记:6px 方块,墨—灰—浅灰三档深浅,不用圆点、不引入新色 */
 .role { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; letter-spacing: .02em; }
 .role i { width: 6px; height: 6px; flex: 0 0 auto; }
 .role.adm { color: var(--ink); } .role.adm i { background: var(--ink); }
@@ -3746,7 +3746,7 @@ a.btn { text-align: center; text-decoration: none; }
     /* 通用 .thead/.tr 的窄屏列模板是给文章屏的(20/44/1fr/72),这两屏列数不同,得用回自己的(否则列被压扁错位) */
     .page-users .thead, .page-users .tr { grid-template-columns: var(--rowcols); gap: 16px; min-width: 640px; }
     .page-plugins .thead, .page-plugins .tr { grid-template-columns: var(--rowcols); gap: 16px; min-width: 680px; }
-    /* 窄屏没有悬停一说:行内操作常显(《83》§5) */
+    /* 窄屏没有悬停一说:行内操作常显 */
     .page-users .tr .who .acts { display: flex; }
 }
 
@@ -3758,7 +3758,7 @@ a.btn { text-align: center; text-decoration: none; }
     background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%;
 }
 
-/* ══ 编辑器增补(《79》)══ */
+/* ══ 编辑器增补══ */
 /* 页面屏的地址行:与标题之间留出呼吸,别贴着标题下的发丝线(#R54 报障) */
 .slug-row { margin-top: 18px; }
 /* 地址格下那行:随敲随算的完整地址提示 */
@@ -3766,7 +3766,7 @@ a.btn { text-align: center; text-decoration: none; }
 /* 时间格:datetime-local 自带的内部件宽窄不一,收一收,跟旁边两个下拉同高 */
 .prow .mini-in[type="datetime-local"] { font-size: 12px; padding: 6px 8px; }
 .prow .mini-in[type="datetime-local"]::-webkit-calendar-picker-indicator { opacity: .45; cursor: pointer; }
-/* 移到回收站改走 POST 表单后,外形还得是链接那副样子(《79》§4.7) */
+/* 移到回收站改走 POST 表单后,外形还得是链接那副样子 */
 .pub-links .trash-row { display: inline-flex; }
 .pub-links button.del {
     padding: 0;
@@ -3778,7 +3778,7 @@ a.btn { text-align: center; text-decoration: none; }
     cursor: pointer;
 }
 @media (max-width: 768px) {
-    /* 窄屏:破坏性动作靠右,离「预览」远远的(《79》§5) */
+    /* 窄屏:破坏性动作靠右,离「预览」远远的 */
     .pub-links { align-items: center; }
     .pub-links .trash-row { margin-left: auto; }
 }
@@ -3833,7 +3833,7 @@ a.btn { text-align: center; text-decoration: none; }
 .pstage[hidden] { display: none; }
 
 /* ══ 择源框(#5)══ */
-/* 移动端不再单独压成三列小图:直接继承上面 @media 里 .dlg.wide .grid 的两列大图规则(《79》§11.3),勿再加回三列覆盖 */
+/* 移动端不再单独压成三列小图:直接继承上面 @media 里 .dlg.wide .grid 的两列大图规则,勿再加回三列覆盖 */
 
 /* 头像那只表单只能待在页尾(文件挤不进主表单):平时零高度,上传时浮起来报进度 */
 .page-profile #avatar-form { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 30; width: min(360px, calc(100vw - 48px)); }
@@ -3854,7 +3854,7 @@ a.btn { text-align: center; text-decoration: none; }
     box-shadow: 0 14px 30px rgba(27, 28, 30, .14);
 }
 
-/* ══ 浮窗提示(《76》§5.7)══ */
+/* ══ 浮窗提示══ */
 /* 全站唯一的一处消息提示:右下角浮着,不挤内容、不随滚动走。ok 走墨色左缘,err 走暖赭 */
 .toasts {
     position: fixed;
@@ -3900,7 +3900,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-tools .lrow .meta { display: block; margin-top: 6px; font-size: 11px; letter-spacing: .02em; color: var(--muted); font-variant-numeric: tabular-nums; }
     .page-tools .lrow .fn { word-break: break-all; }
 }
-/* ══ 后台设置(《76》)══ */
+/* ══ 后台设置══ */
 /* 版式与个人资料同源:页头 + 分组页签 + 分组表单 + 底部保存栏 */
 .page-settings .sec-tabs {
     display: flex;
@@ -3922,7 +3922,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-settings .sec-tabs a:hover { color: var(--ink); }
 .page-settings .sec-tabs a.active { color: var(--ink); border-bottom-color: var(--accent); }
 
-/* ---------- 二级导航(《41》§4)----------
+/* ---------- 二级导航----------
    外观组四屏(partials/appearance-nav.twig)、工具组四屏(partials/tools-nav.twig)、
    用户组两屏(partials/users-nav.twig)共用这一套 sec-tabs 观感,与「设置」页的分组页签同源。
    2026-10-16 补外观组;2026-10-17 补工具组与用户组 —— 此前样式只认 .page-settings 与外观组三屏,
@@ -4070,7 +4070,7 @@ a.btn { text-align: center; text-decoration: none; }
     .page-settings .sec-tabs::-webkit-scrollbar { display: none; }
     .page-settings .sec-tabs a { flex: 0 0 auto; }
 
-    /* 外观组二级导航(《41》§4):这四项在手机上一行放得下,等宽平分 —— 先前是左挤、右边空一大块(2026-10-16 作者报) */
+    /* 外观组二级导航:这四项在手机上一行放得下,等宽平分 —— 先前是左挤、右边空一大块(2026-10-16 作者报) */
     .page-appearance .sec-tabs, .page-menus .sec-tabs { margin-top: 22px; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
     .page-appearance .sec-tabs::-webkit-scrollbar, .page-menus .sec-tabs::-webkit-scrollbar { display: none; }
     .page-appearance .sec-tabs a, .page-menus .sec-tabs a,
@@ -4102,7 +4102,7 @@ a.btn { text-align: center; text-decoration: none; }
     .savebar-settings .btn .m { display: inline; }
 }
 
-/* ── 编辑页自定义字段与面板抽屉(《34A》§4 控件 / §5 落位)──
+/* ── 编辑页自定义字段与面板抽屉(既有规范控件 / §5 落位)──
    只复用既有令牌(--ink/--muted/--accent/--rule/--paper/--font-*),不新增颜色。 */
 .page-editor .more-cf { margin-left: auto; display: inline-flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .page-editor .more-cf .n { font-size: 11px; color: #74736F; font-variant-numeric: tabular-nums; }
@@ -4140,7 +4140,7 @@ a.btn { text-align: center; text-decoration: none; }
 .page-editor .cfj .cfrow .cfsub .mini-in, .page-editor .cfj .cfrow .cfsub select.mini, .page-editor .cfj .cfrow .cfsub .switch { margin-top: 0; }
 .page-editor .cfj .cfrow .lnk { flex: 0 0 auto; align-self: center; }
 .page-editor .cfj .add { align-self: flex-start; }
-/* 面板抽屉(《34A》§5:独立面板;真浮层,不是折叠盒) */
+/* 面板抽屉(独立面板;真浮层,不是折叠盒) */
 .drawer-scrim { position: fixed; inset: 0; background: rgba(27, 28, 30, .42); opacity: 0; visibility: hidden; transition: opacity .24s ease, visibility .24s; z-index: 45; }
 .drawer-scrim.open { opacity: 1; visibility: visible; }
 .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 92vw; background: var(--paper); border-left: 1px solid var(--rule); box-shadow: -18px 0 44px rgba(27, 28, 30, .14); transform: translateX(100%); transition: transform .24s ease; z-index: 46; display: flex; flex-direction: column; }
@@ -4152,7 +4152,7 @@ a.btn { text-align: center; text-decoration: none; }
 .drawer-b { flex: 1 1 auto; overflow-y: auto; padding: 20px 24px 32px; }
 .drawer-b .fld:first-child { margin-top: 0; }
 
-/* ── 插件「从 WordPress 迁移」(《12》§14)───────────────────────────
+/* ── 插件「从 WordPress 迁移」───────────────────────────
    整屏自己一个作用域(与 .page-health 同一套规矩):四步指示、消息行、两栏数据行、上传控件。
    数值与间距沿用后台设置页那套,免得两屏观感不一致。 */
 .page-wp-import .head .tx { max-width: 780px; }
@@ -4196,7 +4196,7 @@ a.btn { text-align: center; text-decoration: none; }
 }
 
 /* iOS 聚焦输入框时,字号 <16px 会强制放大整页(visual viewport zoom)。只对触摸横幅里的 iOS 抬到 16px,
-   桌面与安卓不动 —— 后台各屏字号都是定稿过的,普改会破坏排版。!important 用来压过 .search input 这类更具体的选择器 */
+   桌面与安卓不动 —— 后台各屏字号都是设计稿过的,普改会破坏排版。!important 用来压过 .search input 这类更具体的选择器 */
 @media (max-width: 1024px) {
     @supports (-webkit-touch-callout: none) {
         input:not([type=checkbox]):not([type=radio]):not([type=range]),

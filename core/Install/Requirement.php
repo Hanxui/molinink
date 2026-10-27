@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Install;
 
 /**
- * 一条环境检查结果。state=fail 会中止安装,warn 只提示(《42-安装向导》第 2 节)。
+ * 一条环境检查结果。state=fail 会中止安装,warn 只提示。
  */
 final class Requirement
 {

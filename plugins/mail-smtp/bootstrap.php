@@ -17,9 +17,9 @@ use Molin\Plugins\MailSmtp\Settings;
 use Molin\User\User;
 
 /*
- * SMTP 发信(《62》§2.4 mail.send 能力)。
+ * SMTP 发信(既有规范mail.send 能力)。
  *
- * 找回密码内核只签令牌、不发信(《32》§6.3 ②),签发后发 `user/lostpassword/after`(user, link)——
+ * 找回密码内核只签令牌、不发信(既有规范②),签发后发 `user/lostpassword/after`(user, link)——
  * 这个监听把它寄成真邮件。
  *
  * **2026-10-17:只在"真的发得出去"时才挂钩子。** 此前是无条件挂、回调里发现没配置再静默 return;
@@ -37,7 +37,7 @@ if ($mailer !== null) {
             $mailer->sendReset($user, $link);
             mail_smtp_clear_failure();
         } catch (Throwable $e) {
-            // 发信失败不能拖垮找回密码的页面;把实情留给日志(收件人地址会按《26》脱敏)
+            // 发信失败不能拖垮找回密码的页面;把实情留给日志(收件人地址会脱敏)
             Log::channel('plugin')->error('mail_smtp.send_failed', [
                 'to' => $user->email,
                 'error' => $e->getMessage(),
@@ -48,7 +48,7 @@ if ($mailer !== null) {
     }, 10, 2);
 
     /*
-     * 新评论通知(《31》§4 ⑨:入库后通知归插件)。评论一提交就触发,把后台 admin_email
+     * 新评论通知(既有规范⑨:入库后通知归插件)。评论一提交就触发,把后台 admin_email
      * (站长邮箱)接上 —— 此前它只存不用。发信失败也不拖垮评论提交页,实情进日志。
      * 入参只有 id 与 post_id,其余靠库补读。
      */

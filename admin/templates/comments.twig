@@ -1,7 +1,7 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  评论管理(《31》§3/§9;版式照 后台评论管理-定稿-2026-09-30)。
+  评论管理(既有规范/§9;版式照设计稿)。
   结构与文章列表同一套(.tabs/.filters/.bulk/.table/.pager),行内容是评论;样式挂 .page-comments。
 #}
 {% extends "layout.twig" %}
@@ -76,7 +76,7 @@
                 <div class="body">
                     <div class="q">{{ row.q }}</div>
                     <div class="sub"><span>《{{ row.post_title }}》</span><span class="sep">·</span><span>{{ row.when }}</span></div>
-                    {# 移动端卡片:状态前置 + 作者行(《82》§5);桌面隐藏 #}
+                    {# 移动端卡片:状态前置 + 作者行;桌面隐藏 #}
                     <div class="mmeta">
                         <span class="st {{ row.st_class }}"><i></i>{{ row.status_label }}</span>
                         <span class="sep">·</span><span>《{{ row.post_title }}》</span><span class="sep">·</span><span class="num">{{ row.when }}</span>
@@ -87,7 +87,7 @@
                             <form method="post" action="{{ row.approve_url }}"><input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}"><button type="submit">{{ __('通过') }}</button></form>
                         {% endif %}
 
-                        {# 行内「回复」「编辑」(《82》§6):零 JS,<details> 展开;正文与提交同一条白名单 #}
+                        {# 行内「回复」「编辑」:零 JS,<details> 展开;正文与提交同一条白名单 #}
                         {% if row.status in ['pending', 'approved'] %}
                             <details class="ed">
                                 <summary>{{ __('回复') }}</summary>

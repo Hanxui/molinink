@@ -13,7 +13,7 @@ namespace Molin\Admin;
 use Molin\Database\Database;
 
 /**
- * 评论列表查询:把筛选条件拼成一处,列表与计数共用同一份 WHERE(《57》第 5 节)。
+ * 评论列表查询:把筛选条件拼成一处,列表与计数共用同一份 WHERE。
  */
 final class CommentListQuery
 {

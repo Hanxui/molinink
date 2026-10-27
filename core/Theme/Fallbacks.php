@@ -13,7 +13,7 @@ namespace Molin\Theme;
 use Molin\Exception\ThemeException;
 
 /**
- * 模板回退顺序(《13-主题目录约定》第 3.3 节)。
+ * 模板回退顺序。
  *
  * 找不到就近的文件就依次向上游找,最终兜到 index.twig —— 主题只写它想改的那几个文件。
  * §3.3 未给 author / date / attachment 单独链条,此处按 §3 通则"就近 → 兜到 index"落地。
@@ -23,19 +23,19 @@ final class Fallbacks
     /** 页型 => 候选模板,顺序即优先级 */
     public const CHAINS = [
         'home' => ['front-page.twig', 'home.twig', 'index.twig'],
-        // 首页显示=静态页面(《76》§12.2):挑中的页面走独立模板,主题没做就退回普通页面壳
+        // 首页显示=静态页面:挑中的页面走独立模板,主题没做就退回普通页面壳
         'front-page' => ['front-page.twig', 'page.twig', 'index.twig'],
         'attachment' => ['attachment.twig', 'index.twig'],
         'single' => ['single-{type}-{slug}.twig', 'single-{type}.twig', 'single.twig', 'index.twig'],
-        // 自定义内容类型的归档列表(《34》§2.2):主题可给 `archive-{type}.twig` 单独接管,
+        // 自定义内容类型的归档列表:主题可给 `archive-{type}.twig` 单独接管,
         // 没有就用通用归档壳 `archive.twig`
         'archive' => ['archive-{type}.twig', 'archive.twig', 'index.twig'],
         'page' => ['page-{slug}.twig', 'page-{id}.twig', 'page.twig', 'index.twig'],
         'category' => ['category-{slug}.twig', 'category-{id}.twig', 'category.twig', 'archive.twig', 'index.twig'],
         'tag' => ['tag-{slug}.twig', 'tag-{id}.twig', 'tag.twig', 'archive.twig', 'index.twig'],
         'search' => ['search.twig', 'archive.twig', 'index.twig'],
-        // 列表片段(《23》第 4 节 list.fragment):只吐列表 + 分页,不含整页骨架。
-        // 契约要求每条链最终兜到 index.twig(《13》第 3.3 节);真缺 `list-fragment.twig` 时
+        // 列表片段(既有规范list.fragment):只吐列表 + 分页,不含整页骨架。
+        // 契约要求每条链最终兜到 index.twig;真缺 `list-fragment.twig` 时
         // 端点先一步明确 404(见 ListFragmentController),不会把整页当片段吐出去。
         'list-fragment' => ['list-fragment.twig', 'index.twig'],
         // 通知列表片段（站内通知侧栏）：只吐 <li> 列表，不含整页骨架

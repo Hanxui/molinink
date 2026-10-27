@@ -29,7 +29,7 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 评论端点(《25》§3.4):公开读、App 审核屏、作者回复、游客提交、实删。
+ * 评论端点:公开读、App 审核屏、作者回复、游客提交、实删。
  */
 final class CommentController extends ApiSupport
 {
@@ -178,7 +178,7 @@ final class CommentController extends ApiSupport
     }
 
     /**
-     * `POST /api/v1/comments/{id}/replies` —— 作者行内回复(《82》§6 口径:以当前用户身份直发已通过)。
+     * `POST /api/v1/comments/{id}/replies` —— 作者行内回复(既有规范口径:以当前用户身份直发已通过)。
      * 两级嵌套:回"回复"时挂回它所在的顶层楼层。
      */
     public function commentReply(Request $request, ?User $user, bool $viaSession, int $id): Response
@@ -238,8 +238,8 @@ final class CommentController extends ApiSupport
     }
 
     /**
-     * `POST /api/v1/posts/{id}/comments` —— 发评论(《25》§3.4,认证:—,游客可发)。
-     * 路径段 post_id 并进字段后交给提交流,与网页表单同源(《31》§4):频率、蜜罐、首评必审、
+     * `POST /api/v1/posts/{id}/comments` —— 发评论(既有规范认证:—,游客可发)。
+     * 路径段 post_id 并进字段后交给提交流,与网页表单同源:频率、蜜罐、首评必审、
      * comment/submit/* 钩子一条不落;带 Bearer / 会话身份时由提交流绑成昵称与邮箱。
      */
     public function commentSubmit(Request $request, ?User $user, bool $viaSession, int $postId): Response

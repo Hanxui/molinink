@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * 「记住我」的独立登录令牌(《61》第 2.7 节:用独立令牌、哈希存储,非明文密码)。
+ * 「记住我」的独立登录令牌(用独立令牌、哈希存储,非明文密码)。
  *
- * 2026-10-01 作者点头补这张表 —— 《21》第 2 节的表清单原本没有它,
- * 已按同一份改定登记进《21》。cookie 里给的是 selector:verifier,
+ * 2026-10-01 作者点头补这张表 —— 既有规范的表清单原本没有它,
+ * 已按同一份改定登记进既有规范。cookie 里给的是 selector:verifier,
  * 库里只存 selector 与 sha256(verifier):翻库翻不出可用的凭据,查行也不用比对明文。
  */
 final class AddUserTokensTable20261001140000 extends AbstractMigration

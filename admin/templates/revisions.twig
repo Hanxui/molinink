@@ -1,9 +1,9 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  修订版本比对(《113》,基准 后台修订版本比对-定稿)。
+  修订版本比对(后台修订版本比对-设计稿)。
   两列对着看:左「选中修订」、右「当前版本」。页头三件 + 金属行、一条比对选择条、
-  两列正文、一条底部保存栏。结构树见《113》§4;文案逐字照 §7。
+  两列正文、一条底部保存栏。结构树;文案逐字照 §7。
   正文 HTML 由 RevisionDiff 备好(已转义、已带 <ins>/<del>),模板只摆,不做比对。
 #}
 {% extends "layout.twig" %}
@@ -59,7 +59,7 @@
 {% endblock %}
 
 {% block savebar %}
-    {# 没有可恢复的版本就不摆这条动作栏(空态无基准,《113》§11-9 已记) #}
+    {# 没有可恢复的版本就不摆这条动作栏(空态无设计稿,既有规范已记) #}
     {% if has_any %}
     <footer class="savebar savebar-revisions">
         <div class="status"><span class="d">{{ __('恢复会改写当前正文。') }}<span class="warn">{{ __('这是敏感操作，点击后需再确认一次。') }}</span></span><span class="m">{{ __('恢复会改写当前正文，') }}<span class="warn">{{ __('需再确认一次。') }}</span></span></div>

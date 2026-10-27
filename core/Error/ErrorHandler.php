@@ -22,13 +22,13 @@ use Molin\Support\Performance\RequestSamples;
 use Throwable;
 
 /**
- * 未捕获错误的正门(《26》第 8 节):用户看到友好页,开发者拿到线索,攻击者什么都拿不到。
+ * 未捕获错误的正门:用户看到友好页,开发者拿到线索,攻击者什么都拿不到。
  *
- * 环境判断只认 APP_DEBUG(《26》第 3 节),不许有第二套开关。
+ * 环境判断只认 APP_DEBUG,不许有第二套开关。
  */
 final class ErrorHandler
 {
-    /** 《26》第 9 节:单请求超过 2000ms 记 WARNING */
+    /** 单请求超过 2000ms 记 WARNING */
     private const SLOW_REQUEST_MS = 2000.0;
 
     private const FATAL_LEVELS = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR];
@@ -117,7 +117,7 @@ final class ErrorHandler
     {
         $status = $e instanceof HttpMappable ? $e->statusCode() : 500;
 
-        // 默认只看 APP_DEBUG(《26》第 3 节);显式传值只为让两套行为都能被测到
+        // 默认只看 APP_DEBUG;显式传值只为让两套行为都能被测到
         if ($debug ?? APP_DEBUG) {
             return (new DebugRenderer())->render($e);
         }
@@ -141,7 +141,7 @@ final class ErrorHandler
         ];
 
         try {
-            // 《26》第 5.1 节:认证、权限、可疑行为走 security 通道
+            // 认证、权限、可疑行为走 security 通道
             if ($e instanceof AuthException || $e instanceof RateLimitException) {
                 $logger = Log::channel('security');
             } else {
@@ -175,7 +175,7 @@ final class ErrorHandler
     }
 
     /**
-     * 生产可见文案。不含路径、SQL、PHP 版本、异常原文(《26》第 4 节)。
+     * 生产可见文案。不含路径、SQL、PHP 版本、异常原文。
      */
     private static function friendlyText(int $status): string
     {
@@ -193,7 +193,7 @@ final class ErrorHandler
     /**
      * 请求收尾的统一位置:`register_shutdown_function` 里调的就是这里。
      *
-     * 播 `system/shutdown`(《11》§1.1 两段式生命周期的另一半):放在 finally 里,
+     * 播 `system/shutdown`(既有规范两段式生命周期的另一半):放在 finally 里,
      * 致命错误、慢请求记账、采样任何一步出岔子都必须走到 —— 插件靠它收自己的账(临时文件、
      * 缓冲、统计),漏播一次就是一次泄漏。只播一次:重复调用直接返回。
      */
@@ -236,7 +236,7 @@ final class ErrorHandler
             Log::channel('app')->warning('slow_request', ['ms' => round($elapsed, 1)]);
         }
 
-        // 《57》§2 的按页采样:与慢请求同源。全站唯一的请求计时器就在这里收尾,
+        // 既有规范的按页采样:与慢请求同源。全站唯一的请求计时器就在这里收尾,
         // 把本次请求的真实耗时交给采样器归档(首页按页面缓存命中 / 未命中分桶,后台归一类),
         // 健康屏「性能预算」组据此出读数 —— 不是打开健康屏时才现测一次。
         (new RequestSamples())->recordFromGlobals(self::$startedAt, $elapsed);

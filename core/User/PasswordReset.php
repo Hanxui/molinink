@@ -14,21 +14,21 @@ use Molin\Database\Database;
 use Molin\Router\Router;
 
 /**
- * 一次性密码重置令牌(《32》第 6.3 节 ①③、《61》第 2.8 节)。
+ * 一次性密码重置令牌(既有规范①③、既有规范)。
  *
  * 令牌存 usermeta、只存哈希,明文那一次都不落库 —— 库里翻不到可用的凭据。
  * 有效期 1 小时、用过即废;重复申请直接换新的(旧的那条当场作废)。
  *
- * 发信不在内核里做(《33》/《62》口径:SMTP 属插件),本类只负责"生成 + 校验 + 作废",
+ * 发信不在内核里做(既有规范/既有规范口径:SMTP 属插件),本类只负责"生成 + 校验 + 作废",
  * 并把链接该怎么拼留在 link() 一处;签发后发 `user/lostpassword/after`(user, link),
  * 发信插件接上即寄出,链接格式不必猜(2026-10-04 与 mail-smtp 插件同轮落地)。
  */
 final class PasswordReset
 {
-    /** 《32》§6.3 ①:令牌 1 小时有效 */
+    /** 既有规范①:令牌 1 小时有效 */
     public const TTL = 3600;
 
-    /** 同一账号两次申请的最小间隔。《123》§11 第 2 条说这数值文档没给,先钉 60 秒,别让人拿这页刷邮件 */
+    /** 同一账号两次申请的最小间隔。既有规范条说这数值文档没给,先钉 60 秒,别让人拿这页刷邮件 */
     public const COOLDOWN = 60;
 
     private const KEY_TOKEN = 'reset_token';
@@ -58,7 +58,7 @@ final class PasswordReset
         $this->users->setMeta($user->id, self::KEY_TOKEN, hash('sha256', $raw));
         $this->users->setMeta($user->id, self::KEY_SENT, (string) time());
 
-        // 令牌签发即交棒(《32》§6.3 ②):发信插件(mail-smtp)监听这里把链接寄出去
+        // 令牌签发即交棒(既有规范②):发信插件(mail-smtp)监听这里把链接寄出去
         do_action('user/lostpassword/after', $user, $this->link($raw));
 
         return $raw;

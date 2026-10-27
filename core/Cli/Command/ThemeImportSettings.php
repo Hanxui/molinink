@@ -19,7 +19,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 导入主题设置(《36》第 8 节):`molin theme:import-settings settings.json`。
+ * 导入主题设置:`molin theme:import-settings settings.json`。
  * 先按声明校验,通过才落库;失败逐条打印字段级错误,整体不写。
  */
 final class ThemeImportSettings extends BaseCommand

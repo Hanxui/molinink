@@ -195,7 +195,7 @@ final class FrontRoutes
         $router->add('sitemap', 'GET', '/sitemap.xml', fn (Request $request, array $vars = []): Response => $this->controllers()['siteOutput']->sitemap($request, $vars));
         $router->add('robots', 'GET', '/robots.txt', fn (Request $request, array $vars = []): Response => $this->controllers()['siteOutput']->robots($request, $vars));
 
-        // 单篇注册在"当前固定链接结构"算出的模式上(《23》第 3 节)。查询式结构(?p=%post_id%)
+        // 单篇注册在"当前固定链接结构"算出的模式上。查询式结构(?p=%post_id%)
         // 没有路径段,不挂这条路由,单篇由首页处理器读 ?p= / ?page_id= 解析。
         $postPattern = $router->postPattern();
 
@@ -224,7 +224,7 @@ final class FrontRoutes
         $router->add('search', 'GET', '/search', fn (Request $request, array $vars = []): Response => $this->controllers()['archive']->search($request, $vars));
 
         /*
-         * 列表片段端点(《23》§4 路由名 list.fragment):列表翻页 / 切分类不再整页刷新,只吐列表项 + 分页。
+         * 列表片段端点(既有规范路由名 list.fragment):列表翻页 / 切分类不再整页刷新,只吐列表项 + 分页。
          * 公开只读:GET、免会话、免 CSRF(与其余前台路由同一口径,guard = none 语义)。
          */
         $listFragment = new ListFragmentController($this->context->listSource(), $this->context->renderer());
@@ -234,7 +234,7 @@ final class FrontRoutes
     }
 
     /**
-     * 自定义内容类型(CPT)的前台(《34》§2.2):类型登记表在 system/init 里填好,本节必须排在其后。
+     * 自定义内容类型(CPT)的前台:类型登记表在 system/init 里填好,本节必须排在其后。
      * 单篇 = /{rewrite.slug}/{slug},归档 = /{rewrite.slug}(has_archive=true,含 /page/{n} 分页)。
      * 非 public / rewrite=false / 段与内核保留段重名的类型不挂路由(前台不可达);冲突原因记日志,不崩站。
      * 单篇复用文章处理器,归档复用既有查询与分页链(PostQuery + Renderer),不另造一套。

@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * API 密钥表(《25-接口规范》第 2 节的落地件)。
+ * API 密钥表(既有规范的落地件)。
  *
- * 《25》只规定了用法(`Authorization: Bearer <key>` / `X-Api-Key`),发放路径没写 ——
- * 按"命令行是运维正门"(《58》开篇)以 `molin api:key:*` 为发放入口,本表随之登记进《21》。
+ * 既有规范只规定了用法(`Authorization: Bearer <key>` / `X-Api-Key`),发放路径没写 ——
+ * 按"命令行是运维正门"(既有规范开篇)以 `molin api:key:*` 为发放入口,本表随之登记进既有规范。
  * 库里只存 sha256:翻库翻不出可用凭据,查行也不需要比对明文。
  */
 final class AddApiKeysTable20261003000000 extends AbstractMigration

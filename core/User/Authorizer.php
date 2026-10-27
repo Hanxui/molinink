@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\User;
 
 /**
- * 授权判定(《32-用户与权限模型》第 4 节、《61》第 3 节:默认拒绝)。
+ * 授权判定(既有规范默认拒绝)。
  *
  * 三条规则按顺序生效:
  * 1) 没登录、被封、待验证 —— 一律拒绝;
@@ -28,12 +28,12 @@ final class Authorizer
 
         $allow = $user->holds($capability);
 
-        // 《32》第 4 节:own 类能力在带对象时另判归属,角色里有也不代表能动别人的
+        // own 类能力在带对象时另判归属,角色里有也不代表能动别人的
         if ($allow && str_ends_with($capability, '.own') && $target !== null) {
             $allow = $this->isOwner($user, $target);
         }
 
-        // 插件收紧/放宽的入口(《32》第 10 节示例的形状)
+        // 插件收紧/放宽的入口(既有规范示例的形状)
         $allow = apply_filters('user/capability/validate', $allow, $capability, $user, $target);
 
         return $allow === true;
@@ -56,7 +56,7 @@ final class Authorizer
     }
 
     /**
-     * 任一能力通过即放行。《41》第 4 节的 `post.*` / `media.*` 就是这个意思:
+     * 任一能力通过即放行。既有规范的 `post.*` / `media.*` 就是这个意思:
      * 能新建文章的人就该看到"文章"菜单,不必同时握有全部六个 post.* 。
      * 表里没写全的名字一律拒绝(默认拒绝,不因拼错而放过)。
      *

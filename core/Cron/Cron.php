@@ -16,7 +16,7 @@ use Molin\User\SessionStore;
 use Throwable;
 
 /**
- * 定时任务(《58-CLI工具》第 5 节)。cron:run 只跑到期的,cron:list 只列不动。
+ * 定时任务。cron:run 只跑到期的,cron:list 只列不动。
  *
  * 内建任务写死在本类,插件任务经 `system/cron/collect` 收集。同名时内建优先 ——
  * 插件不能顶掉内核自己维护的清理任务,否则升级后行为会跟着插件清单漂移。
@@ -26,7 +26,7 @@ use Throwable;
  */
 final class Cron
 {
-    /** 任务名一旦发布不改(《58》第 9 节);秒数 = 多久该跑一次。 */
+    /** 任务名一旦发布不改;秒数 = 多久该跑一次。 */
     private const JOBS = [
         'cleanup-sessions' => ['seconds' => 86400, 'note' => '清过期会话'],
         'cleanup-tokens'   => ['seconds' => 86400, 'note' => '清过期登录令牌'],

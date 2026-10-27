@@ -11,8 +11,8 @@ declare(strict_types=1);
 namespace Molin\Http;
 
 /**
- * 请求对象。《23-路由规范》第 9 节:参数一律经统一对象读取,禁止裸用超全局变量拼 SQL。
- * 测试可直接构造(《54-测试策略》第 5 节"构造 Request,断言 Response")。
+ * 请求对象。参数一律经统一对象读取,禁止裸用超全局变量拼 SQL。
+ * 测试可直接构造(既有规范"构造 Request,断言 Response")。
  */
 final class Request
 {
@@ -21,7 +21,7 @@ final class Request
      * @param array<string, mixed> $server 取自 $_SERVER,只读;审计与限速要 IP/UA,但内核不暴露裸超全局
      * @param array<string, mixed> $post 取自 $_POST;表单提交的唯一入口
      * @param array<string, mixed> $files 取自 $_FILES;只有上传这一处需要,内核仍不读裸超全局
-     * @param string $rawBody 原始请求体;接口的 JSON 写端点从这里解析(《25》§4)
+     * @param string $rawBody 原始请求体;接口的 JSON 写端点从这里解析
      */
     public function __construct(
         private readonly string $method,
@@ -108,7 +108,7 @@ final class Request
     }
 
     /**
-     * 接口写端点的 JSON 请求体(《25》§4)。不是 JSON 体时退回表单字段 ——
+     * 接口写端点的 JSON 请求体。不是 JSON 体时退回表单字段 ——
      * 契约是 JSON,但兼容表单不添乱。
      *
      * @return array<string, mixed>
