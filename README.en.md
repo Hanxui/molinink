@@ -24,9 +24,9 @@ If all you want is a place to write without touching a server, a static site gen
 
 - Posts, standalone pages, and content types you define (fields included) for things like a portfolio or notes
 - A WYSIWYG editor that doesn't pull in a third-party rich-text library; with JavaScript disabled it falls back to a plain textarea and still saves
-- Drafts, publishing, scheduled publishing; per-post password protection
+- Five post states — draft, pending, private, published, trash; per-post password protection
 - Revision history with a diff between saves
-- Categories, tags, multi-level navigation menus
+- Categories, tags, navigation menus
 - Attachment pages: images and files get a public URL
 
 **Running the site**
@@ -37,7 +37,7 @@ If all you want is a place to write without touching a server, a static site gen
 - `feed` (RSS/Atom), `sitemap.xml`, `robots.txt`
 - Users, roles and capabilities: permissions are granted by capability point, not just "admin or editor"
 - Backup and restore (whole site packed, downloadable), import/export (`.json`, `.xml`, `.tar.gz`; data only, nothing executed)
-- Site health checks (PHP version, writable directories, schema state, cache, queues) and logs
+- Site health checks (PHP version, required and recommended extensions, PHP settings, writable directories, schema state) and logs
 
 **Extending**
 
