@@ -1,52 +1,52 @@
 <p align="center"><img src=".github/assets/logo.png" alt="墨林 MolinInk" width="320"></p>
 
-<p align="center">墨林（MolinInk）是一个用 PHP 写的博客程序。装好就能发文，其余交给插件和主题。</p>
+<p align="center">用 PHP 写的博客程序，装好就能发文。</p>
 
 <p align="center"><sub>PHP 8.2+ · MySQL 8 · 单入口 · AGPL-3.0</sub></p>
 
-<p align="center"><a href="https://github.com/Hanxui/molinink/releases/latest"><strong>下载安装包</strong></a> · <a href="https://www.molinink.com">官网</a> · <a href="https://demo.molinink.com">演示站</a></p>
+<p align="center"><a href="https://github.com/Hanxui/molinink/releases/latest">下载安装包</a> · <a href="https://www.molinink.com">官网</a> · <a href="https://demo.molinink.com">演示站</a></p>
 
 <p align="center"><img src=".github/assets/screen-home.png" alt="首页"></p>
 
-## 动手之前，有三件事容易踩
+墨林（MolinInk）是一个用 PHP 写的博客程序，跑在 Nginx 加 MySQL 上。装好之后就能写文章、管评论、换主题。程序本体只负责这些基础的结构，其他功能都做成插件，需要什么装什么，默认只带一个主题和一个发邮件用的插件。
 
-**一、包别下错。** 能直接装的是 Releases 里的 `molin-x.y.z.zip`，它带着 `vendor/`，解压到站点根就能用。
+## 下载哪个
 
-仓库页那个绿色的 `Code → Download ZIP` 下的是源码：仓库里不放 `vendor/`（依赖交给 Composer 管），所以打开只会看到一行 `require(.../vendor/autoload.php): Failed to open stream`，而且还会多套一层 `molinink-main/` 目录。真要从源码跑也行，在站点根执行一次 `composer install --no-dev`，程序认出 vendor 后会自己往下走。
+能直接装的是 Releases 里的包，文件名是 `molin-版本号.zip`。依赖已经一起打进去了（`vendor/` 目录），解压到站点根目录就能用。
 
-**二、这里的版本不一定是最新的。** 仓库是开发过程中同步过来的快照，我常常先在自己机器上写、改、试，过一阵才推上来。**请以官网上的实际发布版本为准：<https://www.molinink.com>**。两边对不上时，信官网。
+仓库页面那个绿色的 `Code` 按钮下的是源码，里面没有 `vendor/`，因为依赖是 Composer 装的，不往仓库里放。这样下下来直接打开，只会看到一行报错：
 
-**三、有问题先来群里说。** QQ 群 **1109527088**。目前反馈就这一条路（Issues 也能提，但我看得不勤，后面会换成更顺手的方式）。安全漏洞别公开贴，按 [SECURITY.md](SECURITY.md) 走私密渠道。
+```
+require(.../vendor/autoload.php): Failed to open stream
+```
+
+真要从源码跑也行，在站点根目录执行一次 `composer install --no-dev` 把依赖补上，后面的步骤跟下面一样。
+
+另外说一句版本的事。仓库里的东西不一定是最新的，我平时在自己机器上改，隔一段时间才推上来，官网（<https://www.molinink.com>）上发布的才是实际发出去的版本。两边对不上的时候以官网为准。
 
 ## 装起来
 
-下面按宝塔面板写，其他面板大同小异。顺利的话十分钟以内。想先看看装好是什么样：<https://demo.molinink.com>
+下面按宝塔面板写，用别的面板也差不多，顺利的话十分钟以内。想先看看装好是什么样子，可以打开 <https://demo.molinink.com>。
 
-**需要**：PHP 8.2+（`pdo_mysql`、`mbstring`、`json`、`openssl`、`fileinfo`；建议再加上 `gd`、`zip`、`intl`）、MySQL 8 或 MariaDB 10.5+、一个已经解析到这台服务器的域名。
+需要 PHP 8.2 或更高，扩展要有 `pdo_mysql`、`mbstring`、`json`、`openssl`、`fileinfo`，有 `gd`、`zip`、`intl` 更好。数据库用 MySQL 8 或者 MariaDB 10.5 以上。域名要先解析到这台服务器。
 
-### 1. 建站点和数据库
+**建站点和数据库。** 在宝塔的「网站」里添加站点，填好域名，PHP 版本选 8.2 以上，数据库选 MySQL。建完面板会给一套库名、用户名和密码，下一步要用，先记下来。
 
-宝塔 → 网站 → 添加站点：填域名，PHP 版本选 **8.2 或更高**，数据库选 MySQL。建完会给你一套库名、用户名、密码，第 3 步要用，先记下来。
+**上传解压。** 点进站点打开文件管理，进站点根目录（一般是 `/www/wwwroot/你的域名`），把从 Releases 下的压缩包传上去，右键解压到当前目录。
 
-### 2. 上传并解压
+解压完，根目录下应该直接能看见 `index.php`、`core/`、`install/` 这三样。要是多套了一层文件夹，进去全选剪切上来。
 
-网站 → 点站点名 → 文件 → 进站点根目录（一般是 `/www/wwwroot/你的域名`）→ 上传 Releases 里的 `molin-<版本>.zip` → 右键解压到当前目录。
+这里有个容易踩的地方：别用面板的「运行目录」指到那一层子目录去。程序里 `/uploads/`、`/storage/` 这些规则都是按站点根写的，指偏了就不生效。
 
-解压完，根目录下要**直接**能看到 `index.php`、`core/`、`install/`。如果多出一层 `molin-x.y.z/`，进去全选、剪切到根目录。
-
-有一点要留意：别用面板的「运行目录」指到那层子目录。`/uploads/`、`/storage/` 这些规则都是按站点根写的，指偏了就跟着失效。
-
-### 3. 粘两段配置
-
-先说伪静态（网站 → 设置 → **伪静态**）。程序只有一个入口，磁盘上并没有 `/admin` 这个文件，得让 nginx 把找不到的地址交给 `index.php`：
+**配伪静态。** 程序只有一个入口文件，磁盘上并没有 `/admin` 这个文件，所以要让 nginx 把找不到的地址交给 `index.php`，不然文章页和后台都打不开。填到「设置 → 伪静态」里：
 
 ```nginx
 location / {
     try_files $uri $uri/ /index.php$is_args$args;
 }
 
-# 后台是程序路由：admin/ 目录里只有静态资源（css/js/模板），没有 index 文件。
-# 少了这两行，nginx 会把它当目录索引，点「进入后台」直接 403 Forbidden。
+# 后台是程序路由，admin/ 目录里只有 css、js 和模板，没有 index 文件。
+# 少了这两行，nginx 会把它当目录，点「进入后台」是 403。
 location = /admin {
     try_files $uri /index.php$is_args$args;
 }
@@ -55,9 +55,9 @@ location = /admin/ {
 }
 ```
 
-没加的表现是：首页正常，但 `/admin` 和所有文章页都 404。如果只加了第一段、漏掉 `/admin` 那两行，症状会换一种：文章页好了，登后台时 403。
+只加第一段、漏掉 `/admin` 那两行的话，首页和文章页都正常，但登录后台是 403。
 
-再说 `storage/`（网站 → 设置 → **配置文件**，粘进 `server { }` 里）。里面是备份包、日志、远端备份凭据，不挡住就能被人直接下载：
+**挡住 storage。** `storage/` 里放的是备份包、日志和远端备份用的凭据，得挡住，不然能被人直接下载。在「设置 → 配置文件」里，往 `server { }` 中间加：
 
 ```nginx
 location ^~ /storage/ {
@@ -65,24 +65,22 @@ location ^~ /storage/ {
 }
 ```
 
-图片不用另配，程序自己会发。想让 nginx 直接吐图（`/uploads/`、`/themes/`）可以加速，片段在 `install/服务器配置.txt` 里。
+图片不用管，程序自己会输出。想让 nginx 直接发图片会快一点，片段在压缩包的 `install/服务器配置.txt` 里。
 
-### 4. 走安装向导
+**走向导。** 浏览器打开你的域名，点开始安装。先是环境自检，然后填数据库那三样，再填站点名称、站点地址和管理员账号，最后写入。中途出错会整体回滚，不会留下装了一半的站。装完把 `install/` 删掉。
 
-浏览器打开你的域名，点「开始安装」：环境自检 → 填第 1 步记下的数据库三样 → 站点名称、站点地址、管理员账号 → 写入。中途失败会整体回滚，不会留下装了一半的站。装完记得把 `install/` 删掉。
+**核对四个地址。** 装完挨个打开看看：
 
-### 5. 回头看四个地址
-
-| 打开 | 应该是 |
+| 地址 | 应该是 |
 |---|---|
 | `你的域名/` | 首页能开 |
-| `你的域名/admin` | 后台登录页（404 = 伪静态没生效） |
+| `你的域名/admin` | 后台登录页（404 说明伪静态没生效） |
 | `你的域名/storage/backups/` | 404 |
 | `你的域名/uploads/某张图片` | 能显示 |
 
-带报错对照表的详细版，在压缩包的 `install/安装说明.txt` 里。
+带报错对照表的详细版在压缩包的 `install/安装说明.txt` 里。
 
-### 不想下包，从源码跑
+不想下包、直接从源码跑：
 
 ```bash
 composer install --no-dev
@@ -90,17 +88,19 @@ cp config.example.php config.php   # 填上数据库
 php -S 127.0.0.1:8000              # 或者交给 nginx / apache
 ```
 
-## 它是怎么搭的
+## 代码是怎么组织的
 
-一句话：内核是插座，契约是插头规格。
+内核只做结构，不管长相也不管具体功能。`core/` 里是钩子总线、插件加载、主题渲染、路由、缓存和迁移这些零件。
 
-- 内核不写业务。`core/` 里只有钩子总线、插件加载、主题渲染、路由、缓存、迁移这些东西。
-- 钩子名是 `域/对象/阶段`（`post/save/before`），能力名是 `域.动作`（`post.create`）。两套命名空间互不干扰，规则只增不改。
-- 建表只有一条路：`core/Migrations/`。没有 `schema.sql`，首次安装就是从空库跑一遍迁移，跟升级走同一条链。
-- 模板是 Twig 的受限子集，默认自动转义，模板里不写业务逻辑。
-- 框架件都用现成的：fast-route、Twig、Monolog、symfony/mailer、symfony/console。没有 ORM，也没有整套框架。
+插件和主题通过契约跟内核打交道。钩子叫 `域/对象/阶段`，比如 `post/save/before`；能力叫 `域.动作`，比如 `post.create`。这两套名字分开发，互不干扰，只往里加、不改。
 
-## 后台长相
+建表只有一条路，`core/Migrations/`。没有 `schema.sql` 那种建表脚本，第一次安装就是从空库把迁移跑一遍，跟升级走的是同一条链，省得两边对不上。
+
+模板用的是 Twig 的一个受限子集，默认自动转义，模板里只做展示，不写业务逻辑。
+
+路由、模板引擎、日志、发信都用现成的组件：fast-route、Twig、Monolog、symfony/mailer、symfony/console。没有 ORM，也没套一整个框架。
+
+## 后台
 
 <table>
 <tr>
@@ -111,16 +111,14 @@ php -S 127.0.0.1:8000              # 或者交给 nginx / apache
 
 ## 许可
 
-代码用 **AGPL-3.0-or-later**，全文见 [LICENSE](LICENSE)。
+代码是 AGPL-3.0-or-later，全文在 [LICENSE](LICENSE)。
 
-- 免费用、随便改，想拿它做收费服务也可以。
-- 改了之后如果当作网站对外提供服务，改动的那部分要开源。
-- 分发时把 LICENSE 一起带上。
+免费用、随便改，拿它做收费服务也可以。改了之后如果当作网站对外提供服务，改动的那部分要开源；分发的时候把 LICENSE 一起带上。
 
-用到的第三方组件，各自的许可写在 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
+用到的第三方组件各自的许可写在 [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md)。
 
-「墨林」「MolinInk」这两个名字和 logo 是商标，不跟着代码一起授权。拿它搭自己的站没问题，页脚署名也能改；但别用同一个名字和标识出去发自己的版本。
+「墨林」「MolinInk」这两个名字和 logo 是商标，不在这份代码许可里。拿它搭自己的站没问题，页脚署名也能改，只是别用同一个名字和标识出去发自己的版本。
 
 ---
 
-[English](README.en.md) · QQ 群 **1109527088** · 安全问题见 [SECURITY.md](SECURITY.md)
+[English](README.en.md) · QQ 群 1109527088
