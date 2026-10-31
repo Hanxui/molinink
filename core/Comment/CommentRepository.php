@@ -49,8 +49,12 @@ final class CommentRepository
      * 整页一次查询:窗口函数按 post_id 分区取前 N 条,不做逐篇查询(既有规范的 N+1 红线)。
      * 预览只给纯文本与作者名/头像 —— 卡片上是一行小字,不需要富文本形态。
      *
+     * 2026-10-31 增 `author_url` 与 `parent_author`:卡片上要画「A 回复 B」和昵称外链
+     * (FriendCircle 主题的既有形态)。父评论作者名另走一条批查,只在存在回复时才发,
+     * 仍然不做逐条查询。父评论已被删除时 `parent_author` 给空串,主题按普通评论处理。
+     *
      * @param list<int> $postIds
-     * @return array<int, list<array{id:int, author_name:string, avatar_url:string, content_text:string, created_at:string}>>
+     * @return array<int, list<array{id:int, author_name:string, author_url:string, avatar_url:string, content_text:string, created_at:string, parent_author:string}>>
      */
     public function previewsFor(array $postIds, int $perPost = 3): array
     {
@@ -80,8 +84,8 @@ final class CommentRepository
 
         // 条数是这里算出来的整数(非请求输入),按列表查询的老口径直接拼进 SQL
         $rows = $this->db->select(
-            'SELECT t.post_id, t.id, t.author_name, t.author_email, t.content, t.created_at FROM ('
-            . 'SELECT c.id, c.post_id, c.author_name, c.author_email, c.content, c.created_at,'
+            'SELECT t.post_id, t.id, t.author_name, t.author_email, t.author_url, t.parent_id, t.content, t.created_at FROM ('
+            . 'SELECT c.id, c.post_id, c.author_name, c.author_email, c.author_url, c.parent_id, c.content, c.created_at,'
             . ' ROW_NUMBER() OVER (PARTITION BY c.post_id ORDER BY c.created_at DESC, c.id DESC) AS rn'
             . ' FROM ' . $this->db->table('comments') . ' c'
             . ' WHERE c.post_id IN (' . implode(', ', $marks) . ") AND c.status = 'approved'"
@@ -90,17 +94,68 @@ final class CommentRepository
             $params
         );
 
+        // 回复行的「回复 X」要父评论作者名:整页一条批查,不逐条查
+        $parentIds = [];
+
+        foreach ($rows as $row) {
+            $parentId = (int) ($row['parent_id'] ?? 0);
+
+            if ($parentId > 0) {
+                $parentIds[$parentId] = $parentId;
+            }
+        }
+
+        $parentNames = $this->authorNamesOf(array_values($parentIds));
+
         $out = [];
 
         foreach ($rows as $row) {
             $email = (string) $row['author_email'];
+            $parentId = (int) ($row['parent_id'] ?? 0);
             $out[(int) $row['post_id']][] = [
                 'id' => (int) $row['id'],
                 'author_name' => (string) $row['author_name'],
+                'author_url' => (string) ($row['author_url'] ?? ''),
                 'avatar_url' => $email === '' ? '' : avatar($email, 40),
                 'content_text' => self::plainText((string) $row['content']),
                 'created_at' => (string) $row['created_at'],
+                'parent_author' => $parentId > 0 ? ($parentNames[$parentId] ?? '') : '',
             ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * 一批评论 id 各自的作者名(回复预览用)。父评论已删就先取不到,给空串。
+     *
+     * @param list<int> $ids
+     * @return array<int, string>
+     */
+    private function authorNamesOf(array $ids): array
+    {
+        if ($ids === []) {
+            return [];
+        }
+
+        $marks = [];
+        $params = [];
+
+        foreach (array_values($ids) as $index => $id) {
+            $marks[] = ':c' . $index;
+            $params['c' . $index] = $id;
+        }
+
+        $rows = $this->db->select(
+            'SELECT id, author_name FROM ' . $this->db->table('comments')
+            . ' WHERE id IN (' . implode(', ', $marks) . ')',
+            $params
+        );
+
+        $out = [];
+
+        foreach ($rows as $row) {
+            $out[(int) $row['id']] = (string) ($row['author_name'] ?? '');
         }
 
         return $out;

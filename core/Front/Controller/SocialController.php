@@ -17,18 +17,24 @@ use Molin\Http\Response;
 use Molin\Logger\Log;
 use Molin\Notification\Notifier;
 use Molin\Security\Csrf;
+use Molin\Social\Ratings;
 use Molin\Social\SocialRepository;
+use Molin\Social\VoterKey;
 use Molin\User\Auth;
 use Molin\User\UserRepository;
 
 /**
  * 作者页关注 / 文章赞踩(POST + 会话 CSRF,返回 JSON 给主题原地更新)。
+ *
+ * 赞踩与关注的生命周期不同(2026-10-31):赞由内核的 Ratings 保证可用,
+ * 关注仍依赖插件注入的 SocialRepository —— 插件停用只掉关注,不会掉赞。
  */
 final class SocialController
 {
     public function __construct(
         private readonly FrontContext $context,
         private readonly ?SocialRepository $social,
+        private readonly Ratings $ratings,
         private readonly UserRepository $users,
         private readonly ?Notifier $notifier
     ) {
@@ -78,13 +84,10 @@ final class SocialController
 
     public function rate(Request $request): Response
     {
-        $social = $this->social;
+        $ratings = $this->ratings;
         $notifier = $this->notifier;
 
-        if ($social === null || $notifier === null) {
-            return Response::json(['ok' => false, 'error' => '社交功能未启用'], 404);
-        }
-
+        // 赞由内核保证可用;通知是可选扩展,没有通知插件也照常记录投票,只是不发通知
         $session = Auth::session();
         $token = $request->header(Csrf::HEADER) ?? '';
 
@@ -122,18 +125,19 @@ final class SocialController
 
         $newVoter = false;
 
-        if ($viewer === null && preg_match('/\A[A-Za-z0-9_-]{16,64}\z/', $voter) !== 1) {
+        if ($viewer === null && !VoterKey::valid($voter)) {
             // 旧页面/禁用 cookie 的浏览器：发一个，下一次就能认出来
             $voter = bin2hex(random_bytes(16));
             $newVoter = true;
         }
 
-        $voterKey = $viewer !== null ? 'u' . $viewer->id : 'g' . $voter;
-        $before = $social->ratingFor($post->id, $viewer->id ?? 0, $voterKey);
-        $after = $social->rate($post->id, $viewer->id ?? 0, $type, $voterKey);
+        // 投票标识的拼法收在 VoterKey 一处:列表页要算「这条我投没投」,两边必须同一个算法
+        $voterKey = VoterKey::compose($viewer->id ?? 0, $voter);
+        $before = $ratings->ratingFor($post->id, $viewer->id ?? 0, $voterKey);
+        $after = $ratings->rate($post->id, $viewer->id ?? 0, $type, $voterKey);
 
         // 只在意「态度真的变了」：取消投票撤回通知，新投票/换边写一条；通知失败不影响投票结果
-        if ($before['mine'] !== $after['mine']) {
+        if ($notifier !== null && $before['mine'] !== $after['mine']) {
             try {
                 if ($after['mine'] === '') {
                     $notifier->removeRating($post->id, $voterKey);

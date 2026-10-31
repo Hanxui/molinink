@@ -24,7 +24,7 @@ use Molin\Media\MediaRepository;
 use Molin\Media\Store;
 use Molin\Router\Router;
 use Molin\Security\Csrf;
-use Molin\Social\SocialRepository;
+use Molin\Social\Ratings;
 use Molin\User\Auth;
 use Molin\User\Authorizer;
 use Molin\User\SessionStore;
@@ -42,7 +42,7 @@ final class PostController
         private readonly FrontContext $context,
         private readonly ContentRenderer $contentRenderer,
         private readonly Router $router,
-        private readonly ?SocialRepository $social,
+        private readonly Ratings $ratings,
         private readonly TermAssigner $terms,
         private readonly MediaRepository $media,
         private readonly Store $mediaStore,
@@ -183,15 +183,10 @@ final class PostController
         $ratingVoter = $ratingViewer !== null
             ? 'u' . $ratingViewer->id
             : 'g' . trim((string) $request->cookie('molin_voter', ''));
-        // 社交插件未启用时不碰社交实现,也不生成投票地址(路由还在,主题靠 features.social 隐藏入口)
+        // 赞由内核的 Ratings 保证可用(2026-10-31),不再依赖社交插件是否启用
         // 键名跟主题/JS 的契约一致(like/dislike);action(投票地址)由这里补,仓储不返回它
-        $rating = $this->social === null
-            ? ['like' => 0, 'dislike' => 0, 'mine' => '', 'action' => '']
-            : $this->social->ratingFor($post->id, $ratingViewer->id ?? 0, $ratingVoter);
-
-        if ($this->social !== null) {
-            $rating['action'] = $this->router->path('social.rate');
-        }
+        $rating = $this->ratings->ratingFor($post->id, $ratingViewer->id ?? 0, $ratingVoter);
+        $rating['action'] = $this->router->path('social.rate');
 
         $rating['token'] = $ratingSession === null ? '' : Csrf::token($ratingSession);
 

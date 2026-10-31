@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Molin\Cron;
 
 use Molin\Logger\Log;
+use Molin\Site\VisitRetention;
 use Molin\User\RememberTokens;
 use Molin\User\SessionStore;
 use Throwable;
@@ -30,6 +31,8 @@ final class Cron
     private const JOBS = [
         'cleanup-sessions' => ['seconds' => 86400, 'note' => '清过期会话'],
         'cleanup-tokens'   => ['seconds' => 86400, 'note' => '清过期登录令牌'],
+        // 访问计数只增不删就是无界增长,保留策略见 Molin\Site\VisitRetention(默认留 400 天)
+        'cleanup-visits'   => ['seconds' => 86400, 'note' => '剪掉过保留期的访问计数'],
     ];
 
     /** 任务名:小写字母开头,允许数字、冒号、下划线、点与连字符(插件用 `插件名:任务` 区分) */
@@ -43,7 +46,11 @@ final class Cron
     public function __construct(
         private readonly SessionStore $sessions,
         private readonly RememberTokens $tokens,
-        string $root
+        string $root,
+        // 访问计数的保留策略(2026-10-31 增)。可选:最小装配(只跑内建任务、不带站点库的
+        // CLI 测试容器)里没有它 —— 那种情况下任务照常在册,但一行不动,与其余内建任务
+        // 「依赖没接上就返回 0」同一口径。真正的站点装配在 Bootstrap 里一定注进来。
+        private readonly ?VisitRetention $visits = null
     ) {
         $state = getenv('MOLIN_STATE_ROOT');
         $root = is_string($state) && $state !== '' ? $state : $root;
@@ -209,6 +216,7 @@ final class Cron
             $count = match ($job) {
                 'cleanup-sessions' => $dryRun ? $this->sessions->countExpired() : $this->sessions->purgeExpired(),
                 'cleanup-tokens'   => $dryRun ? $this->tokens->countExpired() : $this->tokens->purgeExpired(),
+                'cleanup-visits'   => $this->visits === null ? 0 : $this->visits->prune($now, $dryRun),
                 default => 0,
             };
         }

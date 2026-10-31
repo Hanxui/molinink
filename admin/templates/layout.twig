@@ -93,6 +93,10 @@
     {% block dialog %}{% endblock %}
 </div>
 
+{# 插件弹层(既有规范):插件自带遮罩与焦点管理,必须落在上面那层 .scrim 之外 ——
+   那层平时是 visibility:hidden,插件面板塞进去会"hidden=false 也还是看不见" #}
+{% block overlay %}{% endblock %}
+
 {# 全站唯一的一处消息提示:右下角浮窗。页面把 notice / error 交给这里统一显,
    不再各页自己往内容区顶上塞一行字(那样得先滑到顶部才看得见)。 #}
 {% set toast_ok = (notice is defined and notice) ? notice : '' %}

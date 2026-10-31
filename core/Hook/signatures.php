@@ -342,6 +342,8 @@ return [
         'returns'   => 'array',
         'stability' => 'public',
         // 形状 {social: ?Molin\Social\SocialRepository, notifications: ?Molin\Notification\NotificationRepository, notifier: ?Molin\Notification\Notifier}
+        // social 若同时实现 Molin\Social\Ratings / BatchRatings,装配层就优先用它的赞踩实现;
+        // 否则回落到内核自带的 Molin\Social\DatabaseRatings —— 赞不依赖插件(2026-10-31)
         'doc'       => '社交 / 通知的实现装配:插件往里填自己的实现,内核只留接口与路由',
     ],
     'theme/features/collect' => [
@@ -352,7 +354,32 @@ return [
         ],
         'returns'   => 'array',
         'stability' => 'public',
-        // 形状 array<string, bool>;内核只认 social / notifications 两个键
+        // 形状 array<string, bool>;内核只认 social / notifications 两个键(赞/踩已由内核保证,不需要开关)
         'doc'       => '主题能力开关:插件停用后,模板据此隐藏对应 UI',
     ],
+    'admin/editor/collect' => [
+        'type'      => 'filter',
+        'since'     => '0.2',
+        'args'      => [
+            ['name' => 'extensions', 'type' => 'array'],
+            ['name' => 'type', 'type' => 'string'],
+        ],
+        'returns'   => 'array',
+        'stability' => 'public',
+        // 形状 {assets: list<{type: 'style'|'script', src: string}>, buttons: list<{id, label, title?, svg?}>};
+        // src 必须是根相对路径,形状不合的条目由内核丢弃 —— 见既有规范
+        'doc'       => '编辑页扩展收集:插件给出工具条按钮与自己的后台资产(既有规范)',
+    ],
+    'admin/editor/render' => [
+        'type'      => 'action',
+        'since'     => '0.2',
+        'args'      => [
+            ['name' => 'type', 'type' => 'string'],
+        ],
+        'returns'   => 'void',
+        'stability' => 'public',
+        // 输出按可信片段对待:插件面板自带遮罩与焦点管理,内核只负责把它放进对话框层
+        'doc'       => '编辑页对话框层渲染时:插件 echo 自己的面板 / 弹层(既有规范)',
+    ],
 ];
+

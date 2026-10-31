@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Molin\Front\Controller;
 
+use Molin\Comment\CommenterCookie;
 use Molin\Comment\Submitter;
 use Molin\Exception\ValidationException;
 use Molin\Front\FrontContext;
@@ -70,6 +71,18 @@ final class CommentController
         }
 
         // approved = 直接见读者;pending = "等待审核"要如实说
-        return Response::redirect($back . $sep . 'comment=' . $result['status'] . '#comments');
+        $response = Response::redirect($back . $sep . 'comment=' . $result['status'] . '#comments');
+
+        // 游客发完评论就记一条 HttpOnly cookie:下次渲染评论框时服务端知道是谁(头像/预填不必等 JS)。
+        // 登录用户不记 —— 身份本来就在会话里。
+        if (Auth::user() === null) {
+            $response = CommenterCookie::attach($response, [
+                'author' => $request->input('author_name'),
+                'mail' => $request->input('author_email'),
+                'url' => $request->input('author_url'),
+            ], $request->isSecure());
+        }
+
+        return $response;
     }
 }

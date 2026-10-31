@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Molin\Api\Controller;
 
 use Molin\Api\ApiSupport;
+use Molin\Comment\CommenterCookie;
 use Molin\Comment\CommentRepository;
 use Molin\Comment\Moderator;
 use Molin\Comment\Submitter;
@@ -253,11 +254,23 @@ final class CommentController extends ApiSupport
 
         $result = $this->submitter->submit($request->withInput($input), $user);
 
-        return $this->ok(['data' => [
+        $response = $this->ok(['data' => [
             'id' => $result['id'],
             'status' => $result['status'],
             'message' => $result['status'] === 'approved' ? '评论已发表。' : '评论已提交，等待审核后展示。',
         ]], 201);
+
+        // 游客发完评论就把昵称/邮箱记一条 HttpOnly cookie:下次渲染评论框时服务端知道是谁,
+        // 头像与预填不必再等前端 JS。登录用户不记 —— 他们的身份本来就在会话里。
+        if ($user === null) {
+            $response = CommenterCookie::attach($response, [
+                'author' => (string) ($input['author_name'] ?? ''),
+                'mail' => (string) ($input['author_email'] ?? ''),
+                'url' => (string) ($input['author_url'] ?? ''),
+            ], $request->isSecure());
+        }
+
+        return $response;
     }
 
     /**

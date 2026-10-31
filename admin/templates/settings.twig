@@ -494,6 +494,20 @@
                     </div>
                 </div>
             </section>
+
+            <section class="group">
+                <h2>{{ __('访问统计') }}</h2>
+                <p class="gdesc">{{ __('页脚那条「今日 / 昨日 / 近 7 天 / 近 30 天 / 总访问」背后的日计数表，留多久。') }}</p>
+                <div class="fields">
+                    <div class="field">
+                        <label>{{ __('保留天数') }}</label>
+                        <div class="ctrl">
+                            <input type="text" name="visits_retention_days" value="{{ values.visits_retention_days|default('400') }}">
+                            <div class="hint">{{ __('默认 400 天，够算年同比又不会把表养大；只收 7–7300 天，越界当场夹回默认区间。每天由定时任务剪掉早于这个窗口的行；「总访问」另有终身计数兜底，剪枝不会让它往回掉。') }}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         {% elseif sec == 'update' %}
             <section class="group">
                 <h2>{{ __('程序更新') }}</h2>

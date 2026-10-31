@@ -146,6 +146,40 @@ final class Avatar
     }
 
     /**
+     * `custom` 头像模板拆成「前缀 / 后缀」,给前端按邮箱自己拼图。
+     *
+     * 场景:主题把访客身份存在浏览器里(localStorage),评论框左侧那张头像要即时画出来,
+     * 但这位访客在服务端没有记录 —— 服务端画不了。把站点级 `custom` 模板拆开交给主题,
+     * 前端 `pre + md5(lowercase(email)) + suf` 拼出来的地址与内核 `avatar()` 完全一致
+     * (占位符算法同为 md5(strtolower(email))),访客头像才跟站内头像长得一个样。
+     *
+     * 只有站点头像源是 `custom`、且模板里真有 `{hash}` 时才给值。其余档位
+     * (gravatar / local / upload,以及任何用户级覆盖)前端无法预测,一律返回空串,
+     * 由主题退回自己那张默认图 —— 宁可统一,不要画错人。
+     *
+     * @return array{pre: string, suf: string}
+     */
+    public function templateParts(): array
+    {
+        $source = (string) ($this->options?->get('avatar_source', 'local') ?? 'local');
+
+        if ($source !== 'custom') {
+            return ['pre' => '', 'suf' => ''];
+        }
+
+        $template = trim((string) ($this->options?->get('avatar_source_url', '') ?? ''));
+
+        // 模板里没有占位符就拼不出「按邮箱取图」的地址,交出去只会是死链
+        if ($template === '' || !str_contains($template, '{hash}')) {
+            return ['pre' => '', 'suf' => ''];
+        }
+
+        [$pre, $suf] = explode('{hash}', $template, 2);
+
+        return ['pre' => $pre, 'suf' => $suf];
+    }
+
+    /**
      * 头像源:用户级 usermeta.avatar_source 优先,未设置回退站点 option(旧数据兼容);
      * 值不在合法集合里(脏数据)按 local 处理。
      *

@@ -12,6 +12,7 @@ namespace Molin\Theme;
 
 use Molin\Comment\CommentRepository;
 use Molin\Content\ContentContext;
+use Closure;
 use Molin\Content\ContentRenderer;
 use Molin\Content\Post;
 use Molin\Content\PostRepository;
@@ -23,6 +24,9 @@ use Molin\Option\Options;
 use Molin\Router\PostTypeRoutes;
 use Molin\Router\Router;
 use Molin\Search\Searcher;
+use Molin\Social\BatchRatings;
+use Molin\Social\VoterBatchRatings;
+use Molin\Social\VoterKey;
 use Molin\User\Roles;
 use Molin\User\User;
 use Molin\User\UserRepository;
@@ -74,6 +78,8 @@ final class ListSource
 
     /**
      * @param ?CacheInterface $cache 主色这类单值小结果用的 PSR-16 存储;没注入就直接算(测试与脱装配场景)
+     * @param ?Closure $ratingsProvider 赞踩数的批量口(2026-10-31 增)。传闭包而不是实例:
+     *        列表装配发生在插件 boot() 之前,那时社交实现还收集不到,必须等真正组项时再取。
      */
     public function __construct(
         private readonly PostRepository $posts,
@@ -86,7 +92,8 @@ final class ListSource
         private readonly MediaRepository $media,
         private readonly Store $store,
         private readonly CommentRepository $comments,
-        private readonly ?CacheInterface $cache = null
+        private readonly ?CacheInterface $cache = null,
+        private readonly ?Closure $ratingsProvider = null
     ) {
     }
 
@@ -432,6 +439,41 @@ final class ListSource
     }
 
     /**
+     * 一批文章的赞/踩数,以及当前访客自己投没投(`mine`,2026-10-31 增)。
+     *
+     * 提供商是闭包 —— 列表装配早于插件 boot(),实例那时还不存在。
+     * 取不到实现(没装社交插件)就返回空数组,调用方按 0 / '' 兜底。
+     *
+     * 能力分层:实现了 VoterBatchRatings 的提供商就多要那一列 `mine`(它只多一条
+     * `IN (...) + voter_key = :k`);只实现父接口 BatchRatings 的老插件照旧只给计数,
+     * 不会因为「不认识新接口」而报错 —— 这正是当初另立接口而不是加参数的目的。
+     * 当前请求没有投票标识(没登录、也没那枚 cookie)时不多查,直接走纯计数。
+     *
+     * @param list<int> $ids
+     * @return array<int, array{like:int, dislike:int, mine?:string}>
+     */
+    private function ratingsOf(array $ids): array
+    {
+        if ($this->ratingsProvider === null || $ids === []) {
+            return [];
+        }
+
+        $ratings = ($this->ratingsProvider)();
+
+        if (!$ratings instanceof BatchRatings) {
+            return [];
+        }
+
+        $voterKey = VoterKey::current();
+
+        if ($voterKey !== '' && $ratings instanceof VoterBatchRatings) {
+            return $ratings->ratingsForVoter($ids, $voterKey);
+        }
+
+        return $ratings->ratingsFor($ids);
+    }
+
+    /**
      * 列表行的统一形状:编号 / 标题 / 日期 / 评论数 / 特色图 / 浏览量 / 分类 / 作者。
      *
      * @param list<Post> $found
@@ -447,6 +489,8 @@ final class ListSource
         $authors = $this->authors($ids);
         // 卡片上的评论预览同理:整页一次窗口查询,不逐篇查
         $previews = $this->comments->previewsFor($ids, self::COMMENT_PREVIEW_LIMIT);
+        // 赞踩数(2026-10-31 增):社交插件给了批量口就整页一条查询,没插件就空数组、整列 0
+        $ratings = $this->ratingsOf($ids);
         // 自动摘要要读正文,而列表查询不带 content —— 本页"没写摘要"的行按 id 补一次
         $bodies = $this->listingFull() ? [] : $this->bodies($found);
         $items = [];
@@ -469,6 +513,15 @@ final class ListSource
                 'comments_preview' => $previews[$post->id] ?? [],
                 'thumbnail' => $thumbs[$post->thumbnail_id] ?? null,
                 'views' => $post->view_count,
+                // 赞/踩数(2026-10-31 增)。没有社交插件时三个键都在、两个数是 0、mine 是空串 ——
+                // 与 author/views 同口径,模板不必做 defined 猜谜,也不必自己判插件在不在。
+                // mine(2026-10-31 补)= 当前访客自己投的那一票,服务端算,不靠前端 cookie 回放;
+                // 登录用户换设备/清 cookie 后心形也是实心的。
+                'rating' => [
+                    'like' => (int) ($ratings[$post->id]['like'] ?? 0),
+                    'dislike' => (int) ($ratings[$post->id]['dislike'] ?? 0),
+                    'mine' => (string) ($ratings[$post->id]['mine'] ?? ''),
+                ],
                 'author' => $authors[$post->id] ?? self::EMPTY_AUTHOR,
                 'category' => $first === null ? null : [
                     'name' => (string) $first['name'],

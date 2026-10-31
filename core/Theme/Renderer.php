@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Molin\Theme;
 
 use Closure;
+use Molin\Comment\CommenterCookie;
 use Molin\Content\MetaStore;
 use Molin\Content\Post;
 use Molin\Content\PostRepository;
@@ -24,6 +25,7 @@ use Molin\Option\Options;
 use Molin\Router\Router;
 use Molin\Security\Csrf;
 use Molin\Site\Seo;
+use Molin\User\Avatar;
 use Molin\User\Auth;
 use Twig\Environment;
 use Twig\Extension\DebugExtension;
@@ -810,6 +812,13 @@ final class Renderer
                 'copyright' => '© ' . date('Y') . ' ' . $name,
             ],
             'current_user' => Auth::user(),
+            // 访客上次评论用的昵称/邮箱/网址(2026-10-31 增)。来源是 HttpOnly 记忆 cookie,
+            // 服务端拿得到,所以评论框渲染时就能把头像和昵称画出来,不必等前端补。
+            // 未评论过的访客三个键都在、值全空,模板不必做 defined 猜谜。
+            'commenter' => CommenterCookie::current(),
+            // 头像模板拆好的前缀/后缀(2026-10-31 增):前端要按邮箱自己拼头像时用,
+            // 站点头像源不是 custom 时两个值都是空串,主题据此退回自己的默认图。
+            'avatar_template' => Avatar::instance()->templateParts(),
             // 既有规范的全局变量:表单要带防跨站令牌,主题不该自己想办法弄
             'csrf_token' => Auth::csrfToken(),
             'csrf_field' => Csrf::FIELD,

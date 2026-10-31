@@ -103,6 +103,8 @@ final class Registry
         // admin 域(2)
         'admin/menu/collect'        => 'filter',
         'admin/dashboard/collect'   => 'filter',
+        'admin/editor/collect'      => 'filter',
+        'admin/editor/render'       => 'action',
 
         // system 域(3):两条两段式生命周期钩子 + 插件定时任务收集
         'system/init'               => 'action',
@@ -121,9 +123,7 @@ final class Registry
     /** 既有规范候选钩子:已登记、尚未冻结,启用时补 since 版本号 */
     public const CANDIDATE = [
         'icon/registry/collect'        => 'filter',
-        'admin/editor/collect'         => 'filter',
         'admin/editor-fields/collect'  => 'filter',
-        'admin/editor/render'          => 'action',
         'content/custom-field/render'  => 'filter',
         'admin/post-bulk/collect'      => 'filter',
         'admin/post-row/collect'       => 'filter',

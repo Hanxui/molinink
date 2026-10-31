@@ -89,6 +89,13 @@
                                 data-pick-url="{{ body_pick_url }}" data-upload-url="{{ img_upload_url }}"><svg viewBox="0 0 16 16"><rect x="2.2" y="3.2" width="11.6" height="9.6" rx="1.6"/><circle cx="5.8" cy="6.4" r="1.1"/><path d="M2.6 11.2 6 8.1l2.4 2.1 2.2-2.2 3.2 3.2"/></svg></button>
                         <span class="tsep"></span>
                         <button class="tbtn" type="button" data-cmd="more" aria-pressed="false" aria-label="{{ __('更多格式') }}"><span class="mark">＋</span></button>
+                        {# 插件按钮(既有规范):内核只按 collect 的结果摆位,语义与行为全归插件自己的脚本 #}
+                        {% if editor_buttons %}
+                        <span class="tsep"></span>
+                        {% for button in editor_buttons %}
+                        <button class="tbtn tbtn-ext" type="button" data-editor-btn="{{ button.id }}" aria-label="{{ button.title }}" title="{{ button.title }}">{% if button.svg %}{{ button.svg|raw }}{% else %}<span class="mark">{{ button.label }}</span>{% endif %}</button>
+                        {% endfor %}
+                        {% endif %}
                     </div>
 
                     <div class="eb eb-view" id="ed-view" contenteditable="true" role="textbox" aria-multiline="true" aria-label="{{ __('正文') }}" data-placeholder="{{ __('从这里开始写。') }}">{{ fields.content|raw }}</div>
@@ -351,6 +358,15 @@
         <button class="btn btn-ghost" type="submit" form="ed-form" name="intent" value="draft">{{ __('保存草稿') }}</button>
         <button class="btn btn-primary" type="submit" form="ed-form" name="intent" value="publish">{{ __('发布') }}</button>
     </div>
+
+    {# 插件为编辑页带来的资产(既有规范):地址已由 EditorScreen 校验成根相对,这里只负责摆 #}
+    {% for asset in editor_assets %}
+        {% if asset.type == 'style' %}
+    <link rel="stylesheet" href="{{ asset.src }}">
+        {% else %}
+    <script src="{{ asset.src }}" defer></script>
+        {% endif %}
+    {% endfor %}
 {% endblock %}
 
 {% block dialog %}
@@ -432,4 +448,11 @@
             </div>
         </div>
     {% endif %}
+{% endblock %}
+
+
+{% block overlay %}
+    {# 插件面板/弹层(既有规范):插件自带遮罩与焦点管理,内核只负责'输出 HTML'这一件事 ——
+       这一块必须落在 layout 的 .scrim 之外,否则父层 visibility:hidden 会让它点开也不可见 #}
+    {{ editor_panels|default('')|raw }}
 {% endblock %}

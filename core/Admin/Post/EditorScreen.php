@@ -211,6 +211,8 @@ class EditorScreen extends ListScreen
         // 媒体选择器:特色图片 / 正文插图 / 图片字段三种用途共用同一层(既有规范盒)
         $picker = $isNew ? null : $this->picker($request, (int) $post->id, $this->thumbnailOf($post)['id']);
 
+        $editorExt = $this->editorExtensions();
+
         return $this->view->render('editor.twig', [
             'page_title' => $isNew
                 ? ($isPage ? __('写新页面') : $newDoing)
@@ -240,6 +242,10 @@ class EditorScreen extends ListScreen
             'taxonomy_boxes' => $isCpt ? $this->taxonomyBoxes($post) : [],
             'field_groups' => $fieldGroups,
             'panel_count' => count($fieldGroups['panel']),
+            // 编辑器扩展(既有规范):按钮、资产、面板三段都来自插件,内核只负责摆到位
+            'editor_buttons' => $editorExt['buttons'],
+            'editor_assets' => $editorExt['assets'],
+            'editor_panels' => $editorExt['panels'],
             'type_singular' => $singular,
             'post' => $post,
             'is_new' => $isNew,
@@ -624,6 +630,99 @@ class EditorScreen extends ListScreen
      * @param array<string, mixed> $spec
      * @return array<string, mixed>
      */
+    /**
+     * 编辑器扩展(既有规范):按钮与资产由 `admin/editor/collect` 交出,面板 HTML 由 `admin/editor/render` 现产出。
+     *
+     * 插件是能跑 PHP 的可信代码,面板不再过滤;但按钮与资产要活着进页面,所以形状先过一道 ——
+     * 坏条目丢掉而不是整页打崩(与 collectFields 同口径)。
+     *
+     * @return array{buttons:list<array{id:string,label:string,title:string,svg:string}>,assets:list<array{type:string,src:string}>,panels:string}
+     */
+    private function editorExtensions(): array
+    {
+        $collected = apply_filters('admin/editor/collect', [], $this->managedType);
+
+        $buttons = [];
+        $assets = [];
+
+        foreach (is_array($collected) ? (array) ($collected['assets'] ?? []) : [] as $asset) {
+            if (!is_array($asset)) {
+                continue;
+            }
+
+            $type = (string) ($asset['type'] ?? '');
+            $src = (string) ($asset['src'] ?? '');
+
+            if (!in_array($type, ['style', 'script'], true) || !self::isRootRelative($src)) {
+                continue;
+            }
+
+            $assets[] = ['type' => $type, 'src' => $src];
+        }
+
+        foreach (is_array($collected) ? (array) ($collected['buttons'] ?? []) : [] as $button) {
+            if (!is_array($button)) {
+                continue;
+            }
+
+            $id = (string) ($button['id'] ?? '');
+
+            if (preg_match('/^[a-z][a-z0-9-]{1,30}$/', $id) !== 1) {
+                continue;
+            }
+
+            $label = mb_substr(trim((string) ($button['label'] ?? '')), 0, 8);
+            $svg = self::safeSvg((string) ($button['svg'] ?? ''));
+
+            if ($label === '' && $svg === '') {
+                continue;
+            }
+
+            $buttons[] = [
+                'id' => $id,
+                'label' => $label,
+                'title' => trim((string) ($button['title'] ?? '')) !== '' ? trim((string) $button['title']) : $label,
+                'svg' => $svg,
+            ];
+        }
+
+        // 面板走 action:插件 echo 什么就是什么,收成一段 HTML 交给模板
+        ob_start();
+        do_action('admin/editor/render', $this->managedType);
+        $panels = (string) ob_get_clean();
+
+        return ['buttons' => $buttons, 'assets' => $assets, 'panels' => $panels];
+    }
+
+    /** 后台静态资源只从本站根相对地址来:带协议或 `..` 的地址一律不认 */
+    private static function isRootRelative(string $src): bool
+    {
+        return $src !== ''
+            && str_starts_with($src, '/')
+            && !str_starts_with($src, '//')
+            && !str_contains($src, '..')
+            && preg_match('#^[a-z][a-z0-9+.-]*:#i', $src) !== 1;
+    }
+
+    /**
+     * 按钮图标只收一枚自足 `<svg>`:脚本与事件属性一律不认(不是防插件,是防"图标字段被拼进别的东西")。
+     */
+    private static function safeSvg(string $svg): string
+    {
+        $svg = trim($svg);
+
+        if ($svg === '' || preg_match('#^<svg[\s\S]*</svg>$#i', $svg) !== 1) {
+            return '';
+        }
+
+        if (stripos($svg, '<script') !== false || preg_match('#\son[a-z]+\s*=#i', $svg) === 1) {
+            return '';
+        }
+
+        return $svg;
+    }
+
+
     private function normalizeField(string $key, array $spec, string $value): array
     {
         $control = (string) ($spec['control'] ?? 'text');

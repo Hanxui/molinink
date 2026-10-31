@@ -89,6 +89,9 @@ use Molin\User\RememberTokens;
 use Molin\User\Session;
 use Molin\User\SessionStore;
 use Molin\User\UserRepository;
+use Molin\Site\VisitCounter;
+use Molin\Site\VisitRetention;
+use Molin\Social\DatabaseRatings;
 use Psr\SimpleCache\CacheInterface;
 
 /**
@@ -269,7 +272,9 @@ final class Bootstrap
         $container->set(Cron::class, static fn (Container $c): Cron => new Cron(
             $c->get(SessionStore::class),
             $c->get(RememberTokens::class),
-            (string) $c->get('root')
+            (string) $c->get('root'),
+            // 访问计数的保留策略:cleanup-visits 每天剪一次过期行
+            $c->get(VisitRetention::class)
         ));
         $container->set(ApiKeys::class, static fn (Container $c): ApiKeys => new ApiKeys($c->get(Database::class)));
         $container->set(AppTokens::class, static fn (Container $c): AppTokens => new AppTokens($c->get(Database::class)));
@@ -323,7 +328,19 @@ final class Bootstrap
         // 评论:存取与提交流各一个类;反垃圾的"最低限度"在 Submitter,智能判定交插件
         $container->set(CommentRepository::class, static fn (Container $c): CommentRepository => new CommentRepository($c->get(Database::class)));
 
-        // 站内通知的存取与写入实现由插件经 social/services/collect 注入,内核不再注册实现类
+        // 按天访问计数(2026-10-31 增):主题的访问统计条与 /stats/visits 端点共用
+        $container->set(VisitCounter::class, static fn (Container $c): VisitCounter => new VisitCounter($c->get(Database::class)));
+        // 访问计数的保留策略(2026-10-31 增):只增不删就是无界增长,cron 的 cleanup-visits 用这一份
+        $container->set(VisitRetention::class, static fn (Container $c): VisitRetention => new VisitRetention(
+            $c->get(Database::class),
+            $c->get(Options::class)
+        ));
+
+        // 赞/踩(2026-10-31 增):内核自带实现,赞不再依赖插件才能用。
+        // 装配层(FrontRoutes)的取法是「插件在就用插件的,不在就用这一份」。
+        $container->set(DatabaseRatings::class, static fn (Container $c): DatabaseRatings => new DatabaseRatings($c->get(Database::class)));
+
+        // 关注/粉丝统计、站内通知的实现仍由插件经 social/services/collect 注入,内核不注册实现类
 
         // 状态迁移唯一门(mark 批准/垃圾/回收):后台屏与接口层共用,钩子只在这里触发一次
         $container->set(Moderator::class, static fn (Container $c): Moderator => new Moderator($c->get(CommentRepository::class)));

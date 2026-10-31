@@ -20,6 +20,8 @@ use Molin\Api\ApiController;
 use Molin\Bootstrap;
 use Molin\Cache\CacheManager;
 use Molin\Cache\PageCache;
+use Molin\Comment\CommenterCookie;
+use Molin\Container\Container;
 use Molin\Front\FrontContext;
 use Molin\Front\FrontRoutes;
 use Molin\Http\Request;
@@ -29,6 +31,7 @@ use Molin\Language\Translator;
 use Molin\Plugin\Loader;
 use Molin\Router\Router;
 use Molin\Security\Csrf;
+use Molin\Site\VisitCounter;
 use Molin\Support\Performance\RequestSamples;
 use Molin\Update\Maintenance;
 use Molin\User\Auth;
@@ -139,6 +142,8 @@ try {
         ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET'
         && !isset($_COOKIE['molin_session'])
         && !isset($_COOKIE['molin_remember'])
+        // 访客记忆 cookie 会让页面带上他自己的昵称/邮箱,不能共享给旁人
+        && !isset($_COOKIE['molin_commenter'])
         && !Maintenance::isOn(MOLIN_ROOT)
     ) {
         /** @var array<string, mixed> $fastConfig */
@@ -180,6 +185,11 @@ try {
                     }, (float) ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true)), $fastCacheConfig);
                 }
 
+                // 按天访问计数:快速通道绕过了整个内核装配,自己补一次(失败静默)。
+                // 登录用户走不到这里 —— 上面那个 if 已经挡掉了带 molin_session / molin_remember
+                // 的请求,没有这两条 cookie 就不可能是登录态(详见 VisitCounter::recordFromConfig)。
+                VisitCounter::recordFromConfig($fastConfig);
+
                 header('Content-Type: text/html; charset=utf-8');
                 header('Cache-Control: public, max-age=60, stale-while-revalidate=300');
                 header('ETag: ' . $fastPage['etag']);
@@ -214,6 +224,36 @@ try {
 }
 
 $container = Bootstrap::start(MOLIN_ROOT, $autoloader);
+/*
+ * 按天访问计数(2026-10-31 增):内建缓存命中与正常渲染两个出口共用这一个判定。
+ * 「该不该算」由 VisitCounter::countable 一处定义(方法 / 静态资源 / 机器端点 / 爬虫 / 已登录),
+ * 这里只负责借容器里那个实例记一笔,失败一律静默 —— 统计条不该影响页面。
+ *
+ * 登录态在这一步已经拿得到了:上面 `$auth->attach()` 在路由分发之前就把会话挂上来了
+ * (见本文件「会话挂载要在路由之前」那一节),而这两个出口都在它之后,所以凭 Auth::id()
+ * 判「是不是登录用户在刷自己的站」是可靠的 —— 已登录一律不记账。
+ * 快速通道那一条(本函数定义之前)判不了登录态,它另有门槛,理由写在 countable 的注释里。
+ */
+$recordVisit = static function (Container $container): void {
+    if (!VisitCounter::countable(
+        (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'),
+        (string) ($_SERVER['REQUEST_URI'] ?? '/'),
+        (string) ($_SERVER['HTTP_USER_AGENT'] ?? ''),
+        Auth::id()
+    )) {
+        return;
+    }
+
+    try {
+        $counter = $container->get(VisitCounter::class);
+
+        if ($counter instanceof VisitCounter) {
+            $counter->hit();
+        }
+    } catch (\Throwable) {
+        // 计数失败不影响页面
+    }
+};
 
 $front = FrontContext::fromContainer($container);
 $frontRoutes = new FrontRoutes($front);
@@ -361,16 +401,21 @@ $loggedIn = PageCache::isLoggedIn(Auth::id());
  *   ② 口令解锁态 —— 解锁之后能看到正文,缓存下来等于把私密正文端给所有人。
  * 这两条都在会话里,判起来是常数开销;除它们以外,匿名访客(哪怕带着会话 cookie)照常命中。
  */
-$personalised = $session !== null && (
+$personalised = ($session !== null && (
     (array) ($session->data['pending_comments'] ?? []) !== []
     || (array) ($session->data['unlocked_posts'] ?? []) !== []
-);
+))
+    // 带访客记忆 cookie 时,页面里的昵称/邮箱/头像属于这个人 —— 存下来就等于端给所有人
+    || $request->cookie(CommenterCookie::COOKIE) !== null;
 $cacheUsable = !$loggedIn && !$personalised;
 
 if ($pageCacheOn && $cacheUsable) {
     $cachedPage = $pageCache->fastHit($request->method(), $requestUri);
 
     if ($cachedPage !== null) {
+        $recordVisit($container);
+
+
         header('Content-Type: text/html; charset=utf-8');
         header('Cache-Control: public, max-age=60, stale-while-revalidate=300');
         header('ETag: ' . $cachedPage['etag']);
@@ -442,4 +487,11 @@ if ($pathNow === '/admin' || $pathNow === '/admin/' || str_starts_with($pathNow,
     ]);
 }
 
+// 按天访问计数:只统计真正送达读者的整页(200 + HTML),404 / 跳转 / JSON 端点都不算。
+// 快速通道与内建缓存命中另有各自的记录点,三处合起来才等于「页面被打开了多少次」。
+if ($response->status() === 200
+    && str_contains((string) ($response->headers()['Content-Type'] ?? ''), 'text/html')
+) {
+    $recordVisit($container);
+}
 $response->withHeaders(SecurityHeaders::apply($response->headers(), $request->isSecure(), $csp))->send();

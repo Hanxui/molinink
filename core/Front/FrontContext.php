@@ -24,6 +24,8 @@ use Molin\Media\MediaRepository;
 use Molin\Media\Store;
 use Molin\Option\Options;
 use Molin\Router\Router;
+use Molin\Social\BatchRatings;
+use Molin\Social\DatabaseRatings;
 use Molin\Search\Searcher;
 use Molin\Theme\ListSource;
 use Molin\Theme\Renderer;
@@ -67,6 +69,21 @@ final class FrontContext
         /** @var ?CacheInterface $cache 主色结果的跨请求存储;装配线没给就退回本请求内计算 */
         $cache = $container->has(CacheInterface::class) ? $container->get(CacheInterface::class) : null;
 
+        /*
+         * 列表层的赞/踩数(2026-10-31 增)。
+         * 这里必须传**闭包**而不是实例 —— 列表装配发生在 index.php 的 plugins->boot() 之前,
+         * 那一刻插件还没把实现挂到钩子上,现在取只会拿到 null。等真正组项时再解析一次就对了。
+         * 取法与文章页一致:插件在就用插件的批量口,不在就退到内核自带的 DatabaseRatings。
+         */
+        $ratingsProvider = static function () use ($container): BatchRatings {
+            $collected = apply_filters('social/services/collect', ['social' => null, 'notifications' => null, 'notifier' => null]);
+            $socialService = is_array($collected) ? ($collected['social'] ?? null) : null;
+
+            return $socialService instanceof BatchRatings
+                ? $socialService
+                : $container->get(DatabaseRatings::class);
+        };
+
         $listSource = new ListSource(
             $posts,
             $container->get(TermAssigner::class),
@@ -78,7 +95,8 @@ final class FrontContext
             $container->get(MediaRepository::class),
             $container->get(Store::class),
             $container->get(CommentRepository::class),
-            $cache
+            $cache,
+            $ratingsProvider
         );
 
         $context = new self($container, $renderer, $listSource, $posts, $options);

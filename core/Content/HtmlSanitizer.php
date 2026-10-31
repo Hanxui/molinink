@@ -64,6 +64,29 @@ final class HtmlSanitizer
             return '';
         }
 
+        // 正文里"比大小"的尖括号很常见(代码块、数学式),libxml 会把 `< $b` / `<n` / `a<b)` 当成标签开头,
+        // 一路吞到下一个 `>` 甚至吞到结尾。分两步把"不像标签"的尖括号先转成文字。
+        // ① 尖括号后面根本不是字母: `< 6`、`<$a`
+        $html = (string) preg_replace('/<(?![a-zA-Z\/!?])/', '&lt;', $html);
+        // ② 像标签开头、但名字后面不是空白 / `>` / `/` 的: `a<b)`、`i<n;`
+        //    断言里带上字母数字,否则正则会回溯成 `<di` 把 `<div>` 这种正常标签也误伤
+        $html = (string) preg_replace('/<([a-zA-Z][a-zA-Z0-9]*)(?![a-zA-Z0-9\s>\/])/', '&lt;$1', $html);
+        // ③ 剩下的都是"长得像标签"的:白名单照旧,未登记的按老规矩"剥标签留文字",
+        //    但前提是它真有闭合 —— 没有闭合的多半仍是正文里的尖括号
+        $html = (string) preg_replace_callback(
+            '/<(\/?)([a-zA-Z][a-zA-Z0-9]*)/',
+            static function (array $m) use ($html): string {
+                $name = strtolower($m[2]);
+
+                if (in_array($name, self::TAGS, true) || in_array($name, self::DROP_WITH_CONTENT, true)) {
+                    return $m[0];
+                }
+
+                return str_contains($html, '</' . $name . '>') ? $m[0] : '&lt;' . $m[1] . $m[2];
+            },
+            $html
+        );
+
         // libxml 默认按 ISO-8859-1 读片段,中文会被拆成乱码字节;先转数字实体再解析
         $packed = mb_encode_numericentity($html, [0x80, 0x10FFFF, 0, 0x10FFFF], 'UTF-8');
         $previous = libxml_use_internal_errors(true);
@@ -91,7 +114,9 @@ final class HtmlSanitizer
 
         foreach ($nodes as $node) {
             if ($node instanceof \DOMText) {
-                $out .= htmlspecialchars($node->data, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+                // 文本节点只处理 & < >:ENT_QUOTES 会把引号写成 &quot;,
+                // 而正文里的引号是作者写的内容(短代码属性、引语),转义了就得原样显示出来
+                $out .= htmlspecialchars($node->data, ENT_NOQUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
                 continue;
             }

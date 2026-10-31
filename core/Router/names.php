@@ -45,6 +45,11 @@ return [
     'sitemap'        => ['methods' => ['GET'], 'paths' => ['/sitemap.xml']],
     'robots'         => ['methods' => ['GET'], 'paths' => ['/robots.txt']],
     'comment.submit' => ['methods' => ['POST'], 'paths' => ['/comment']],
+    // 2026-10-31 增两格（访客记忆与访问统计）：
+    //   commenter.forget —— 访客「清除你的个人信息」，只清自己浏览器的记忆 cookie
+    //   stats.visits     —— 访问统计条的只读 JSON，公开读，与其余前台读端点同口径
+    'commenter.forget' => ['methods' => ['POST'], 'paths' => ['/commenter/forget']],
+    'stats.visits'   => ['methods' => ['GET'], 'paths' => ['/stats/visits']],
     // 2026-10-20 增四格（站内通知）：列表片段只给登录用户，已读/删除走 POST + CSRF
     'notifications.list'   => ['methods' => ['GET'], 'paths' => ['/notifications']],
     'notifications.count'  => ['methods' => ['GET'], 'paths' => ['/notifications/count']],

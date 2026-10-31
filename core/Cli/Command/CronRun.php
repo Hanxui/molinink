@@ -25,7 +25,7 @@ use Symfony\Component\Console\Output\OutputInterface;
  * 不必给每个任务单独挂一条 crontab。
  *
  * CLI 不会自动加载插件,先 boot 一遍装载器再收集任务;否则插件的 `system/cron/collect`
- * 回调根本不会注册,列表里永远只有内建的两条。
+ * 回调根本不会注册,列表里永远只有内核自带的那几条。
  */
 final class CronRun extends BaseCommand
 {

@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Molin\Front;
 
 use Molin\Api\ListFragmentController;
+use Molin\Comment\CommenterCookie;
 use Molin\Comment\Submitter;
 use Molin\Comment\Thread;
 use Molin\Content\ContentRenderer;
@@ -35,6 +36,9 @@ use Molin\Notification\NotificationRepository;
 use Molin\Notification\Notifier;
 use Molin\Router\PostTypeRoutes;
 use Molin\Router\Router;
+use Molin\Site\VisitCounter;
+use Molin\Social\DatabaseRatings;
+use Molin\Social\Ratings;
 use Molin\Social\SocialRepository;
 use Molin\User\Auth;
 use Molin\User\Authorizer;
@@ -108,6 +112,13 @@ final class FrontRoutes
         $socialService = $services['social'] ?? null;
         $social = $socialService instanceof SocialRepository ? $socialService : null;
 
+        /*
+         * 赞/踩(2026-10-31 增):插件在就用插件的实现,不在就退到内核自带的 DatabaseRatings。
+         * 赞是内容主题的最低配 —— 之前的取法是「插件停用 => 投票接口回 404 => 主题的赞按钮变死按钮」,
+         * 那个结果不该由「要不要关注、要不要通知」这类社交扩展的开关来决定。
+         */
+        $ratings = $socialService instanceof Ratings ? $socialService : $container->get(DatabaseRatings::class);
+
         $notificationService = $services['notifications'] ?? null;
         $notifications = $notificationService instanceof NotificationRepository ? $notificationService : null;
 
@@ -118,7 +129,7 @@ final class FrontRoutes
             $this->context,
             $container->get(ContentRenderer::class),
             $router,
-            $social,
+            $ratings,
             $terms,
             $container->get(MediaRepository::class),
             $container->get(Store::class),
@@ -152,6 +163,7 @@ final class FrontRoutes
             'social' => new SocialController(
                 $this->context,
                 $social,
+                $ratings,
                 $container->get(UserRepository::class),
                 $notifier
             ),
@@ -213,6 +225,24 @@ final class FrontRoutes
 
         $router->add('social.follow', 'POST', '/social/follow', fn (Request $request, array $vars = []): Response => $this->controllers()['social']->follow($request));
         $router->add('social.rate', 'POST', '/social/rate', fn (Request $request, array $vars = []): Response => $this->controllers()['social']->rate($request));
+
+        /*
+         * 2026-10-31 增两格。
+         *
+         * `commenter.forget`:访客点「清除你的个人信息」时把记忆 cookie 清掉。这条不校验防跨站令牌 ——
+         *   它不碰任何服务端状态,只让调用方自己的浏览器忘掉昵称/邮箱,伪造请求最多是让别人
+         *   重新填一次名字,没有可利用面。
+         * `stats.visits`:主题访问统计条轮询用的只读 JSON,免会话免 CSRF,与其余前台读端点同口径;
+         *   带 no-store,免得 CDN 把旧数字缓存住。
+         */
+        $router->add('commenter.forget', 'POST', '/commenter/forget', static fn (Request $request): Response => CommenterCookie::clear(Response::json(['ok' => true]), $request->isSecure()));
+
+        $router->add('stats.visits', 'GET', '/stats/visits', function (Request $request): Response {
+            /** @var VisitCounter $counter */
+            $counter = $this->context->container()->get(VisitCounter::class);
+
+            return Response::json($counter->stats())->withHeaders(['Cache-Control' => 'no-store']);
+        });
 
         $router->add('notifications.list', 'GET', '/notifications', fn (Request $request, array $vars = []): Response => $this->controllers()['notification']->listItems($request, $vars));
         $router->add('notifications.count', 'GET', '/notifications/count', fn (Request $request, array $vars = []): Response => $this->controllers()['notification']->count($request, $vars));

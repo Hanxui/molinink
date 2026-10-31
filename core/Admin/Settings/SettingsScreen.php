@@ -20,6 +20,7 @@ use Molin\Language\Translator;
 use Molin\Option\Options;
 use Molin\Router\Router;
 use Molin\Security\Csrf;
+use Molin\Site\VisitRetention;
 use Molin\User\Auth;
 
 /**
@@ -115,6 +116,9 @@ final class SettingsScreen
             'upload_types' => 'jpg jpeg png gif webp pdf zip mp4 webm mp3',
             'update_channel' => 'dev',
             'update_auto' => '0',
+            // 访问计数的保留期(2026-10-31 增)。默认值只在 VisitRetention 里定义一次,
+            // 这里跟它取同一个常量 —— 别再抄一个 400 出来
+            'visits_retention_days' => (string) VisitRetention::DEFAULT_DAYS,
         ];
 
         $values = [];
@@ -239,11 +243,20 @@ final class SettingsScreen
                 'exif_policy' => ['type' => 'select', 'default' => 'strip', 'options' => ['strip']],
                 'upload_types' => ['type' => 'text', 'default' => 'jpg jpeg png gif webp pdf zip mp4 webm mp3'],
             ],
-            // 缓存组暂无「可配」字段:缓存开关在 config.php 的 cache 段,这一组本来就不写库。
+            // 缓存组:缓存开关在 config.php 的 cache 段,这一组本来就不写库。
             // (2026-10-12 更正旧注释"既有规范的数据缓存适配器与页面缓存都还没落地"—— 已过时:
             //  0.74.0 起 CacheManager / PageCache 已接线,设置页与仪表盘显示的是实际生效的后端。)
-            // 页面上只放只读说明,不留会写库的输入 —— 有输入却没人读,就是会说谎的开关。
-            'cache' => [],
+            // 页面上只放只读说明 —— 有输入却没人读,就是会说谎的开关。
+            // 唯一的例外是访问计数的保留期(2026-10-31 增):它确实会被 cron 的 cleanup-visits
+            // 天天读,放在这一组是因为它同属"存下来的东西留多久"这类运维口径,而不是内容或外观偏好。
+            'cache' => [
+                'visits_retention_days' => [
+                    'type' => 'int',
+                    'default' => (string) VisitRetention::DEFAULT_DAYS,
+                    'min' => VisitRetention::MIN_DAYS,
+                    'max' => VisitRetention::MAX_DAYS,
+                ],
+            ],
             'update' => [
                 // 2026-10-23 起只留开发版一条官方通道(stable 源已下线),正式版源恢复时再把 stable 加回来
                 'update_channel' => ['type' => 'select', 'default' => 'dev', 'options' => ['dev']],
