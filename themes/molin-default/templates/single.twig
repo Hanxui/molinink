@@ -1,7 +1,11 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {# 单篇:文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
    post.content 是内核已处理的正文(可信富文本),允许 |raw,该位置由契约测试登记复核。
-   category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。 #}
+   category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。
+   评论表单里的昵称/邮箱/网址三格回填内核 `commenter` 全局(来源是 HttpOnly 记忆 cookie,
+   见 core/Comment/CommenterCookie.php):三个键恒在、没填过就是空串,所以直接当 value 渲染,
+   不必做 defined 判断;只走服务端回填,不用 JS 二次覆盖,免得顶掉访客正在输入的内容。
+   这三个值都是用户输入,交给 Twig 自动转义,不加 raw 过滤器。蜜罐 website_hp 反垃圾,永不预填。 #}
 <!DOCTYPE html>
 <html lang="{{ html_lang() }}">
 <head>
@@ -121,15 +125,15 @@
                         {% else %}
                         <div class="f">
                             <label>{{ __('昵称', 'theme') }}<span class="req">*</span></label>
-                            <input type="text" name="author_name">
+                            <input type="text" name="author_name" value="{{ commenter.author|default('') }}">
                         </div>
                         <div class="f">
                             <label>{{ __('邮箱', 'theme') }}<span class="req">*</span></label>
-                            <input type="email" name="author_email">
+                            <input type="email" name="author_email" value="{{ commenter.mail|default('') }}">
                         </div>
                         <div class="f">
                             <label>{{ __('网址', 'theme') }}</label>
-                            <input type="url" name="author_url" placeholder="{{ __('选填', 'theme') }}">
+                            <input type="url" name="author_url" placeholder="{{ __('选填', 'theme') }}" value="{{ commenter.url|default('') }}">
                         </div>
                         {% endif %}
                         <div class="f full">

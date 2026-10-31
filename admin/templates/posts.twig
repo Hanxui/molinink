@@ -84,7 +84,7 @@
 
         {% for row in rows %}
             <div class="tr{% if quick_id == row.id %} qe{% endif %}" data-rows>
-                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择既有规范', 'molin', row.label) }}"></span>
+                <span><input type="checkbox" class="cb" name="ids[]" value="{{ row.id }}" form="bulk-form" aria-label="{{ __('选择《%s》', 'molin', row.label) }}"></span>
                 <div class="ttl">
                     <div class="t">
                         {% if row.edit_url %}<a href="{{ row.edit_url }}">{{ row.label }}</a>{% else %}{{ row.label }}{% endif %}

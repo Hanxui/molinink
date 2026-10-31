@@ -2,6 +2,31 @@
 
 格式参照 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)；版本号「主.次.小」三位，每次改动必升版本。
 
+## [0.2.8] - 2026-10-31
+
+### 新增
+
+- **赞/踩成为内核能力，不再依赖社交插件**：新增 `core/Social/Ratings.php`（窄接口）、`BatchRatings.php`（批量计数）、`DatabaseRatings.php`（内核实装）。装配层优先取插件给的实现（`instanceof`），插件缺席时回落到内核那份，两条路给模板的数据形状完全一致。
+    - 起因：插件停用后投票端点回 404，主题的赞按钮变成「点了没反应」的死按钮，而赞是内容主题最低配。
+    - `SocialRepository` 老接口一字未动，插件侧只需多实现两个新接口。
+- **访客身份**：游客成功提交评论后种 `molin_commenter`（HttpOnly、30 天、SameSite=Lax），并注入 Twig 全局 `commenter`（`author` / `mail` / `url`）；新增 `commenter.forget` 供访客自行清除。首屏就能带出昵称与头像，不必等用户在表单里重填一遍。
+- **访问统计**：`{p}visits` 日粒度表 + `Service` `VisitCounter` + 只读端点 `GET /stats/visits`（今日 / 昨日 / 近 7 天 / 近 30 天 / 总）。
+    - 已登录账号一律不计数（包括整页缓存命中的快速通道），登出即恢复；读接口不受影响。
+    - 新增 `VisitRetention` 与内建 cron 任务 `cleanup-visits`（默认保留 400 天，可配 7~7300）。剪枝在一个事务里**先**把待删行的 hits 累加进终身计数、**再**删行，`--dry-run` 不碰数据，重复执行不漂移。
+- **后台**：设置页「缓存」组新增「访问统计保留天数」。该组此前不留会写库的输入，这一格是唯一例外 —— 它确实被 cron 天天读。
+
+### 变更
+
+- **列表每一项的 `rating` 多一个 `mine`**：`{like, dislike, mine}`，`mine ∈ '' | 'like' | 'dislike'`。为此另立 `Social\VoterBatchRatings` 子接口而不给 `BatchRatings` 既有方法加参数 —— 接口加参数会让所有已发布插件在加载时致命错误。`VoterKey` 收口投票标识（`u{id}` / `g{raw}`）。
+- **评论预览多两个键**：`parent_author`（父评论作者昵称，只给昵称不给链接）与 `author_url`（评论者填的个人网址，空串表示没填）。
+- **`VisitCounter` 只依赖 `Database`**：终身计数由 `prunedTotal()` 直读 options 行。`Options` 有进程内缓存，剪枝与取数在同一进程会读到剪枝前的值，同一站点「先剪枝后取数」会少算。
+- **从内部开发版回流**：编辑器扩展五件套（`EditorScreen` / `Hook\Registry` / `Hook\signatures` / `admin/templates/editor.twig` / `admin/templates/layout.twig` 的 overlay 块，缺它插件面板会被静默丢弃）；`HtmlSanitizer` 补「不像标签的尖括号」预处理（正文里的 `< 6`、`a<b)` 不再被 libxml 当成标签开头吞掉后文），文本节点改用 `ENT_NOQUOTES`（元素内容里的引号无需转义；生成属性那一处仍 `ENT_QUOTES`）。
+- `Kernel::VERSION` 0.2.6 → 0.2.8。
+
+### 修复
+
+- **两处用户可见文案被文档脱敏误伤**：`admin/templates/posts.twig` / `pages.twig` / `posttype.twig` 的批量勾选框 `aria-label` 里 `__('选择《%s》')` 的占位符被吃成「选择既有规范」，行名念不出来（读屏用户只听到一句话）；`install/templates/site.twig` 的提示句「会建一篇既有规范…」改成实际的欢迎文章标题。
+- 版本号从 0.2.6 直接跳到 0.2.8：0.2.7 是内部开发版的递增，没有对外记录，那批改动（编辑器扩展）已并入本条。
 ## [0.2.6] - 2026-10-27
 
 ### 修复
