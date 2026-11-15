@@ -51,6 +51,7 @@ jobs:
           files: |
             molin-*.zip
             molin-*.zip.sha256
+          body_from_tag: false
           body: |
             安装包自带 `vendor/`，解压到站点根目录即可安装，不需要 composer。
 
@@ -62,3 +63,9 @@ jobs:
             The package bundles `vendor/`: unzip it into your site root and run the installer — no Composer needed.
 
             **这是测试版（0.x）**，升级前请备份。
+
+            ---
+
+            ## 本次更新
+
+            更新内容以 [CHANGELOG.md](https://github.com/Hanxui/molinink/blob/main/CHANGELOG.md) 对应版本条目为准。
