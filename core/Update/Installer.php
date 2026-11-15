@@ -19,7 +19,7 @@ use Molin\Support\Files;
 use Throwable;
 
 /**
- * 升级执行链(既有规范–9 步):备份 → 维护模式 → 下载校验 → 替换 → 迁移 → 自检 → 退出。
+ * 升级执行链(升级机制设计、更新页界面规格第 3–9 步):备份 → 维护模式 → 下载校验 → 替换 → 迁移 → 自检 → 退出。
  *
  * **"失败不影响当前版本"是靠三段做到的**:
  *   ① 动文件之前(备份、下载、校验)出的错 —— 退维护模式就完事,一个字节没改;
@@ -55,7 +55,7 @@ final class Installer
 
     public const JOB = 'update';
 
-    /** 九步 */
+    /** 九步(更新页界面规格) */
     public const TOTAL = 9;
 
     public function __construct(
@@ -75,7 +75,7 @@ final class Installer
      * @param array<string, mixed> $manifest 已验过签名的清单
      * @param bool $preflightOk 前置体检八项是否全过(调用方算;不在这里重算)
      * @param bool $backup 动文件前要不要先做一份备份。默认做;更新页"不勾备份"时由调用方传 false
-     *                     (2026-10-13 作者定:不再强制备份,但跳过后失败时数据库无法自动还原)
+     *                     (2026-10-13 按现行设计:不再强制备份,但跳过后失败时数据库无法自动还原)
      * @return array{ok:bool, step:int, message:string}
      */
     public function run(array $manifest, string $manifestUrl, string $current, bool $preflightOk, bool $backup = true): array
@@ -91,7 +91,7 @@ final class Installer
             return ['ok' => false, 'step' => 1, 'message' => '这份清单不合规,不动手。'];
         }
 
-        // 降级不在本链的能力范围内:本链只做"升到更新版本"。
+        // 降级不在本链的能力范围内(升级机制设计、更新页界面规格):本链只做"升到更新版本"。
         // 旧版代码配上被新版本迁移过的库结构会出事,而本链没有"把库退回旧结构"的能力(第 7 步只往前跑迁移),
         // 所以在这里直接拒绝,不换文件、不碰库 —— 这与"升级失败自动回滚"是两件事。
         // 少了这道闸,任何人拿一份旧版清单进来都会得到"新库旧代码",比没有回滚按钮更糟。
@@ -123,7 +123,7 @@ final class Installer
         $this->progress->begin(self::JOB);
         $this->progress->advance(2, self::TOTAL, '体检八项全过', 'check');
 
-        // ---- ③ 备份(动文件之前;做不做由调用方定 —— 2026-10-13 作者定:更新页默认不备份) ----
+        // ---- ③ 备份(动文件之前;做不做由调用方定 —— 2026-10-13 按现行设计:更新页默认不备份) ----
         // 不做时锁里不留 backup,后面"失败还原数据库"那两处会照旧跳过(文件级回滚不受影响),
         // 页面上第 ③ 步也会如实显示「跳过备份」,不撒谎。
         $this->mark($lock, 3);

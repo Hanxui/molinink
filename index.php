@@ -23,6 +23,7 @@ use Molin\Cache\PageCache;
 use Molin\Comment\CommenterCookie;
 use Molin\Container\Container;
 use Molin\Front\FrontContext;
+use Molin\Install\BootstrapPages;
 use Molin\Front\FrontRoutes;
 use Molin\Http\Request;
 use Molin\Http\Response;
@@ -94,40 +95,7 @@ HTML;
 $autoloader = require MOLIN_ROOT . '/vendor/autoload.php';
 
 if (!Bootstrap::isConfigured(MOLIN_ROOT)) {
-    // 第一次打开站点(还没装):别只回一行纯文本 —— 一个陌生用户不该靠猜才知道下一步是 /install/。
-    // 样式内联、不引外部资源:这时容器还没起来,任何外链都可能二次失败(既有规范同一条道理)。
-    http_response_code(503);
-    header('Content-Type: text/html; charset=utf-8');
-    echo <<<'HTML'
-<!doctype html><html lang="zh-Hans"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>站点还没装好 · 墨林</title>
-<style>
- body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#FAFAF8;color:#1B1C1E;
-      font:16px/1.7 "Noto Serif SC","Songti SC",Georgia,serif}
- .card{max-width:600px;padding:40px 36px;background:#fff;border:1px solid #E5E3DE;border-radius:6px}
- h1{margin:0 0 12px;font-size:26px;font-weight:400}
- p{margin:0 0 14px;color:#3A3A38}
- ol{margin:0 0 18px;padding-left:1.2em;color:#3A3A38}
- code{font-family:Consolas,monospace;background:#F3F2EE;padding:1px 5px;border-radius:3px;font-size:14px}
- a.btn{display:inline-block;padding:10px 22px;background:#1B1C1E;color:#FAFAF8;text-decoration:none;border-radius:4px}
- .sub{color:#85837E;font-size:13px;margin-top:18px}
-</style></head><body>
-<div class="card">
-  <h1>站点还没装好</h1>
-  <p>这台站还没有配置文件，先跑一遍安装向导。三步：</p>
-  <ol>
-    <li>打开 <a href="/install/">/install/</a>，按提示填数据库与管理员账号；</li>
-    <li>装完后删掉服务器上的 <code>install/</code> 目录；</li>
-    <li>按安装目录里 <code>服务器配置.txt</code> 加两条服务器规则（图片显示、备份防下载）。</li>
-  </ol>
-  <p><a class="btn" href="/install/">开始安装 →</a></p>
-  <p class="sub">已经在装、但这里还是这一页？检查站点根目录下有没有 <code>config.php</code>；也可以把 <code>config.example.php</code> 复制成 <code>config.php</code> 手填。</p>
-</div></body></html>
-HTML;
-
-    return;
+    BootstrapPages::notInstalled();
 }
 
 /*
@@ -438,6 +406,16 @@ if ($pageCacheOn && $cacheUsable) {
 }
 
 $response = $router->dispatch($request);
+
+// 404 接管口(候选钩子):分发没命中的请求,插件可整体换一份响应(如暗门入口页)。
+// 放在 pendingCookies 之前 —— 接管者自带的 Set-Cookie 随自己的响应走,互不掺和。
+if ($response->status() === 404) {
+    $replaced = apply_filters('route/not-found/replace', null, $request->path());
+
+    if ($replaced instanceof \Molin\Http\Response) {
+        $response = $replaced;
+    }
+}
 
 foreach ($auth->pendingCookies() as $cookie) {
     $response = $response->withCookie($cookie['name'], $cookie['value'], $cookie['maxAge'], $request->isSecure());

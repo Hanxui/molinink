@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 插件加载期失败:入口文件读不到、依赖不满足、契约不兼容等。
+ * 插件加载期失败:入口文件读不到、依赖不满足、契约不兼容等。见错误与日志设计第 1 节。
  */
 class PluginLoadException extends PluginException
 {

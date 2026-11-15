@@ -13,7 +13,7 @@ namespace Molin\Migrations;
 use Molin\Database\Database;
 
 /**
- * 迁移基类:把数据层与表前缀递给具体迁移。命名规范。
+ * 迁移基类:把数据层与表前缀递给具体迁移。命名规范见自动加载约定第 6 节。
  */
 abstract class AbstractMigration implements Migration
 {
@@ -22,7 +22,7 @@ abstract class AbstractMigration implements Migration
     }
 
     /**
-     * 表前缀,用于把既有规范里的 `{p}` 落成真实表名。
+     * 表前缀,用于把数据模型设计里的 `{p}` 落成真实表名。
      */
     protected function prefix(): string
     {

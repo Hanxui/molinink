@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 主题相关错误:清单不合法、模板找不到、父主题成环。
+ * 主题相关错误:清单不合法、模板找不到、父主题成环。见错误与日志设计第 1 节。
  */
 class ThemeException extends MolinException
 {

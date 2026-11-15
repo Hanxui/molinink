@@ -11,9 +11,9 @@ declare(strict_types=1);
 namespace Molin\Plugin;
 
 /**
- * 能力词表(既有规范是唯一权威来源,既有规范只是摘录)。
+ * 能力词表(能力清单是唯一权威来源,插件清单schema第 6 节只是摘录)。
  *
- * 此处只承载词表本身;"未声明即拒绝"的门卫拦截点在既有规范
+ * 此处只承载词表本身;"未声明即拒绝"的门卫拦截点在能力清单第 6 节,
  * 那要等内核门卫层(HTTP / 文件 / DB 包装)与插件清单校验落地后接入。
  */
 final class Capability
@@ -62,10 +62,10 @@ final class Capability
         'frontend.asset',
     ];
 
-    /** 预定义保留名:插件不得自定义同名 */
+    /** 预定义保留名:插件不得自定义同名(能力清单第 10 节) */
     public const RESERVED = ['db.direct', 'file.write', 'user.role.change', 'auth.hook', 'crypto.keys'];
 
-    /** 旧名 => 规范名,清单校验按此提示改法 */
+    /** 旧名 => 规范名(能力清单第 11 节),清单校验按此提示改法 */
     public const DEPRECATED = [
         'network'          => 'http.outbound',
         'filesystem.write' => 'file.write',
@@ -76,7 +76,7 @@ final class Capability
     ];
 
     /**
-     * 已从词表移除、无替代名的旧写法:
+     * 已从词表移除、无替代名的旧写法(能力清单第 11 节):
      * filesystem.read 不设独立能力;eval / exec 在 PHP 层拦不住,声明它只会制造虚假安全感。
      */
     public const REVOKED = ['filesystem.read', 'eval', 'exec'];

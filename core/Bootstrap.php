@@ -140,7 +140,7 @@ final class Bootstrap
         // 钩子总线是进程内单例:注册成服务,渲染器按容器取同一份
         $container->instance(HookBus::class, HookBus::instance());
 
-        // 缓存统一入口(既有规范/§4):按 config.php 的 cache 段装配,并 boot 成全局实例。
+        // 缓存统一入口(既有规范):按 config.php 的 cache 段装配,并 boot 成全局实例。
         // yac / redis 扩展缺失或适配器未落地时 fromConfig 会**如实降级为文件后端**,健康屏显示真状态。
         $container->set(CacheManager::class, static function (Container $c): CacheManager {
             /** @var array<string, mixed> $config */
@@ -344,7 +344,7 @@ final class Bootstrap
 
         // 状态迁移唯一门(mark 批准/垃圾/回收):后台屏与接口层共用,钩子只在这里触发一次
         $container->set(Moderator::class, static fn (Container $c): Moderator => new Moderator($c->get(CommentRepository::class)));
-        // 前台评论树(既有规范/§3):已通过 + "仅你可见"的待审,按 comment_nest_depth 压平
+        // 前台评论树(既有规范):已通过 + "仅你可见"的待审,按 comment_nest_depth 压平
         $container->set(Thread::class, static fn (Container $c): Thread => new Thread(
             $c->get(CommentRepository::class),
             $c->get(Options::class),
@@ -504,7 +504,7 @@ final class Bootstrap
             // 2026-10-17:健康屏改成"按了才测",检测结果要存一份快照给下一次进页面读
             $c->get(Options::class)
         ));
-        // 用户新建与编辑:进页/保存保守挂在 user.create(既有规范待裁)
+        // 用户新建与编辑:进页/保存保守挂在 user.create(权限粒度待后续细化)
         $container->set(UserEditController::class, static fn (Container $c): UserEditController => new UserEditController(
             $c->get(AdminView::class),
             $c->get(UserRepository::class),
@@ -523,7 +523,7 @@ final class Bootstrap
             $c->get(Loader::class),
             $c->get(Router::class)
         ));
-        // 修订版本比对:属「文章」组;post_revisions 只读,"恢复"本轮只留痕(§11-4 语义待裁)
+        // 修订版本比对:属「文章」组;post_revisions 只读,"恢复"本轮只记录修订,不覆盖正文(语义待后续细化)
         $container->set(RevisionRepository::class, static fn (Container $c): RevisionRepository => new RevisionRepository(
             $c->get(Database::class)
         ));
@@ -605,7 +605,7 @@ final class Bootstrap
         ));
 
         /*
-         * 缓存失效接线(既有规范/§6.3),按影响范围分三档 —— 能从事件里认出"只动了哪一篇"的
+         * 缓存失效接线(既有规范),按影响范围分三档 —— 能从事件里认出"只动了哪一篇"的
          * 就只清那一篇,认不出来的保持整片清。原则:宁可多清一份,不能留下脏页。
          *
          *   事件                                 数据缓存                        整页缓存
@@ -620,9 +620,9 @@ final class Bootstrap
         };
 
         foreach ([
-            'content/save/after',      // 文章 / 页面保存(带上 $post)
-            'content/delete/before',   // 文章 / 页面删除(带上 $post)
-            'post/status/after',       // 回收站 / 状态迁移(带上 $post)
+            'content/save/after',      // 文章、页面保存(带上 $post)
+            'content/delete/before',   // 文章、页面删除(带上 $post)
+            'post/status/after',       // 回收站、状态迁移(带上 $post)
         ] as $hook) {
             add_action($hook, $contentChanged);
         }

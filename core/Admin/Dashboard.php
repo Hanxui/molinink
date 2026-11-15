@@ -22,14 +22,14 @@ use Molin\Update\Feed;
 use Molin\User\UserRepository;
 
 /**
- * 仪表盘的读模型(既有规范)。
+ * 仪表盘的读模型(仪表盘界面规格)。
  *
  * 只读,不写:数一数、取最近几条、报四项健康。评论的审核动作在 AdminController 里,
  * 因为那是"改数据",与这一屏的取数分开放,免得读模型顺手带上写权限。
  */
 final class Dashboard
 {
-    /** 双栏各取 5 与 3,再多就没进设计稿 */
+    /** 仪表盘界面规格:双栏各取 5 与 3,再多就没进设计稿 */
     private const RECENT_POSTS = 5;
 
     private const RECENT_COMMENTS = 3;
@@ -55,7 +55,7 @@ final class Dashboard
 
         return [
             'page_kind' => 'dashboard',
-            // 三句导语(既有规范/§10.1;待审为零那句作者 2026-10-01 已点头)
+            // 三句导语(仪表盘界面规格;待审为零那句已确认)
             'lede' => $postCount === 0
                 ? __('站点还是空的。先写下第一篇，其余会跟着长起来。')
                 : ($pending > 0 ? __('站点此刻的样子。有新的评论等你过目，其余一切安好。') : __('站点此刻的样子。一切安好。')),
@@ -82,7 +82,7 @@ final class Dashboard
     }
 
     /**
-     * 侧栏「评论」那颗徽标要同一个数(待审数量同时驱动徽标),
+     * 侧栏「评论」那颗徽标要同一个数(仪表盘界面规格:待审数量同时驱动徽标),
      * 所以别在屏里再算一遍,出口只留这一个。
      */
     public function pendingCount(): int
@@ -127,7 +127,7 @@ final class Dashboard
             ->type('post')
             ->statuses(StatusMachine::CREATABLE)
             // 按最后动过的时间排:草稿没有 published_at,按它排会被挤到末尾,
-            // 与设计稿"草稿排在中间那一档"对不上
+            // 与设计稿"草稿排在中间那一档"对不上(仪表盘界面规格)
             ->orderBy('updated_at')
             ->limit(self::RECENT_POSTS)
             ->get();
@@ -152,7 +152,7 @@ final class Dashboard
     }
 
     /**
-     * 一次查完,不按行查。
+     * 一次查完,不按行查(性能预算第 5 节)。
      *
      * @param list<Post> $posts
      *
@@ -233,8 +233,8 @@ final class Dashboard
             [
                 'k' => __('程序版本'),
                 'v' => 'v' . Kernel::VERSION,
-                // 既有规范的升级检查已落在后台「更新」页;这里只读那份检查留下的已验签清单,
-                // 不联网、不写 —— 仪表盘是取数屏。有新版据实报,没查过就指路「更新」页。
+                // 升级机制设计的升级检查已落在后台「更新」页;这里只读那份检查留下的已验签清单,
+                // 不联网、不写 —— 仪表盘是取数屏(仪表盘界面规格)。有新版据实报,没查过就指路「更新」页。
                 's' => $update['text'],
                 'warn' => $update['warn'],
             ],
@@ -252,7 +252,7 @@ final class Dashboard
             ],
             [
                 'k' => __('缓存'),
-                // 既有规范的适配器与页面缓存已接线:显示实际生效的后端,不再写"已启用"这种空话
+                // 缓存层设计的适配器与页面缓存已接线:显示实际生效的后端,不再写"已启用"这种空话(仪表盘界面规格)
                 'v' => $this->cacheLabel(),
                 's' => $this->cacheNote(),
                 'warn' => false,
@@ -340,7 +340,7 @@ final class Dashboard
     }
 
     /**
-     * 插件卡片(既有规范admin/dashboard/collect):每张 {title: string, html: string}。
+     * 插件卡片(钩子规范 admin/dashboard/collect):每张 {title: string, html: string}。
      * 钩子层的类型校验只在开发环境跑,生产环境靠这道归一 —— 形状不合的丢,别把首页打崩。
      *
      * @return list<array{title:string, html:string}>
@@ -380,7 +380,7 @@ final class Dashboard
     }
 
     /**
-     * 库存的是 UTC(既有规范通用约定),不写时区就会被按本地时间读一遍,差一个时区。
+     * 库存的是 UTC(数据模型设计通用约定),不写时区就会被按本地时间读一遍,差一个时区。
      */
     private static function ts(string $databaseTime): int
     {

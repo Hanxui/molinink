@@ -29,9 +29,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 
 /**
- * 命令基类:统一挂既有规范的全局选项,并把子类的工作集中在 handle。
+ * 命令基类:统一挂CLI设计第 3 节的全局选项,并把子类的工作集中在 handle()。
  *
- * 命令名一旦发布不改,所以名字写死在这里、不靠约定生成。
+ * 命令名一旦发布不改(CLI设计第 9 节),所以名字写死在这里、不靠约定生成。
  */
 abstract class BaseCommand extends Command
 {
@@ -77,7 +77,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * 密码类输入的取法(优先提示输入,脚本走环境变量,不写进 shell 历史)。
+     * 密码类输入的取法(CLI设计:优先提示输入,脚本走环境变量,不写进 shell 历史)。
      */
     protected function askSecret(InputInterface $input, OutputInterface $output, string $label, string $env): string
     {
@@ -125,7 +125,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * 建表只有一条来源(约定),CLI 与安装向导共用同一个执行器。
+     * 建表只有一条来源(红线 17),CLI 与安装向导共用同一个执行器。
      */
     protected function migrator(): Migrator
     {
@@ -138,7 +138,7 @@ abstract class BaseCommand extends Command
     }
 
     /**
-     * 主题设置器(既有规范的导出/导入命令与后台配置器读同一份声明与取值)。
+     * 主题设置器(主题配置器设计 的导出/导入命令与后台配置器读同一份声明与取值)。
      */
     protected function themeSettings(): ThemeSettings
     {

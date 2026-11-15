@@ -1,9 +1,7 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   独立页面样式(既有规范;源件:设计稿与
+   独立页面样式(独立页面界面规格;源件:设计稿与
    设计稿)。
-   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
-
-/* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(#56 页脚钉底) */
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(页脚钉底) */
 .head{margin:74px auto 0;max-width:720px;width:100%;}
 .head h1{font-size:72px;font-weight:400;line-height:1.24;letter-spacing:.01em;}
 .underline{margin-top:34px;width:96px;height:3px;background:var(--accent);}
@@ -33,8 +31,12 @@
 .body figure{margin-top:2.4em;}
 .body figure img{width:100%;border:1px solid var(--rule);display:block;}
 .body figcaption{margin-top:14px;font-family:var(--font-sans);font-size:12.5px;letter-spacing:.08em;color:var(--muted);}
-/* 编辑器直插的图片(#56 报障):等比限宽 + 发丝边框;不裁不改原文件 */
+/* 编辑器直插的图片(实测曾溢出):等比限宽 + 发丝边框;不裁不改原文件 */
 .body img{max-width:100%;height:auto;border:1px solid var(--rule);display:block;cursor:zoom-in;}
+/* 视频/音频/外链嵌入,与文章详情页同一档段间距与限宽 */
+.body video{display:block;width:100%;max-width:100%;height:auto;margin-top:2.4em;border:1px solid var(--rule);background:#000;}
+.body audio{display:block;width:100%;margin-top:2.4em;}
+.body iframe{display:block;width:100%;aspect-ratio:16/9;height:auto;margin-top:2.4em;border:1px solid var(--rule);}
 
 .subs{margin:96px auto 0;max-width:720px;width:100%;padding-top:30px;border-top:1px solid var(--rule);}
 .subs .lab{font-family:var(--font-sans);font-size:11.5px;letter-spacing:.2em;color:var(--muted);}
@@ -43,7 +45,7 @@
 .subs a{font-size:19px;color:var(--ink);text-decoration:none;}
 .subs a:hover{color:var(--accent);}
 
-/* 灯箱(#56):点开看大图、关回原位,开合位移由 shell.js 驱动;底色用墨的 alpha 态 */
+/* 灯箱:点开看大图、关回原位,开合位移由 shell.js 驱动;底色用墨的 alpha 态 */
 .lightbox{position:fixed;inset:0;z-index:60;background:rgba(27,28,30,.9);opacity:0;
   transition:opacity .24s ease;cursor:zoom-out;}
 .lightbox.open{opacity:1;}
@@ -70,6 +72,7 @@
   .body li{margin-top:.55em;}
   .body blockquote{padding-left:18px;font-size:var(--font-size);}
   .body figure{margin-top:2.2em;}
+  .body video,.body audio,.body iframe{margin-top:2.2em;}
   .body figcaption{margin-top:11px;font-size:10.5px;}
   .body pre{padding:14px 14px;font-size:13px;}
   .body table{font-size:.82em;}

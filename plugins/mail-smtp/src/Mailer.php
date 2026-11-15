@@ -55,7 +55,7 @@ final class Mailer
     }
 
     /**
-     * 重置密码邮件。正文里「1 小时」与内核 PasswordReset::TTL 同源(既有规范①)。
+     * 重置密码邮件。正文里「1 小时」与内核 PasswordReset::TTL 同源(用户权限设计 ①)。
      */
     public function sendReset(User $user, string $link): void
     {

@@ -25,7 +25,7 @@ use Molin\User\Authorizer;
 use Molin\User\User;
 
 /**
- * 导入与导出。工具组下一屏,左右两栏:导出 / 导入。
+ * 导入与导出(导入导出界面规格)。工具组下一屏,左右两栏:导出 / 导入。
  *
  * 本类只剩入口与路径分派,活都在 `Molin\Admin\Transfer\`:
  * Exporter(导出、下载、删除导出件)、ImportReader(导入)、ExportStore(导出目录与保留策略)、
@@ -63,9 +63,9 @@ final class ImportExportController
      */
     public function handle(Request $request, string $path, User $user, array $menu): Response
     {
-        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次。
-        // 口径与 pages.php 的 import-export 条目同源(既有规范的 backup.manage 属既有规范插件申报词表,
-        // 不在用户权限登记表;同工具区挂 setting.manage,2026-10-04 作者定)。
+        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次(安全基线)。
+        // 口径与 pages.php 的 import-export 条目同源(导入导出界面规格 的 backup.manage 属能力清单插件申报词表,
+        // 不在用户权限登记表;同工具区挂 setting.manage,2026-10-04 按现行设计)。
         if (!$this->can->can($user, 'setting.manage')) {
             return $this->view->render('forbidden.twig', [
                 'page_title' => __('导入与导出'),

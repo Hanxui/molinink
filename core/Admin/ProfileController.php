@@ -32,11 +32,11 @@ use Molin\User\UserRepository;
 use Throwable;
 
 /**
- * 个人资料屏。
+ * 个人资料屏(个人资料界面规格)。
  *
  * 这页只改登录者自己的事:昵称、邮箱、头像、简介、界面语言、密码。
- * 不得出现改角色 / 改他人资料的入口 —— 那些是「用户」列表页的活。
- * 进页需 `read`,写操作带 CSRF 并记审计。
+ * 不得出现改角色 / 改他人资料的入口 —— 那些是「用户」列表页的活(个人资料界面规格)。
+ * 进页需 `read`,写操作带 CSRF 并记审计(错误与日志设计)。
  */
 final class ProfileController
 {
@@ -45,15 +45,16 @@ final class ProfileController
         'avatar' => '头像已更新。',
     ];
 
-    /** 头像来源的合法值:本地首字母(默认) / 自上传 / Gravatar / 自定义模板 */
+    /** 头像来源的合法值(评论系统设计):本地首字母(默认) / 自上传 / Gravatar / 自定义模板 */
     private const AVATAR_SOURCES = ['local', 'upload', 'gravatar', 'custom'];
 
     /**
-     * `?err=` 的码 → 人话。上传失败一律带回执 ——
-     * 失败静默跳回等于什么都没告诉人,作者实测过这一笔。
+     * `?err=` 的码 → 人话(个人资料界面规格)。上传失败一律带回执 ——
+     * 失败静默跳回等于什么都没告诉人,实测发现过这一笔。
      */
+
     /**
-     * 上传失败的人话(既有规范头像三档)。码由 uploadAvatar 带回来,文案集中在这一处。
+     * 上传失败的人话(用户权限设计 头像三档)。码由 uploadAvatar() 带回来,文案集中在这一处。
      * 写字面量而不是常量表 —— 语言包提取按源码里的字面量扫,常量表它看不见。
      */
     private static function avatarError(string $code): string
@@ -187,7 +188,7 @@ final class ProfileController
         if ($passwordChange) {
             $this->users->changePassword($user->id, $new);
 
-            // 本设备留在原地:把本会话的版本号跟到新值;其他设备的旧会话仍因版本对不上被拒
+            // 本设备留在原地:把本会话的版本号跟到新值;其他设备的旧会话仍因版本对不上被拒(个人资料界面规格)
             $fresh = $this->users->find($user->id);
             $session = Auth::session();
 
@@ -327,7 +328,7 @@ final class ProfileController
         $lastSaved = $times['updated_at'] ?? $times['registered_at'];
         $languages = $this->translator->available();
         // 没表过态(或存的写法已不认)一律落成「跟随站点」。以前这里落的是"站点当时那个具体语言",
-        // 于是保存一次个人资料就把它钉死,站点语言从此对这个人不生效。
+        // 于是保存一次个人资料就把它钉死,站点语言从此对这个人不生效(多语言设计)。
         $locale = (string) ($meta['locale'] ?? '');
         $known = $locale === Translator::AUTO
             || $locale === Translator::SITE
@@ -367,7 +368,7 @@ final class ProfileController
     }
 
     /**
-     * 「管理员 · 36 篇文章 · 加入于 2026 年 3 月」。
+     * 「管理员 · 36 篇文章 · 加入于 2026 年 3 月」(个人资料界面规格)。
      */
     private function metaLine(User $user): string
     {

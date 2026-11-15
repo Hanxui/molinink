@@ -1,5 +1,5 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
-{# 首页:hero + 编号列表。壳(页头/发丝线/浮层/页脚)与归档族同源，
+{# 首页(首页界面规格):hero + 编号列表。壳(页头/发丝线/浮层/页脚)与归档族同源，
    样式落在 assets/home.css;hero 两句文案读首页设置,没配过就用参考图默认值。 #}
 <!DOCTYPE html>
 <html lang="{{ html_lang() }}">
@@ -7,9 +7,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ site.name }}</title>
-    {# 站点标语:后台外观「页头→标语」配了就出 meta description,不配则空(既有规范取值回退) #}
+    {# 站点标语:后台外观「页头→标语」配了就出 meta description,不配则空(主题配置器设计取值回退) #}
     {% if theme_setting('header.tagline') %}<meta name="description" content="{{ theme_setting('header.tagline') }}">{% endif %}
-    {# 安装向导第 3 步的"搜索引擎可见"关掉时,全站不进索引 #}
+    {# 安装向导第 3 步的"搜索引擎可见"关掉时,全站不进索引(安装向导界面规格) #}
     {% if not site.public %}<meta name="robots" content="noindex,nofollow">{% endif %}
     {% include 'partials/theme-style.twig' %}
     {{ inline_style('shell.css') }}
@@ -27,7 +27,7 @@
     </section>
 
     {# 精选栏目:后台外观「首页→精选栏目」配了几行就出几列;不配整区不渲染。
-       每行是栏目名 + 分类别名,渲染成指向对应分类归档的链接列(既有规范分类固定链接)。 #}
+       每行是 栏目名 + 分类别名,渲染成指向对应分类归档的链接列(内容模型设计分类固定链接)。 #}
     {% set featured = theme_setting('home.featured') %}
     {% if featured is not empty %}
         <section class="featured">

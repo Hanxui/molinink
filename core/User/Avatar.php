@@ -153,7 +153,7 @@ final class Avatar
      * 前端 `pre + md5(lowercase(email)) + suf` 拼出来的地址与内核 `avatar()` 完全一致
      * (占位符算法同为 md5(strtolower(email))),访客头像才跟站内头像长得一个样。
      *
-     * 只有站点头像源是 `custom`、且模板里真有 `{hash}` 时才给值。其余档位
+     * 只有头像源是 `custom`、且模板里真有 `{hash}` 时才给值。其余档位
      * (gravatar / local / upload,以及任何用户级覆盖)前端无法预测,一律返回空串,
      * 由主题退回自己那张默认图 —— 宁可统一,不要画错人。
      *

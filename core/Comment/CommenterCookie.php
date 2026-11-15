@@ -136,7 +136,7 @@ final class CommenterCookie
         }
 
         // 只留 http(s) 与站内相对地址,`javascript:` 这类一律丢掉
-        if ($out['url'] !== '' && preg_match('#\A(https?://|/)#i', $out['url']) !== 1) {
+        if ($out['url'] !== '' && preg_match('#\A(https?:/|/)#i', $out['url']) !== 1) {
             $out['url'] = '';
         }
 

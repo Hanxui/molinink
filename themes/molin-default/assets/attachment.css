@@ -1,9 +1,7 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   附件页样式(既有规范;源件:设计稿与
+   附件页样式(附件页界面规格;源件:设计稿与
    设计稿)。
-   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
-
-/* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(#56 页脚钉底) */
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */* 内容栏居中:块是 .page flex 列的成员,width:100% 保它铺满再被 max-width 收住(页脚钉底) */
 .head{margin:78px auto 0;max-width:900px;width:100%;}
 .eyebrow{font-family:var(--font-sans);font-size:13px;letter-spacing:.34em;color:var(--ink);}
 .head h1{margin-top:30px;font-size:44px;font-weight:400;line-height:1.26;letter-spacing:.01em;}

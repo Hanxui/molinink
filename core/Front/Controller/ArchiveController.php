@@ -80,7 +80,7 @@ final class ArchiveController
         return $this->dateArchive($request, $vars, max(1, (int) ($vars['page'] ?? 1)));
     }
 
-    // 搜索(LIKE 起步、标题命中优先;结果页按搜索结果-设计稿渲染)
+    // 搜索(搜索设计:LIKE 起步、标题命中优先;结果页按搜索结果-设计稿渲染)
     // 取数与组项(含无结果态两条建议)收进 ListSource,与搜索片段端点同源。
     /** @param array<string, string> $vars 路由变量 */
     public function search(Request $request, array $vars = []): Response
@@ -129,7 +129,7 @@ final class ArchiveController
         $slug = (string) ($vars['slug'] ?? '');
         $page = max(1, (int) ($vars['page'] ?? 1));
 
-        // 词条不存在或已删 / 页码越界 → 404;空词条 → 头部照常,列表区一句中灰提示
+        // 词条不存在或已删 / 页码越界 → 404(标签页界面规格);空词条 → 头部照常,列表区一句中灰提示(分类页界面规格)
         $result = $this->context->listSource()->build($kind, ['slug' => $slug], $page);
 
         if ((int) $result['status'] !== 200) {
@@ -141,13 +141,13 @@ final class ArchiveController
         return $view->render($kind, [
             'term' => $term,
             'items' => $result['items'],
-            // 分类 / 标签单页时计数不带「每页 N 篇」;满页与既有规范一致
+            // 分类 / 标签单页时计数不带「每页 N 篇」(标签页界面规格);满页与分类页界面规格一致
             'pager' => $result['pager'],
         ], ['slug' => $slug, 'id' => (int) ($term['term_id'] ?? 0)]);
     }
 
     /**
-     * 作者页:头部是信息卡,列表与分类页同壳。
+     * 作者页(作者页界面规格):头部是信息卡,列表与分类页同壳。
      * 作者查无此人 / 被禁用 → 404。
      *
      * @param array<string, string> $vars 路由变量
@@ -178,12 +178,12 @@ final class ArchiveController
             && $this->social->isFollowing($viewer->id, $authorId);
 
         return $view->render('author', [
-            // 作者不是词条;term 形状照既有规范的"列表页变量"给(既有规范条的变量缺口待补文档)
+            // 作者不是词条;term 形状照主题目录约定 的"列表页变量"给(作者页界面规格 第 2 条的变量缺口待补文档)
             'term' => $result['term'] ?? [],
             'author' => $result['author'] ?? [],
             'categories' => $result['categories'] ?? [],
             'items' => $result['items'],
-            // 作者页只有页码、没有上/下页(既有规范设计稿);计数两个断点都带「每页 N 篇」
+            // 作者页只有页码、没有上/下页(作者页界面规格设计稿);计数两个断点都带「每页 N 篇」(作者页界面规格)
             'pager' => $result['pager'],
             'author_stats' => $authorStats,
             'is_following' => $isFollowing,
@@ -193,11 +193,12 @@ final class ArchiveController
     }
 
     /*
-     * 日期归档:按月过滤。
+     * 日期归档(归档页界面规格):按月过滤。
      * 日期超出 1–12 月 → 404。
      *
      * @param array<string, string> $vars
      */
+
     /** @param array<string, string> $vars 路由变量 */
     private function dateArchive(Request $request, array $vars, int $page): Response
     {
@@ -213,10 +214,10 @@ final class ArchiveController
         }
 
         return $view->render('date', [
-            // lede 取既有规范条里可自动生成的前半句;内容概括那半句内核生成不了(该条待拍板)
+            // lede 取归档页界面规格 第 4 条里可自动生成的前半句;内容概括那半句内核生成不了(该条待确认)
             'term' => $result['term'] ?? [],
             'items' => $result['items'],
-            // 日期页单页只留计数;计数两个断点都带「每页 N 篇」
+            // 日期页单页只留计数(归档页界面规格);计数两个断点都带「每页 N 篇」
             'pager' => $result['pager'],
         ], ['year' => $year, 'month' => $month]);
     }

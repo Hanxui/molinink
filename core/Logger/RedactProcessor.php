@@ -14,7 +14,7 @@ use Monolog\LogRecord;
 use Monolog\Processor\ProcessorInterface;
 
 /**
- * 统一脱敏(强制,不许各处手写)。
+ * 统一脱敏(错误与日志设计第 6 节:强制,不许各处手写)。
  *
  * 邮箱 → a***@b.com;IPv4/IPv6 → 掩掉末段。
  * 密码/token/密钥这类键整个删掉 —— 它们根本不该进日志。

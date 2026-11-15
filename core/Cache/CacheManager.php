@@ -16,17 +16,17 @@ use Molin\Support\Files;
 use Psr\SimpleCache\CacheInterface;
 
 /**
- * 缓存统一入口。
+ * 缓存统一入口(缓存层设计第 3、4、5、9 节)。
  *
  * 业务代码只说"要缓存这个",换后端只改 config.php 的 `cache.backend` 一行;
- * `backend = null` 时走 NullStore,调用方不用改(§3.4)。
+ * `backend = null` 时走 NullStore,调用方不用改。
  *
  * 后端的诚实口径:配置里写了 yac / redis,但扩展未装或适配器尚未落地时**如实降级为文件后端**,
- * 并把"配置值 / 实际生效值"分别吐出来(§3.2 / §3.3、健康屏与设置页据此显示真状态),
+ * 并把"配置值 / 实际生效值"分别吐出来(/、健康屏与设置页据此显示真状态),
  * 绝不假装连上了。降级只影响快慢,不影响正确性。
  *
- * 键命名走既有规范的 `{prefix}:{域}:{对象}:{标识}` 习惯,但**落到 PSR-16 存储前会把冒号换成点** ——
- * PSR-16 §2 把 `{}()/\@:` 列为保留字符,FileStore 也照此校验,直传冒号键会当场抛。
+ * 键命名走缓存层设计 的 `{prefix}:{域}:{对象}:{标识}` 习惯,但**落到 PSR-16 存储前会把冒号换成点** ——
+ * PSR-16 把 `{}()/\@:` 列为保留字符,FileStore 也照此校验,直传冒号键会当场抛。
  * 这是文档习惯与 PSR-16 约束的取舍,不改存储适配器的合规性。
  */
 final class CacheManager
@@ -37,7 +37,7 @@ final class CacheManager
     /** 键前缀缺省值;配置 `cache.prefix` 可覆盖 */
     public const DEFAULT_PREFIX = 'molin';
 
-    /** 默认存活秒数(既有规范的 `cache.ttl`) */
+    /** 默认存活秒数(缓存层设计 的 `cache.ttl`) */
     public const DEFAULT_TTL = 3600;
 
     /** 标签索引目录名(落在数据目录下,与 FileStore 的两位十六进制分片目录互不干扰) */
@@ -93,7 +93,7 @@ final class CacheManager
     }
 
     /**
-     * 按 config.php 的 `cache` 段造一份实例(§4)。
+     * 按 config.php 的 `cache` 段造一份实例。
      *
      * @param array<string, mixed> $cache config.php 里的 cache 段;缺配置时全部走默认
      * @param string               $root  站点根;测试经 MOLIN_STATE_ROOT 换根,写盘不碰仓库
@@ -130,7 +130,7 @@ final class CacheManager
     }
 
     /**
-     * 最常用入口(§9):命中直接回值,未命中才跑回调并落盘。
+     * 最常用入口:命中直接回值,未命中才跑回调并落盘。
      *
      * `$tags` 是标签失效的登记口:落盘成功后把这条键写进对应标签的索引,
      * 之后 invalidateTags() 才能按标签精确删。不传也能用 —— 键的命名空间(`post:list:…`)会自动
@@ -165,7 +165,7 @@ final class CacheManager
     }
 
     /**
-     * 标签失效(§6.1/§6.2):按标签→键索引精确删。
+     * 标签失效(/):按标签→键索引精确删。
      *
      * 只要有一个标签的索引文件在,就只删清单里的键 —— 其它域(插件、主题、别的模块)的键原样留着。
      * 一个索引文件都没有,说明这批标签从没被登记过(旧版本写的键、或拼错的标签),影响范围不可知,
@@ -347,7 +347,7 @@ final class CacheManager
     }
 
     /**
-     * 键的命名空间当标签:标准键形如 `post:list:{hash}`,
+     * 键的命名空间当标签:标准键形如 `post:list:{hash}`(缓存层设计),
      * 于是它同时属于 `post` 与 `post:list` —— 内容一变,失效方传 `post` 就能一并清掉,
      * 不用让每个业务调用点各自学会打标签。
      *
@@ -432,7 +432,7 @@ final class CacheManager
     private function qualify(string $key): string
     {
         $full = ($this->prefix === '' ? '' : $this->prefix . '.') . ltrim(strtolower(trim($key)), '.');
-        // PSR-16 §2 保留字符 { } ( ) / \ @ : 一律换点;前缀里万一混进保留字符也一并收干净
+        // PSR-16 保留字符 { } ( ) / \ @ : 一律换点;前缀里万一混进保留字符也一并收干净
         $full = preg_replace('#[{}\(\)/\\\\@:]+#', '.', $full) ?? $full;
 
         return trim($full, '.') === '' ? 'entry' : $full;

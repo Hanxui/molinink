@@ -13,10 +13,10 @@ namespace Molin\Cache;
 use Molin\Support\Files;
 
 /**
- * 页面静态缓存(既有规范分层里的第 3 层"整页 HTML")。
+ * 页面静态缓存(缓存层设计第 7 节,分层里的第 3 层"整页 HTML")。
  *
  * 只缓存 **GET + 未登录 + 200 + text/html** 的页面;后台 / 接口 / 登录注册 / 搜索等入口一律不缓存
- * (§7.2)。命中时由入口 index.php 直接吐 HTML、不再查内容与渲染。
+ * 。命中时由入口 index.php 直接吐 HTML、不再查内容与渲染。
  *
  * 两个落点:装配之后入口用 fastHit() 走常规命中;无本站 cookie 的 GET 则走 index.php 最前面的
  * 快速通道,同样是 fastHit() —— 在 Bootstrap::start() 之前就吐盘上的整页,省掉的是内核装配本身。
@@ -31,7 +31,7 @@ use Molin\Support\Files;
  * 其余查询参数照旧参与哈希,分页、`?p=1` 这类同路径不同页面不会互相串。
  * TTL 由 Bootstrap 从 `cache.ttl` 传入,看文件 mtime,过期即当未命中顺手删掉。
  *
- * 失效(§7.3 / §6.2)两档:purge() 整片清(列表/首页/归档会变的内容事件),
+ * 失效(/)两档:purge() 整片清(列表/首页/归档会变的内容事件),
  * purgeUris() 按地址精确清(只有某一篇文章变了的评论事件)。
  */
 final class PageCache
@@ -46,7 +46,7 @@ final class PageCache
     private const CACHEABLE_TYPE = 'text/html';
 
     /**
-     * 不缓存的前台入口前缀(后台 / 接口 / 账号 / 搜索 / 评论回跳 / 口令解锁 / 非整页输出)(§7.2)。
+     * 不缓存的前台入口前缀(后台 / 接口 / 账号 / 搜索 / 评论回跳 / 口令解锁 / 非整页输出)。
      * 按路径段匹配,免得 `/feedback` 这种文章被 `/feed` 误伤。
      */
     private const EXCLUDED_PREFIXES = [

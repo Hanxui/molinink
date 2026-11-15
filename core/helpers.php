@@ -23,9 +23,9 @@ use Molin\User\Roles;
 use Molin\User\User;
 
 /**
- * 钩子族全局函数 —— 面向插件作者的稳定 API,签名即契约。
+ * 钩子族全局函数 —— 面向插件作者的稳定 API,签名即契约(钩子规范第 4 节)。
  * 名字一旦发布不改,故只做最薄的一层包装。
- * 内容 / 用户 / 缓存等其余助手随各自模块落地。
+ * 内容 / 用户 / 缓存等其余助手随各自模块落地(自动加载约定第 5 节)。
  */
 function add_filter(string $hook, callable $cb, int $priority = 10, int $acceptedArgs = 1): void
 {
@@ -81,7 +81,7 @@ function current_hook(): ?string
 }
 
 /**
- * 用户族全局函数。
+ * 用户族全局函数(自动加载约定第 5 节、用户权限设计第 10 节)。
  * 名字一旦发布不改,所以只做最薄的一层包装。
  */
 function current_user(): ?User
@@ -90,7 +90,7 @@ function current_user(): ?User
 }
 
 /**
- * 当前登录者是否有某项能力;带对象时还要过"是不是他的"这一关。
+ * 当前登录者是否有某项能力;带对象时还要过"是不是他的"这一关(用户权限设计第 4 节)。
  */
 function current_user_can(string $capability, ?object $target = null): bool
 {
@@ -116,13 +116,13 @@ function grant_capability(string $role, string $capability): void
 }
 
 /**
- * 内容类型与分类法登记,插件在 system/init 里调用。
+ * 内容类型与分类法登记(内容模型设计第 2、3 节),插件在 system/init 里调用。
  *
  * 能力门卫:`content.type.register` / `taxonomy.register` 目前**没有运行时拦截** ——
- * 拦截点将来落在插件能力门卫层(既有规范与 HTTP / 文件 / DB 包装同一层),
+ * 拦截点将来落在插件能力门卫层(能力清单第 6 节,与 HTTP / 文件 / DB 包装同一层),
  * 那里先校验清单声明、再放行到登记表。本批不在这一层伪造校验。
  *
- * @param array<string, mixed> $args ;前台已消费 label / public / has_archive / rewrite / taxonomies,
+ * @param array<string, mixed> $args 见内容模型设计第 2.2 节;前台已消费 label / public / has_archive / rewrite / taxonomies,
  *                                   其余参数(supports 等)仍由后续批次接管
  */
 function register_post_type(string $type, array $args = []): void
@@ -140,8 +140,8 @@ function register_taxonomy(string $taxonomy, array $objectTypes = [], array $arg
 }
 
 /**
- * 自定义字段数据契约:type / single / default / show_in_rest。
- * 键名为 `{插件名}_{字段}`;必须带 default。两段式的第一段,先于 register_post_field(§3.3)。
+ * 自定义字段数据契约(内容模型设计、字段与控件设计):type / single / default / show_in_rest。
+ * 键名为 `{插件名}_{字段}`;必须带 default。两段式的第一段,先于 register_post_field。
  *
  * @param array<string, mixed> $meta
  */
@@ -151,8 +151,8 @@ function register_post_meta(string $type, string $key, array $meta): void
 }
 
 /**
- * 自定义字段界面契约(既有规范):label / control / position / priority …
- * `control` 取自既有规范词表;词表外 → 拒绝装载。调用前该键须已有 register_post_meta。
+ * 自定义字段界面契约(字段与控件设计):label / control / position / priority …
+ * `control` 取自主题配置器设计 词表;词表外 → 拒绝装载。调用前该键须已有 register_post_meta。
  *
  * @param array<string, mixed> $ui
  */
@@ -162,7 +162,7 @@ function register_post_field(string $type, string $key, array $ui): void
 }
 
 /**
- * 主题设置取值,回退链:用户值 → 主题 default → 兜底。
+ * 主题设置取值,回退链:用户值 → 主题 default → 兜底(主题配置器设计第 5 节)。
  * PHP 与 Twig 同名,插件与模板都走这一个口。
  */
 function theme_setting(string $path, mixed $default = null): mixed
@@ -171,7 +171,7 @@ function theme_setting(string $path, mixed $default = null): mixed
 }
 
 /**
- * 插件自己的配置取值。**只读** —— 写是插件后台页控制器里
+ * 插件自己的配置取值(插件清单schema)。**只读** —— 写是插件后台页控制器里
  * `AdminPageContext::$settings` 的事。钩子、主题、前台要读插件配置就走这里。
  */
 function plugin_setting(string $plugin, string $key, string $default = ''): string
@@ -180,7 +180,7 @@ function plugin_setting(string $plugin, string $key, string $default = ''): stri
 }
 
 /**
- * 界面文字翻译(既有规范签名定死):第 2 参数永远是域,占位符实参从第 3 参起。
+ * 界面文字翻译(多语言设计 签名定死):第 2 参数永远是域,占位符实参从第 3 参起。
  */
 function __(string $text, string $domain = 'molin', mixed ...$args): string
 {
@@ -196,7 +196,7 @@ function _e(string $text, string $domain = 'molin', mixed ...$args): void
 }
 
 /**
- * 本地化日期;intl 缺失时走内置模板。
+ * 本地化日期(多语言设计);intl 缺失时走内置模板。
  */
 function format_date(mixed $value, string $style = 'long'): string
 {
@@ -229,7 +229,7 @@ function site_datetime(mixed $value, ?string $timezone = null): DateTimeImmutabl
 }
 
 /**
- * 本地化数字。
+ * 本地化数字(多语言设计)。
  */
 function format_number(int|float $value, int $decimals = 0): string
 {
@@ -237,7 +237,7 @@ function format_number(int|float $value, int $decimals = 0): string
 }
 
 /**
- * 头像地址:自定义附件 → Gravatar → 本地首字母 SVG。
+ * 头像地址(评论系统设计):自定义附件 → Gravatar → 本地首字母 SVG。
  * 主题与后台模板同名同源,只给一个邮箱地址就能出图。
  */
 function avatar(string $email, int $size = 48): string

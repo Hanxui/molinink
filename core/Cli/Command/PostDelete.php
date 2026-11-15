@@ -18,10 +18,10 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 删文章(既有规范的 post:delete)。
+ * 删文章(CLI设计第 1 节的 post:delete)。
  *
  * 默认进回收站(软删,30 天后才真删);--force 才是彻底删除 ——
- * 非交互环境的删除必须显式授权。
+ * 非交互环境的删除必须显式授权(CLI设计第 7 节)。
  */
 final class PostDelete extends BaseCommand
 {

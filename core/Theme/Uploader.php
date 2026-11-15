@@ -14,7 +14,7 @@ use Molin\Exception\MolinException;
 use Twig\Source;
 
 /**
- * 主题包上传(先解包审查,再移入;既有规范七项校验)。
+ * 主题包上传(市场与分发规范第 8 节:先解包审查,再移入;主题目录约定第 10 节七项校验)。
  *
  * 解包到 storage/trash 下的临时区,逐个 zip 条目写文件(路径穿越、盘符、反斜杠当场拒掉),
  * 七项校验全过才 rename 进 themes/{slug}/。失败一律清掉临时区再报错,不落半成品。
@@ -25,7 +25,7 @@ final class Uploader
 
     private const MAX_FILES = 2000;
 
-    /** 主题包只该是模板与静态件:任何可执行脚本一律拒 */
+    /** 主题包只该是模板与静态件:任何可执行脚本一律拒(市场与分发规范) */
     private const FORBIDDEN_EXT = ['php', 'phtml', 'php3', 'php4', 'php5', 'php7', 'phps', 'phar', 'pht', 'inc', 'cgi', 'pl', 'py', 'sh', 'bat', 'exe'];
 
     public function __construct(
@@ -214,7 +214,7 @@ final class Uploader
         return count($found) === 1 ? $found[0] : null;
     }
 
-    // ---- 七项校验 ----
+    // ---- 七项校验(主题目录约定) ----
 
     /**
      * @return list<string>

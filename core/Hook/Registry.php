@@ -11,26 +11,26 @@ declare(strict_types=1);
 namespace Molin\Hook;
 
 /**
- * 钩子命名契约与 1.0 冻结清单。数据源:既有规范与第 7 节。
+ * 钩子命名契约与 1.0 冻结清单。数据源:契约文档第 1 节与第 7 节。
  *
- * 每个钩子的参数与返回签名登记在 core/Hook/signatures.php,
- * 那些签名逐条来自既有规范等文档,随对应模块落地时一并写入;
+ * 每个钩子的参数与返回签名登记在 core/Hook/signatures.php(钩子规范第 3 节),
+ * 那些签名逐条来自数据模型设计API设计媒体库设计评论系统设计等文档,随对应模块落地时一并写入;
  * 本类承载两层校验:名字与类型(注册时)、参数与返回值(触发时)。
  *
  * @phpstan-type Signature array{type: string, since: string, args: list<array{name: string, type: string}>, returns: string, stability: string, doc: string}
  */
 final class Registry
 {
-    /** 阶段封闭词表,不许自造 */
+    /** 阶段封闭词表(钩子规范1.3),不许自造 */
     public const STAGES = ['before', 'after', 'render', 'validate', 'collect', 'replace'];
 
     /**
-     * 词表之外的合法例外(既有规范已白名单冻结):
+     * 词表之外的合法例外(钩子规范1.3 已白名单冻结):
      * 结果类阶段 failed 只允许挂在 user/login/failed 上。
      */
     public const STAGE_EXCEPTIONS = ['user/login/failed'];
 
-    /** 段内形态:小写 kebab-case;用 \A..\z 而非 ^..$,免得尾部换行蒙混过关 */
+    /** 段内形态:小写 kebab-case(钩子规范1.1);用 \A..\z 而非 ^..$,免得尾部换行蒙混过关 */
     public const SEGMENT_PATTERN = '#\A[a-z][a-z0-9]*(?:-[a-z0-9]+)*\z#';
 
     /** 1.0 冻结钩子:钩子名 => filter|action,只增不改 */
@@ -47,7 +47,8 @@ final class Registry
         'post/publish/after'        => 'action',
         'post/status/after'         => 'action',
 
-        // user 域(8):`user/lostpassword/after` 随发信插件落地增补(2026-10-04,since 0.49)
+        // user 域(8→9):`user/lostpassword/after` 随发信插件落地增补(2026-10-04,since 0.49);
+        // `user/login/validate` 随暗门插件落地增补(2026-11-09,候选转正)
         'user/register/before'      => 'filter',
         'user/register/after'       => 'action',
         'user/login/before'         => 'filter',
@@ -56,8 +57,10 @@ final class Registry
         'user/logout/after'         => 'action',
         'user/lostpassword/after'   => 'action',
         'user/capability/validate'  => 'filter',
+        // `user/login/validate` 随暗门插件落地增补(2026-11-09,候选转正):登录门闸,可换一份响应(如伪装 404)
+        'user/login/validate'       => 'filter',
 
-        // theme 域(8):`theme/setting/after` 原为既有规范候选,#43 起用并登记(since 0.39)
+        // theme 域(8):`theme/setting/after` 原为钩子规范7.11 候选,#43 起用并登记(since 0.39)
         'theme/activate/before'     => 'action',
         'theme/activate/after'      => 'action',
         'theme/setting/after'       => 'filter',
@@ -100,7 +103,7 @@ final class Registry
         // api 域(1)
         'api/response/before'       => 'filter',
 
-        // admin 域(2)
+        // admin 域(4):编辑器两条 2026-10-28 转正(短代码插件要往编辑屏加按钮与面板)
         'admin/menu/collect'        => 'filter',
         'admin/dashboard/collect'   => 'filter',
         'admin/editor/collect'      => 'filter',
@@ -118,9 +121,13 @@ final class Registry
 
         // social 域(1):关注 / 赞踩 / 通知的实现由插件提供,内核只留接口与路由
         'social/services/collect'   => 'filter',
+
+        // route 域(1):`route/not-found/replace` 候选起于 0.98,2026-11-09 随暗门插件落地转正
+        // (404 接管口:插件路由压不过内核的变量兜底路由,未命中请求统一在这里交插件换一份响应)
+        'route/not-found/replace'   => 'filter',
     ];
 
-    /** 既有规范候选钩子:已登记、尚未冻结,启用时补 since 版本号 */
+    /** 钩子规范7.11 候选钩子:已登记、尚未冻结,启用时补 since 版本号 */
     public const CANDIDATE = [
         'icon/registry/collect'        => 'filter',
         'admin/editor-fields/collect'  => 'filter',
@@ -177,7 +184,7 @@ final class Registry
     }
 
     /**
-     * 已登记钩子的声明类型;未登记的自定义钩子返回 null(插件领域事件,既有规范D6)。
+     * 已登记钩子的声明类型;未登记的自定义钩子返回 null(插件领域事件,总览文档D6)。
      */
     public static function declaredType(string $hook): ?string
     {
@@ -185,7 +192,7 @@ final class Registry
     }
 
     /**
-     * 签名表。只读一次,运行期不再碰磁盘。
+     * 签名表(钩子规范第 3 节)。只读一次,运行期不再碰磁盘。
      *
      * @return array<string, Signature>
      */
@@ -209,7 +216,7 @@ final class Registry
     }
 
     /**
-     * 参数类型校验。只查实参,少传由回调自己的 acceptedArgs 决定。
+     * 参数类型校验(钩子规范3.2)。只查实参,少传由回调自己的 acceptedArgs 决定。
      *
      * @param array<array-key, mixed> $passed
      */
@@ -241,7 +248,7 @@ final class Registry
     }
 
     /**
-     * 返回值类型校验。
+     * 返回值类型校验(钩子规范3.2、钩子API设计第 4 节)。
      */
     public static function validateReturn(string $hook, mixed $value): void
     {
@@ -262,7 +269,7 @@ final class Registry
     }
 
     /**
-     * 类型写法判定:标量、类名、`Foo[]`、`string|int`、`?string`。
+     * 类型写法判定(钩子规范3.1):标量、类名、`Foo[]`、`string|int`、`?string`。
      * 公开是为了让 CLI 与契约测试能复核登记表里的类型写法。
      */
     public static function matches(mixed $value, string $type): bool

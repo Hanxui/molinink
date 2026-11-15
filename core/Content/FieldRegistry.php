@@ -14,10 +14,10 @@ use Molin\Exception\ConfigException;
 use Molin\Hook\HookBus;
 
 /**
- * 自定义字段登记表(既有规范数据契约 +既有规范界面契约,两段式)。
+ * 自定义字段登记表(内容模型设计 数据契约 +字段与控件设计 界面契约,两段式)。
  *
  * 插件在 system/init 里先 register_post_meta() 声明数据契约、再 register_post_field() 声明界面契约;
- * 后台编辑屏由收集点(PostsController::collectFields)从本表取出字段定义(§3、§5 落位)。
+ * 后台编辑屏由收集点(PostsController::collectFields)从本表取出字段定义(、落位)。
  * 值仍只有 postmeta 一个权威来源(MetaStore):本表只回答"有哪些字段、长什么控件、摆在哪、没有值时用什么默认"。
  *
  * 与 PostTypeRegistry / TaxonomyRegistry 同一副骨架:单例、reset() 给测试用、归属走
@@ -29,16 +29,16 @@ use Molin\Hook\HookBus;
  */
 final class FieldRegistry
 {
-    /** 控件词表,取自既有规范(14 种);词表外 → 拒绝装载 */
+    /** 控件词表,取自主题配置器设计(14 种);字段与控件设计:词表外 → 拒绝装载 */
     public const CONTROLS = [
         'text', 'textarea', 'bool', 'select', 'radio', 'color', 'range',
         'number', 'image', 'file', 'url', 'code', 'group', 'repeater',
     ];
 
-    /** 落位:side=右栏 / main=正文下 / panel=独立面板 */
+    /** 落位(字段与控件设计):side=右栏 / main=正文下 / panel=独立面板 */
     public const POSITIONS = ['side', 'main', 'panel'];
 
-    /** 数据类型 → 默认控件(既有规范默认推导表) */
+    /** 数据类型 → 默认控件(字段与控件设计 默认推导表) */
     private const CONTROL_BY_TYPE = [
         'string'  => 'text',
         'integer' => 'number',
@@ -48,10 +48,10 @@ final class FieldRegistry
         'object'  => 'group',
     ];
 
-    /** 数据类型词表 */
+    /** 数据类型词表(内容模型设计) */
     private const TYPES = ['string', 'integer', 'number', 'boolean', 'array', 'object'];
 
-    /** 键名 {插件名}_{字段}:插件名取既有规范的 name 口径,字段名宽松到字母数字下划线 */
+    /** 键名 {插件名}_{字段}:插件名取插件清单schema的 name 口径,字段名宽松到字母数字下划线(数据模型设计) */
     private const KEY_PATTERN = '#\A[a-z][a-z0-9-]*_[A-Za-z0-9_]+\z#';
 
     private static ?self $instance = null;
@@ -81,7 +81,7 @@ final class FieldRegistry
     }
 
     /**
-     * 数据契约登记(register_post_meta,既有规范/既有规范)。
+     * 数据契约登记(register_post_meta,内容模型设计 /字段与控件设计)。
      *
      * 同键 + 同声明 + 同归属的重复登记视为幂等(插件入口可能被重复拉起);同键不同声明则报错。
      *
@@ -109,7 +109,7 @@ final class FieldRegistry
     }
 
     /**
-     * 界面契约登记(register_post_field,既有规范)。数据契约必须先于界面契约,否则拒绝。
+     * 界面契约登记(register_post_field,字段与控件设计)。数据契约必须先于界面契约,否则拒绝。
      *
      * 同声明 + 同归属的重复登记幂等;同键不同声明则报错。
      *
@@ -124,7 +124,7 @@ final class FieldRegistry
 
         if ($existing === null) {
             throw new ConfigException(
-                "字段「{$key}」(类型「{$type}」)未先登记 register_post_meta,数据契约必须先于界面契约"
+                "字段「{$key}」(类型「{$type}」)未先登记 register_post_meta,数据契约必须先于界面契约(字段与控件设计)"
             );
         }
 
@@ -169,7 +169,7 @@ final class FieldRegistry
     }
 
     /**
-     * 某类型里有界面契约的字段(键 => ui),按 priority 升序 —— 收集点(§3、§5)直接吃这份。
+     * 某类型里有界面契约的字段(键 => ui),按 priority 升序 —— 收集点()直接吃这份。
      *
      * @return array<string, FieldUi>
      */
@@ -224,9 +224,9 @@ final class FieldRegistry
     }
 
     /**
-     * 取某内容的字段值:没写过就用数据契约声明的 default(既有规范)。
+     * 取某内容的字段值:没写过就用数据契约声明的 default(字段与控件设计)。
      *
-     * 只认已登记的键(未登记给 null)—— 与"表单只接受已注册键"同一口径(§8)。
+     * 只认已登记的键(未登记给 null)—— 与"表单只接受已注册键"同一口径。
      * 结构值按 MetaStore 的存法(json 字符串)解码回 array;标量按 type 归一。
      */
     public function value(MetaStore $store, int $postId, string $type, string $key): mixed
@@ -247,7 +247,7 @@ final class FieldRegistry
     }
 
     /**
-     * 数据契约归一与校验:type 在既有规范词表内、必须带 default。
+     * 数据契约归一与校验:type 在内容模型设计 词表内、必须带 default(字段与控件设计)。
      *
      * @param FieldMeta $meta
      * @return FieldMeta
@@ -258,13 +258,13 @@ final class FieldRegistry
 
         if (!in_array($kind, self::TYPES, true)) {
             throw new ConfigException(
-                "字段「{$key}」(类型「{$type}」)的 type「{$kind}」不在既有规范词表内(string|integer|number|boolean|array|object)"
+                "字段「{$key}」(类型「{$type}」)的 type「{$kind}」不在内容模型设计 词表内(string|integer|number|boolean|array|object)"
             );
         }
 
         if (!array_key_exists('default', $meta)) {
             throw new ConfigException(
-                "字段「{$key}」(类型「{$type}」)缺少 default ——既有规范要求每个字段都带默认值"
+                "字段「{$key}」(类型「{$type}」)缺少 default ——字段与控件设计 要求每个字段都带默认值"
             );
         }
 
@@ -272,7 +272,7 @@ final class FieldRegistry
     }
 
     /**
-     * 界面契约归一与校验:label 必填、control 在既有规范词表内(缺省按 type 推导)、落位归一。
+     * 界面契约归一与校验:label 必填、control 在主题配置器设计 词表内(缺省按 type 推导)、落位归一。
      *
      * @param FieldUi $ui
      * @param FieldMeta $meta
@@ -283,7 +283,7 @@ final class FieldRegistry
         $label = trim((string) ($ui['label'] ?? ''));
 
         if ($label === '') {
-            throw new ConfigException("字段「{$key}」(类型「{$type}」)的界面契约缺少 label");
+            throw new ConfigException("字段「{$key}」(类型「{$type}」)的界面契约缺少 label(字段与控件设计)");
         }
 
         $control = trim((string) ($ui['control'] ?? ''));
@@ -317,7 +317,7 @@ final class FieldRegistry
     }
 
     /**
-     * group / repeater 的 `control_args.fields` 是嵌套字段定义,控件名同样受词表约束。
+     * group / repeater 的 `control_args.fields` 是嵌套字段定义,控件名同样受词表约束(字段与控件设计)。
      *
      * @param FieldUi $controlArgs
      */
@@ -348,25 +348,25 @@ final class FieldRegistry
     {
         if (!in_array($control, self::CONTROLS, true)) {
             throw new ConfigException(
-                "字段「{$key}」的 control「{$control}」不在既有规范词表内,拒绝装载"
+                "字段「{$key}」的 control「{$control}」不在主题配置器设计 词表内,拒绝装载(字段与控件设计)"
             );
         }
     }
 
     /**
-     * 键名必须匹配 {插件名}_{字段};已知登记方时前缀还须与插件名一致。
+     * 键名必须匹配 {插件名}_{字段}(字段与控件设计);已知登记方时前缀还须与插件名一致。
      */
     private static function assertKey(string $key, ?string $owner): void
     {
         if (preg_match(self::KEY_PATTERN, $key) !== 1) {
             throw new ConfigException(
-                "字段键名「{$key}」不合 {插件名}_{字段} 规范"
+                "字段键名「{$key}」不合 {插件名}_{字段} 规范(数据模型设计、字段与控件设计)"
             );
         }
 
         if ($owner !== null && !str_starts_with($key, $owner . '_')) {
             throw new ConfigException(
-                "字段键名「{$key}」必须以登记方插件名「{$owner}_」为前缀"
+                "字段键名「{$key}」必须以登记方插件名「{$owner}_」为前缀(字段与控件设计)"
             );
         }
     }
@@ -382,7 +382,7 @@ final class FieldRegistry
     }
 
     /**
-     * 存的是字符串:结构值存 JSON,这里按声明类型解回。
+     * 存的是字符串:结构值存 JSON(内容模型设计),这里按声明类型解回。
      */
     private static function cast(string $raw, string $type): mixed
     {

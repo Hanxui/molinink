@@ -27,19 +27,19 @@ use Molin\User\User;
 use Molin\User\UserRepository;
 
 /**
- * 修订版本比对屏(既有规范属「文章」组,侧栏当前项借 posts 的位)。
+ * 修订版本比对屏(修订比对界面规格 属「文章」组,侧栏当前项借 posts 的位)。
  *
  * 两块内容并排:左「选中修订」、右「当前版本」。进页靠 `?post=<id>` 认文章,`?rev=<id>` 认左列选中
  * 哪一版;没给 rev 就默认最早那版(与设计稿一致)。
  *
- * ── 「当前版本」的取数(§10)──
+ * ── 「当前版本」的取数──
  * post_revisions 存的是**改之前**的那一版(见 PostWriter::snapshotRevision),所以右列"当前版本"
  * 不是某条修订,而是 posts 表里正在生效的正文;左列才是历史修订。
  *
- * ── 记录数上限(§7 金属行「每篇最多留最近 K 份」)──
+ * ── 记录数上限(金属行「每篇最多留最近 K 份」)──
  * K 与 PostWriter 的保留上限同源,引用它、不另写常量,免得两处漂移。
  *
- * ── 恢复动作(§11-4 已由作者定为「真恢复」)──
+ * ── 恢复动作(已由定为「真恢复」)──
  * POST revisions/restore 过 CSRF 闸 → 校验修订属于这篇 → 把所选修订的 title/content 回写 posts
  * 并留一条新修订留痕(RevisionRepository::restore)→ 记审计 → 跳回比对页。校验不过/令牌不对一律
  * 回本页不落库(防串号)。不依赖 PostWriter —— 它与 PostsController 在别的同事手里。
@@ -63,9 +63,9 @@ final class RevisionController
      */
     public function handle(Request $request, string $path, User $user, array $menu): Response
     {
-        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次。
-        // 口径与 pages.php 的 revisions 条目同源:既有规范的 content.write 是既有规范插件申报词表
-        // 里的名,不在用户权限登记表,内置角色无从持有 —— 按 §10 意图落到 post.edit.*(2026-10-04 作者定)。
+        // 藏菜单不算防护:进页与扣扳机都在这道闸上再校验一次(安全基线)。
+        // 口径与 pages.php 的 revisions 条目同源:修订比对界面规格 的 content.write 是能力清单插件申报词表
+        // 里的名,不在用户权限登记表,内置角色无从持有 —— 按 意图落到 post.edit.*(2026-10-04 按现行设计)。
         if (!$user->holds('post.edit.own') && !$user->holds('post.edit.others')) {
             return $this->view->render('forbidden.twig', [
                 'page_title' => __('修订版本'),
@@ -158,6 +158,7 @@ final class RevisionController
      * 恢复入口:CSRF 闸 → 校验修订属于这篇文章 → 回写 posts 并留痕 → 记审计 → 回比对页。
      * 令牌不对、post/rev 缺、或修订不属于这篇,一律回本页不落库(防串号,口径与 render 的回落一致)。
      */
+
     /**
      * @param list<array{title:string, path:string, active:bool, badge?:string}> $menu
      */

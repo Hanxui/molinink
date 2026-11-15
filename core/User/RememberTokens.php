@@ -13,7 +13,7 @@ namespace Molin\User;
 use Molin\Database\Database;
 
 /**
- * 「记住我」的独立登录令牌(既有规范记住我 30 天)。
+ * 「记住我」的独立登录令牌(安全基线第 2.7 节、用户权限设计第 8 节:记住我 30 天)。
  *
  * cookie 里放 `selector:verifier` 两截:selector 是公开定位用的,verifier 只以 sha256 落库。
  * 于是 —— 库里翻不出可用凭据;校验用 hash_equals 比哈希,不拿明文当索引;
@@ -21,7 +21,7 @@ use Molin\Database\Database;
  */
 final class RememberTokens
 {
-    /** 记住我 30 天 */
+    /** 用户权限设计第 8 节:记住我 30 天 */
     public const TTL = 2_592_000;
 
     /** 与 molin_session 分开一枚:会话是会话,长期凭据是长期凭据,撤销互不牵连 */
@@ -106,7 +106,7 @@ final class RememberTokens
     }
 
     /**
-     * 改密码 = 所有设备的长期凭据一起作废(既有规范session_version 的同一条语义)。
+     * 改密码 = 所有设备的长期凭据一起作废(用户权限设计第 8 节 session_version 的同一条语义)。
      */
     public function revokeAll(int $userId): void
     {
@@ -114,7 +114,7 @@ final class RememberTokens
     }
 
     /**
-     * 清掉过期令牌,交给 cron(与媒体物理清理同一条路,既有规范)。
+     * 清掉过期令牌,交给 cron(与媒体物理清理同一条路,媒体库设计第 8.1 节)。
      */
     public function purgeExpired(): int
     {

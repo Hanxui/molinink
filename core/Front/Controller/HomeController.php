@@ -17,7 +17,7 @@ use Molin\Http\Response;
 use Molin\Theme\Renderer;
 
 /**
- * 首页与全站文章页:hero + 编号列表。
+ * 首页与全站文章页(首页界面规格):hero + 编号列表。
  *
  * 条目与分页由 ListSource 装配(与归档族、片段端点同源),这里只决定页型与变量。
  * 首页还要处理两条分派:查询式固定链接(?p= / ?page_id=)与「首页显示 = 静态页面」。
@@ -41,7 +41,7 @@ final class HomeController
 
         $options = $this->context->options();
 
-        // 阅读组「首页显示 = 静态页面」:挑中的那篇页面顶到首页;
+        // 阅读组「首页显示 = 静态页面」(设置页界面规格):挑中的那篇页面顶到首页;
         // 页面没挑、已删或不可见时回落博客流,不留 404 首页
         if ((string) $options->get('show_on_front', 'posts') === 'page') {
             $frontId = (int) $options->get('page_on_front', 0);
@@ -67,6 +67,7 @@ final class HomeController
      * 取数与首页同源(ListSource::home),所以不吃「首页显示=静态页面」那条读设置,也不渲染 Hero;
      * 顶部筛选条要的分类计数在这里一并给齐,模板只管画。
      */
+
     /** @param array<string, string> $vars 路由变量 */
     public function archive(Request $request, array $vars = []): Response
     {
@@ -114,7 +115,7 @@ final class HomeController
             // 旧变量名保留给第三方主题,内核自带的模板用 items/pager
             'posts' => $result['posts'],
             'pagination' => $result['pagination'],
-            // 筛选条的分类与计数:与后台分类盒同一份口径,count 只数已发布
+            // 筛选条的分类与计数:与后台分类盒同一份口径(编辑页界面规格),count 只数已发布
             'categories' => $this->terms->choices(TermAssigner::CATEGORY),
             'archive_total' => (int) $result['pagination']['total'],
         ]);

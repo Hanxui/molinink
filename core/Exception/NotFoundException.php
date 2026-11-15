@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 资源不存在 → 404。段位 3xxx(资源)。
+ * 资源不存在 → 404。段位 3xxx(资源),见错误与日志设计第 2 节。
  */
 final class NotFoundException extends MolinException implements HttpMappable
 {

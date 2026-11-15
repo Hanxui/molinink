@@ -14,18 +14,19 @@ use Molin\Hook\HookBus;
 use Molin\Logger\Log;
 
 /**
- * 插件能力门卫。
+ * 插件能力门卫(能力清单第 5、6 节)。
  *
  * 底层包装层(文件 / DB / HTTP / 设置 / 邮箱)放行前喊一声 assert():查此刻的调用方插件有没有
  * 在清单里声明过这项能力。调用方取自 HookBus::currentPlugin() —— 返回 null 表示内核自身在跑,
  * 一律放行:门卫只拦插件,不能反过来挡住内核自己的活。
  *
  * 未声明即拒绝:开发模式直接抛异常(当场暴露),生产模式先记 plugin 通道日志再抛,
- * 由调用方兜住 —— 一个插件越权不该把整站打崩。
+ * 由调用方兜住 —— 一个插件越权不该把整站打崩(能力清单第 5 节)。
  */
 final class CapabilityGate
 {
     /** 声明按插件名缓存:一次请求里同一插件只读一次清单 */
+
     /** @var array<string, list<string>> */
     private static array $declared = [];
 
@@ -64,7 +65,7 @@ final class CapabilityGate
     }
 
     /**
-     * 拒绝:开发模式只抛(立刻暴露),生产模式先留痕再抛。
+     * 拒绝:开发模式只抛(立刻暴露),生产模式先留痕再抛(能力清单第 5.2 节)。
      */
     private static function deny(string $plugin, string $capability, string $log): void
     {

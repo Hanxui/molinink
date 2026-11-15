@@ -1,5 +1,4 @@
-/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
-/* 归档页折叠交互:事件委托到 document,一个页面渲染多份本模板也只绑一次。
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */* 归档页折叠交互(归档页界面规格):事件委托到 document,一个页面渲染多份本模板也只绑一次。
    年、月各自开合互不干扰;工具栏两钮整体开合,文案在展开/收起间切换。不改 URL、不发请求。 */
 (function () {
     'use strict';
@@ -38,7 +37,7 @@
             return;
         }
 
-        // 月标题先拦:否则会连带触发外层年
+        // 月标题先拦:否则会连带触发外层年(归档页界面规格)
         var head = target.closest('.month-head');
         if (head) {
             e.stopPropagation();

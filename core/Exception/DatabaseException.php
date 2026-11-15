@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 数据库层错误。
+ * 数据库层错误。见错误与日志设计第 1 节。
  */
 class DatabaseException extends MolinException
 {

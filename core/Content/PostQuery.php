@@ -16,14 +16,14 @@ use Molin\Database\Database;
 use Molin\Exception\DatabaseException;
 
 /**
- * 流式内容查询,最终编译成参数化 SQL。
+ * 流式内容查询(内容模型设计第 7 节),最终编译成参数化 SQL。
  *
- * 前台可见性三条规矩来自既有规范与
+ * 前台可见性三条规矩来自内容模型设计第 5 节与数据模型设计第 2 节:
  * trash 不进前台、定时发布到点才可见、软删除的行一律排除。
  */
 final class PostQuery
 {
-    /** 可排序列,取自既有规范的 posts 列名,杜绝把用户输入拼进 ORDER BY */
+    /** 可排序列,取自数据模型设计第 2 节的 posts 列名,杜绝把用户输入拼进 ORDER BY */
     private const ORDER_COLUMNS = [
         'id',
         'title',
@@ -66,7 +66,7 @@ final class PostQuery
 
     /**
      * 把回收站里的行也放进来。后台的"回收站"这一栏非用不可 ——
-     * 默认的 `deleted_at IS NULL` 会把它们全藏掉,人就再也还原/真删不了。
+     * 默认的 `deleted_at IS NULL` 会把它们全藏掉,人就再也还原/真删不了(后台信息架构第 6.1 节)。
      */
     public function trashed(bool $with = true): self
     {
@@ -76,7 +76,7 @@ final class PostQuery
     }
 
     /**
-     * 显式要正文。默认列表不取 content —— 一篇几万字 ×  20 条,首屏字节和内存都栽在它身上。
+     * 显式要正文。默认列表不取 content —— 一篇几万字 ×  20 条,首屏字节和内存都栽在它身上(性能预算第 2、5 节)。
      */
     public function content(bool $with = true): self
     {
@@ -119,7 +119,7 @@ final class PostQuery
     }
 
     /**
-     * 一次限定多个类型(既有规范in_main_list 的首页取文):空数组 = 不加条件。
+     * 一次限定多个类型(内容模型设计 in_main_list 的首页取文):空数组 = 不加条件。
      *
      * @param list<string> $types
      */
@@ -157,7 +157,7 @@ final class PostQuery
     }
 
     /**
-     * 一次限定多个状态。后台"全部"这一栏要排除回收站,拼四个查询就是四次往返。
+     * 一次限定多个状态。后台"全部"这一栏要排除回收站,拼四个查询就是四次往返(性能预算第 5 节)。
      *
      * @param list<string> $statuses
      */
@@ -211,7 +211,7 @@ final class PostQuery
     }
 
     /**
-     * 按父页筛选(「全部父页面」下拉)。0 = 只看顶层,>0 = 该页的直接子页。
+     * 按父页筛选(页面列表界面规格:「全部父页面」下拉)。0 = 只看顶层,>0 = 该页的直接子页。
      */
     public function parent(int $postId): self
     {
@@ -225,7 +225,7 @@ final class PostQuery
     }
 
     /**
-     * 关键词搜标题与正文。既有规范那套索引还没落地,后台列表的搜索框先吃 LIKE ——
+     * 关键词搜标题与正文。搜索设计那套索引还没落地,后台列表的搜索框先吃 LIKE ——
      * 站点量级在这里不会成为问题,真到需要全文检索时换的是这个方法,不是调用方。
      */
     public function search(string $term): self
@@ -322,7 +322,7 @@ final class PostQuery
             return $this->hydrateAll($this->db->select($sql, $this->params));
         }
 
-        // 键 = SQL + 绑定参数的哈希(§5:禁用用户输入直拼键;分页/筛选天然进哈希,各存各的)
+        // 键 = SQL + 绑定参数的哈希(:禁用用户输入直拼键;分页/筛选天然进哈希,各存各的)
         return $manager->remember(
             'post:list:' . hash('sha256', $sql . '|' . serialize($this->params)),
             null,
@@ -331,7 +331,7 @@ final class PostQuery
     }
 
     /**
-     * 上/下篇:在当前筛选条件内,按发布时间紧邻当前篇的两篇。
+     * 上/下篇(文章详情界面规格):在当前筛选条件内,按发布时间紧邻当前篇的两篇。
      *
      * 「上一篇」= 比当前新的那条,「下一篇」= 比当前旧的那条;时间并列时用 id 破,
      * 与列表的 `published_at DESC, id DESC` 稳定序同一口径。当前篇没有时间
@@ -354,7 +354,7 @@ final class PostQuery
     }
 
     /**
-     * 在全部命中里随机取一篇(既有规范404 页的「或许你想看」)。
+     * 在全部命中里随机取一篇(404页界面规格 404 页的「或许你想看」)。
      *
      * 2026-10 改:`ORDER BY RAND()` 会把整个命中集排序一遍,而 404 页不落整页缓存 ——
      * 爬虫刷 404 就是反复全表随机。改成「先 COUNT 拿总数 → 随机偏移取一行」:
@@ -434,7 +434,7 @@ final class PostQuery
     }
 
     /**
-     * 这一趟该不该进缓存(既有规范)。
+     * 这一趟该不该进缓存(缓存层设计)。
      *
      * 两条硬闸:① 缓存没接上(backend=null 或本进程未装配)就回源;
      * ② **事务未提交时不缓存** —— 回滚掉的行留在缓存里就是脏读,缓存永远不能成为正确性来源。

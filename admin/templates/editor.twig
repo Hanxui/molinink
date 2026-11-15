@@ -1,15 +1,15 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
 {#
-  后台编辑页。数值与文案逐字取自
+  后台编辑页(编辑页界面规格)。数值与文案逐字取自
   设计稿与其移动端版;右栏六盒顺序固定不可换。
-  页面变体:少「分类/标签/讨论」盒,多「父页面」盒(候选排除自己与后代)。
-  正文区的"富文本"路线:contenteditable 直接排版,交表时同步进同名 textarea。
-  无 JS 时看到的就是 textarea,照样能写能存。落库前由 HtmlSanitizer 过白名单。
+  页面变体按页面列表界面规格:少「分类/标签/讨论」盒,多「父页面」盒(候选排除自己与后代)。
+  正文区按后台信息架构 的"富文本"路线:contenteditable 直接排版,交表时同步进同名 textarea。
+  无 JS 时看到的就是 textarea,照样能写能存。落库前由 HtmlSanitizer 过白名单(编辑器区块设计)。
 #}
 {% extends "layout.twig" %}
 
 {% block bands %}
-    {# 两条带默认藏着:自动保存成功后显第一条,有未保存改动又想走时才显第二条 #}
+    {# 两条带默认藏着:自动保存成功后显第一条,有未保存改动又想走时才显第二条(编辑页界面规格) #}
     <div class="autosave{% if autosave_text is not empty %} on{% endif %}" id="ed-autosave"><i></i><span>{{ autosave_text }}</span></div>
     <div class="leave" id="ed-leave">
         <span class="lt">{{ __('当前修改尚未保存，离开前请先存草稿。') }}</span>
@@ -30,12 +30,12 @@
                 <a href="{{ list_url }}">{{ list_label }}</a><span class="sep">/</span><span class="cur">{{ is_new ? __('新建') : __('编辑') }}</span>
             </div>
             <div class="saved"><i></i>{{ saved_text }}</div>
-            {# 修订版本比对的唯一门:它对文章列表与侧栏都没有入口,只在编辑这篇时才有意义。
+            {# 修订版本比对(修订比对界面规格)的唯一门:它对文章列表与侧栏都没有入口,只在编辑这篇时才有意义。
                条数由 PostsController 备好(revisions),0 份时不摆这块空按钮 #}
             {% if not is_new and revisions|default(0) > 0 %}
                 <a class="btn btn-ghost btn-sm" href="{{ path('admin', {path: 'revisions'}) }}?post={{ fields.id }}">{{ __('修订 %s 份', 'molin', revisions) }}</a>
             {% endif %}
-            {# 面板字段(panel 落位)收进右侧抽屉,这里只给入口 #}
+            {# 面板字段(panel 落位)收进右侧抽屉,这里只给入口(字段与控件设计) #}
             {% if field_groups.panel %}
                 <button class="btn btn-ghost btn-sm more-cf" type="button" id="ed-fields-tog" aria-controls="ed-fields-drawer" aria-expanded="false">{{ __('更多字段') }}<span class="n">{{ panel_count }}</span></button>
             {% endif %}
@@ -59,13 +59,13 @@
                 {% if show_editor %}
                 <div class="ed">
                     <div class="tbar">
-                        {# 段落样式:点开一层小菜单。原来的 select 只活在前端 execCommand 里,
+                        {# 段落样式:点开一层小菜单(编辑页界面规格)。原来的 select 只活在前端 execCommand 里,
                            从不随表提交,所以这里不需要 name,也不留隐藏兼容字段。
                            用 button + 菜单容器(不再用 <details>:它的开合会被 summary 上的样式吞掉),
                            开合由 admin.js 管:切 aria-expanded 与菜单的 hidden。
                            档位三档:正文 / 二级标题 / 三级标题 —— 一级标题(h1)是文章标题那一格,
                            正文里再出 h1 会把层级顶乱,所以不列;旧的「标题」「副标题」叫法认不出层级,
-                           一并换成标准叫法(2026-10-11 作者定) #}
+                           一并换成标准叫法(2026-10-11 按现行设计) #}
                         <div class="bpick" id="ed-bpick">
                             <button type="button" class="bpick-tog" id="ed-bpick-tog" aria-haspopup="true" aria-expanded="false" aria-controls="ed-bpick-menu">
                                 <b id="ed-bpick-label">{{ __('正文') }}</b>
@@ -87,9 +87,13 @@
                         {# 图片钮:先问图从哪儿来(#13)。两个地址留给 JS,老的无 JS 现场点它没有落处(以前就是死钮) #}
                         <button class="tbtn" type="button" data-cmd="image" aria-pressed="false" aria-label="{{ __('图片') }}"
                                 data-pick-url="{{ body_pick_url }}" data-upload-url="{{ img_upload_url }}"><svg viewBox="0 0 16 16"><rect x="2.2" y="3.2" width="11.6" height="9.6" rx="1.6"/><circle cx="5.8" cy="6.4" r="1.1"/><path d="M2.6 11.2 6 8.1l2.4 2.1 2.2-2.2 3.2 3.2"/></svg></button>
+                        {# 视频钮:同样先问从哪儿来 —— 站内媒体库那一段,或白名单站点的外链。
+                           data-pick-url 指向 `?pick=av` 那一层选择器(只列音视频),新建那篇要到建完草稿才有 #}
+                        <button class="tbtn" type="button" data-cmd="video" aria-pressed="false" aria-label="{{ __('视频') }}"
+                                data-pick-url="{{ video_pick_url }}"><svg viewBox="0 0 16 16"><rect x="2.2" y="3.6" width="8.4" height="8.8" rx="1.6"/><path d="M10.6 8 14 5.6v4.8L10.6 8Z"/></svg></button>
                         <span class="tsep"></span>
                         <button class="tbtn" type="button" data-cmd="more" aria-pressed="false" aria-label="{{ __('更多格式') }}"><span class="mark">＋</span></button>
-                        {# 插件按钮(既有规范):内核只按 collect 的结果摆位,语义与行为全归插件自己的脚本 #}
+                        {# 插件按钮(编辑器区块设计):内核只按 collect 的结果摆位,语义与行为全归插件自己的脚本 #}
                         {% if editor_buttons %}
                         <span class="tsep"></span>
                         {% for button in editor_buttons %}
@@ -106,7 +110,7 @@
                 <div class="wc" id="ed-wc">{{ word_count }}</div>
                 {% endif %}
 
-                {# position = main 的自定义字段:正文下方(既有规范「字段很少时的必要字段」) #}
+                {# position = main 的自定义字段:正文下方(字段与控件设计「字段很少时的必要字段」) #}
                 {% if field_groups.main %}
                     <section class="box box-cf-main">
                         <h3>{{ __('字段') }}</h3>
@@ -146,7 +150,7 @@
                                placeholder="{{ post_password_edit ? __('留空保持原口令') : __('设置访问口令') }}"
                                autocomplete="new-password">
                     </div>
-                    {# 时间可点可改(既有规范盒);留空 = 发布时取当下 #}
+                    {# 时间可点可改(编辑页界面规格 第 1 盒);留空 = 发布时取当下 #}
                     <div class="prow">
                         <span class="k">{{ __('时间') }}</span>
                         <input class="mini-in" type="datetime-local" name="published_at" value="{{ published_input }}" aria-label="{{ __('发布时间') }}" title="{{ __('留空即发布时按当下时间') }}">
@@ -160,7 +164,7 @@
                     <div class="pub-links">
                         {% if preview_url %}<a href="{{ preview_url }}">{{ __('预览') }}</a>{% endif %}
                         {# 移到回收站是破坏性动作:只能 POST 带令牌走(拿 <a> 去 GET 会被令牌闸挡在列表页)。
-                           .trash-row 是给移动端靠右留的包裹位 #}
+                           .trash-row 是给移动端靠右留的包裹位(编辑页界面规格) #}
                         {% if trash_url %}
                             <form class="trash-row" method="post" action="{{ trash_url }}">
                                 <input type="hidden" name="{{ csrf_field }}" value="{{ csrf_token }}">
@@ -171,9 +175,9 @@
                 </section>
 
                 {% if show_classic_taxboxes %}
-                {# 分类盒。行尾那颗「×」删的是**整个分类**(全局动作,与既有规范管理屏同一个去处),
+                {# 分类盒。行尾那颗「×」删的是**整个分类**(全局动作,与分类标签界面规格管理屏同一个去处),
                    所以走 XHR + 站内唯一的模态件做二次确认:删完把这一行收掉,人不用离开没保存的稿子。
-                   两道闸:门控 category.manage,兜底项「未分类」不给「×」—— 与既有规范那屏逐条对齐 #}
+                   两道闸:门控 category.manage,兜底项「未分类」不给「×」—— 与分类标签界面规格那屏逐条对齐 #}
                 <section class="box" id="box-cats"{% if can_manage_categories %} data-del-url="{{ term_delete_url }}" data-csrf-field="{{ csrf_field }}" data-csrf-token="{{ csrf_token }}"{% endif %}>
                     <h3><span>{{ __('分类') }}</span>{% if can_manage_categories %}<a class="manage" href="{{ categories_url }}">{{ __('管理分类与标签') }}</a>{% endif %}</h3>
                     <div class="cats">
@@ -202,7 +206,7 @@
                 </section>
                 {% endif %}
 
-                {# CPT 声明的分类法盒(既有规范taxonomies):多选;层级型给父子缩进候选 #}
+                {# CPT 声明的分类法盒(内容模型设计 taxonomies):多选;层级型给父子缩进候选 #}
                 {% for box in taxonomy_boxes %}
                 <section class="box">
                     <h3>{{ box.label }}</h3>
@@ -305,7 +309,7 @@
                 </section>
                 {% endif %}
 
-                {# position = side 的自定义字段:右栏独立盒,按 priority 升序 #}
+                {# position = side 的自定义字段:右栏独立盒(字段与控件设计),按 priority 升序 #}
                 {% if field_groups.side %}
                 <section class="box box-cf">
                     <h3>{{ __('字段') }}</h3>
@@ -321,7 +325,7 @@
             </aside>
         </div>
 
-        {# position = panel 的自定义字段:低频 / 成组,收进右侧真抽屉。
+        {# position = panel 的自定义字段:低频 / 成组,收进右侧真抽屉(字段与控件设计)。
            触发按钮在页头;开合 / Esc / 点遮罩由 admin.js 管。抽屉在表单内,字段照常提交。 #}
         {% if field_groups.panel %}
         <div class="drawer-scrim" id="ed-fields-scrim" hidden></div>
@@ -353,13 +357,13 @@
     })();
     </script>
 
-    {# 移动端固定底部保存栏;桌面端由右栏「发布」盒承担 #}
+    {# 移动端固定底部保存栏(编辑页界面规格);桌面端由右栏「发布」盒承担 #}
     <div class="actionbar">
         <button class="btn btn-ghost" type="submit" form="ed-form" name="intent" value="draft">{{ __('保存草稿') }}</button>
         <button class="btn btn-primary" type="submit" form="ed-form" name="intent" value="publish">{{ __('发布') }}</button>
     </div>
 
-    {# 插件为编辑页带来的资产(既有规范):地址已由 EditorScreen 校验成根相对,这里只负责摆 #}
+    {# 插件为编辑页带来的资产(编辑器区块设计):地址已由 EditorScreen 校验成根相对,这里只负责摆 #}
     {% for asset in editor_assets %}
         {% if asset.type == 'style' %}
     <link rel="stylesheet" href="{{ asset.src }}">
@@ -388,12 +392,31 @@
         </div>
     </div>
 
+    {# 视频从哪儿来:站内媒体库那一段,或白名单站点的外链。外链那格由 admin.js 换成播放器地址,
+       认不出的地址当场给一句人话,不静默吞掉 #}
+    <div class="dlg img-choose video-choose" id="video-choose" role="dialog" aria-modal="true" aria-labelledby="video-choose-title" hidden>
+        <h2 id="video-choose-title">{{ __('这段视频从哪儿来？') }}</h2>
+        <div class="img-src">
+            <button class="btn btn-ghost" type="button" data-video="lib">{{ __('从媒体库选择') }}</button>
+        </div>
+        <div class="vid-embed">
+            <label class="vid-lab" for="video-embed">{{ __('外链嵌入') }}</label>
+            <input class="mini-in" id="video-embed" type="text" autocomplete="off" spellcheck="false"
+                   placeholder="{{ __('粘贴 B 站 / YouTube / Vimeo 链接，或 mp4 直链') }}">
+        </div>
+        <p class="uperr" id="video-err" hidden></p>
+        <div class="foot">
+            <button class="btn btn-ghost" type="button" data-video="cancel">{{ __('取消') }}</button>
+            <button class="btn btn-primary" type="button" data-video="embed">{{ __('插入') }}</button>
+        </div>
+    </div>
+
     {% if picker %}
         <div class="dlg wide" role="dialog" aria-modal="true" aria-labelledby="pick-title" data-meta-key="{{ picker.key|default('') }}">
             <div class="tag">{{ __('媒体库') }}</div>
-            <h2 id="pick-title">{{ picker.mode == 'body' ? __('插入图片') : (picker.mode == 'meta' ? __('选择图片') : __('选择特色图片')) }}</h2>
+            <h2 id="pick-title">{{ picker.mode == 'body' ? __('插入图片') : (picker.mode == 'av' ? __('插入视频') : (picker.mode == 'meta' ? __('选择图片') : __('选择特色图片'))) }}</h2>
             <form class="filters" method="get" action="{{ picker.action }}">
-                <input type="hidden" name="pick" value="{{ picker.mode == 'body' ? 'body' : (picker.mode == 'meta' ? 'meta' : '1') }}">
+                <input type="hidden" name="pick" value="{{ picker.mode == 'body' ? 'body' : (picker.mode == 'av' ? 'av' : (picker.mode == 'meta' ? 'meta' : '1')) }}">
                 {% if picker.mode == 'meta' %}<input type="hidden" name="key" value="{{ picker.key }}">{% endif %}
                 <div class="search">
                     <span class="ico"></span>
@@ -421,8 +444,11 @@
                     {% if picker.mode == 'body' %}
                         {# 正文插图(#13):选中的那张把原图地址交出来,由编辑器插进正文 #}
                         <button class="cell" type="button" data-url="{{ item.url }}">{{ cell }}</button>
+                    {% elseif picker.mode == 'av' %}
+                        {# 正文视频:插 `video` 还是 `audio` 由 mime 决定,判断留在前端一处 #}
+                        <button class="cell" type="button" data-url="{{ item.url }}" data-mime="{{ item.mime }}">{{ cell }}</button>
                     {% elseif picker.mode == 'meta' %}
-                        {# 图片字段:选中即把附件 id 写回该字段的隐藏输入与预览,不导航 #}
+                        {# 图片字段(字段与控件设计):选中即把附件 id 写回该字段的隐藏输入与预览,不导航 #}
                         <button class="cell" type="button" data-meta="{{ item.id }}" data-mname="{{ item.name }}" data-mthumb="{{ item.thumb }}">{{ cell }}</button>
                     {% else %}
                         <form method="post" action="{{ picker.set_url }}">
@@ -432,7 +458,7 @@
                         </form>
                     {% endif %}
                 {% else %}
-                    <p class="lede">{{ __('媒体库还是空的。先到「媒体」传一张图,再回来选。') }}</p>
+                    <p class="lede">{{ picker.mode == 'av' ? __('媒体库还没有音视频。先到「媒体」传一段，再回来选。') : __('媒体库还是空的。先到「媒体」传一张图,再回来选。') }}</p>
                 {% endfor %}
             </div>
             <div class="pick-pager">
@@ -450,9 +476,8 @@
     {% endif %}
 {% endblock %}
 
-
 {% block overlay %}
-    {# 插件面板/弹层(既有规范):插件自带遮罩与焦点管理,内核只负责'输出 HTML'这一件事 ——
+    {# 插件面板/弹层(编辑器区块设计):插件自带遮罩与焦点管理,内核只负责'输出 HTML'这一件事 ——
        这一块必须落在 layout 的 .scrim 之外,否则父层 visibility:hidden 会让它点开也不可见 #}
     {{ editor_panels|default('')|raw }}
 {% endblock %}

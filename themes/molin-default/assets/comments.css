@@ -1,7 +1,5 @@
-/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
-
-/* 评论区(既有规范配套的,设计稿)
-   (既有规范/§3/§5/§7) ── */
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */* 评论区(安装向导界面规格配套的评论系统设计设计稿,设计稿)
+   (评论系统设计//) ── */
   .comments{margin:96px auto 0;max-width:720px;width:100%;}
   .comments > h2{font-size:30px;font-weight:400;line-height:1.4;letter-spacing:.01em;}
   .clist{margin-top:34px;}
@@ -56,9 +54,7 @@
     color:var(--paper);}
   .btn:hover{background:var(--ink-soft,#2A2B2E);}
 
-  /* 上/下篇与页脚由 article.css 统一提供,本件不重复声明 */
-
-  /* 移动端:三栏改单栏,按钮排头不被限制文案挤换行(与 article.css 同断点) */
+  /* 上/下篇与页脚由 article.css 统一提供,本件不重复声明 */* 移动端:三栏改单栏,按钮排头不被限制文案挤换行(与 article.css 同断点) */
   @media (max-width:768px){
     .comments{margin-top:56px;}
     .comments > h2{font-size:24px;}

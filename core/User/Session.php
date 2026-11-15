@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace Molin\User;
 
 /**
- * 一次登录态(既有规范sessions 行)。
+ * 一次登录态(数据模型设计第 10 节 sessions 行)。
  *
  * id 是 64 位十六进制随机值,只当句柄用,不含任何信息 —— 防会话固定靠的就是
- * "登录成功后换一个新 id"。
+ * "登录成功后换一个新 id"(安全基线第 2.3 节)。
  */
 final class Session
 {

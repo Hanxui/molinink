@@ -1,11 +1,11 @@
 {#
   墨林 - Molinink · 作者 Kira · https://www.molinink.com
 
-  后台设置(设计稿与各分组态图)。
+  后台设置(设置页界面规格,设计稿设计稿与各分组态图)。
   外壳(head/topbar/content/savebar)由 layout.twig 提供,这里只写内容区:页头 + 分组页签 + 表单。
   分组顺序固定:常规 / 写作 / 阅读 / 讨论 / 固定链接 / 媒体 / 缓存 / 更新。
   当前分组由 settings_section 决定(默认 regular);页签整页跳转(?sec=),口径同文章列表的分页签。
-  可选前缀(分类页前缀 / 标签页前缀)本轮不做。
+  可选前缀(分类页前缀 / 标签页前缀)本轮不做(设置页界面规格)。
 #}
 {% extends "layout.twig" %}
 
@@ -494,7 +494,6 @@
                     </div>
                 </div>
             </section>
-
             <section class="group">
                 <h2>{{ __('访问统计') }}</h2>
                 <p class="gdesc">{{ __('页脚那条「今日 / 昨日 / 近 7 天 / 近 30 天 / 总访问」背后的日计数表，留多久。') }}</p>

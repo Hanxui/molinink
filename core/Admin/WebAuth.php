@@ -27,10 +27,10 @@ use Molin\User\SessionStore;
 use Molin\User\User;
 
 /**
- * 登录 / 注册 / 登出三个屏(既有规范–8 节、既有规范)。
+ * 登录 / 注册 / 登出三个屏(用户权限设计第 5–8 节、安全基线第 2、4 节)。
  *
  * 访客也要有会话才带得动防跨站令牌:进页面先发一条 user_id=0 的匿名会话;
- * 登录成功后**换成全新 id**、旧的当场删掉(既有规范防会话固定)。
+ * 登录成功后**换成全新 id**、旧的当场删掉(安全基线第 2.3 节防会话固定)。
  */
 final class WebAuth
 {
@@ -50,10 +50,17 @@ final class WebAuth
             return Response::redirect('/admin');
         }
 
+        // 登录门闸:已登录的上面就走了,这里拦的是访客(如暗门插件伪装 404)
+        $gate = apply_filters('user/login/validate', null, $request->ip());
+
+        if ($gate instanceof Response) {
+            return $gate;
+        }
+
         [$session, $cookie] = $this->guest($request);
 
         if (!$request->isPost()) {
-            // 会话是怎么没的,后台那边只带一个 ?expired=1 过来(既有规范的载体未冻结,§11 第 6 条)
+            // 会话是怎么没的,后台那边只带一个 ?expired=1 过来(登录页界面规格 的载体未冻结, 第 6 条)
             $expired = $request->input('expired') === '1';
 
             // 下载中心这类入口未登录时把回跳地址带在登录链接上,而这一屏以前只认表单字段 POST 上来,
@@ -99,13 +106,13 @@ final class WebAuth
                 return $this->with(Response::redirect($this->withFlag($back, 'login=locked'), 303), $cookie, $request);
             }
 
-            // 锁定优先:这一态不显示警示条,整张表单禁用,只留 .note 那两行
+            // 锁定优先:这一态不显示警示条,整张表单禁用,只留 .note 那两行(登录页界面规格)
             return $this->with($this->loginPage(['locked' => true, 'identity' => $identity]), $cookie, $request, 429);
         }
 
         $this->sessions->destroy($session->id);
 
-        // 勾了「记住我（30 天）」,签发的长期令牌由 Auth 排队、入口统一补发;
+        // 勾了「记住我（30 天）」,签发的长期令牌由 Auth 排队、入口统一补发(安全基线2.7);
         // 会话 cookie 本身不延长 —— 它是会话,不是凭据,过期了靠令牌换回来就是了
         return $this->with(Response::redirect($back ?? '/admin'), (string) Auth::sessionId(), $request);
     }
@@ -122,15 +129,15 @@ final class WebAuth
     }
 
     /**
-     * 只接受站内绝对路径：拒绝 //evil.com、http(s)://、带换行的值，避免登录后被带去外站。
-     * 反斜杠一并拒:`/\evil.com` 被浏览器按 `//evil.com` 归一化,是同一类外跳。
+     * 只接受站内绝对路径：拒绝 /evil.com、http(s):/、带换行的值，避免登录后被带去外站。
+     * 反斜杠一并拒:`/\evil.com` 被浏览器按 `/evil.com` 归一化,是同一类外跳。
      */
     private function returnPath(string $path): ?string
     {
         $path = trim($path);
 
-        if ($path === '' || $path[0] !== '/' || str_starts_with($path, '//')
-            || str_contains($path, '\\') || str_contains($path, '://')
+        if ($path === '' || $path[0] !== '/' || str_starts_with($path, '/')
+            || str_contains($path, '\\') || str_contains($path, ':/')
             || str_contains($path, "\n") || str_contains($path, "\r")) {
             return null;
         }
@@ -146,7 +153,7 @@ final class WebAuth
 
     public function register(Request $request): Response
     {
-        // 关闭注册不是错误:照设计稿出一张"本站未开放注册"的卡,表单整块不渲染
+        // 关闭注册不是错误:照设计稿出一张"本站未开放注册"的卡,表单整块不渲染(注册页界面规格)
         if (!$this->registrar->isOpen()) {
             return $this->view->render('register.twig', ['open' => false]);
         }
@@ -177,9 +184,9 @@ final class WebAuth
     }
 
     /**
-     * 找回密码(既有规范/ §6.2):提交邮箱 → 生成一次性令牌 → 一律回同一句"邮件已发出"。
+     * 找回密码(找回密码界面规格 /):提交邮箱 → 生成一次性令牌 → 一律回同一句"邮件已发出"。
      *
-     * 内核不发信(作者 2026-10-01 定:发信交插件),这一屏只把令牌与链接备好;
+     * 内核不发信(按现行设计:发信交插件),这一屏只把令牌与链接备好;
      * 签发后发 `user/lostpassword/after`(user, link)交棒(见 core/User/PasswordReset.php),
      * 随包插件 plugins/mail-smtp 正监听它真发信 —— 已闭环
      * (2026-10-12 更正旧注释"寄出去那一步还没人做":发信那步已由插件接上)。
@@ -198,9 +205,8 @@ final class WebAuth
             return $this->with($this->recoverPage(['email' => $email, 'notice' => __(self::STALE)]), $cookie, $request, 403);
         }
 
-        // 账号在不在、发没发出去,反馈都得一样 —— 既有规范那句"不透露注册情况"是安全口径,不是客套
-        //
-        // 但"发没发出去"得说实话(2026-10-17 作者定):内核不发信,发信靠插件接 `user/lostpassword/after`。
+        // 账号在不在、发没发出去,反馈都得一样 —— 找回密码界面规格 那句"不透露注册情况"是安全口径,不是客套
+        // 但"发没发出去"得说实话(2026-10-17 按现行设计):内核不发信,发信靠插件接 `user/lostpassword/after`。
         // 没人接棒还回"邮件已发出"就是把站长骗在门外 —— 没接棒时干脆不签发令牌(签发也没人送),
         // 两种账号仍给同一句,不透露注册情况的口径不变。
         $mailable = has_action('user/lostpassword/after');
@@ -213,7 +219,7 @@ final class WebAuth
     }
 
     /**
-     * 重置密码(既有规范/ §6.4):渲染哪一态完全由令牌校验结果决定。
+     * 重置密码(找回密码界面规格 /):渲染哪一态完全由令牌校验结果决定。
      */
     public function resetpassword(Request $request): Response
     {
@@ -250,7 +256,7 @@ final class WebAuth
 
         Audit::record('user.password.reset', 'user:' . $user->id, true, $request, 'user:' . $user->id);
 
-        // 改完密码这台设备也不算登录着(session_version 已 +1),让人拿新密码重新进
+        // 改完密码这台设备也不算登录着(session_version 已 +1),让人拿新密码重新进(用户权限设计)
         return $this->with(Response::redirect('/login'), $cookie, $request);
     }
 
@@ -280,7 +286,7 @@ final class WebAuth
     /** 令牌对不上 = 页面是旧的,不是有人在攻击;提示要往"重新提交"引,别吓到正常人 */
     public const STALE = '页面放得太久了,请重新提交。';
 
-    /** 会话失效那句照既有规范逐字(全角标点),不改写成开发方的口味 */
+    /** 会话失效那句照登录页界面规格 逐字(全角标点),不改写成开发方的口味 */
     public const EXPIRED = '登录状态已失效，请重新登录。';
 
     /**
@@ -314,11 +320,11 @@ final class WebAuth
             'locked' => false,
             // 回跳地址的载体:模板里那个隐藏字段,空串 = 不带(登录后照旧回 /admin)
             'redirect_to' => '',
-            // 三个数字都跟着配置走,不写死;天数现在取自令牌寿命,不再是会话上限
+            // 三个数字都跟着配置走,不写死(登录页界面规格);天数现在取自令牌寿命,不再是会话上限
             'remember_days' => intdiv(RememberTokens::TTL, 86400),
             'lock_minutes' => (int) round(LoginThrottle::LOCK_SECONDS / 60),
             'max_attempts' => LoginThrottle::MAX_ATTEMPTS,
-            // 开放注册时登录页才给「注册新账号」这一枚入口(既有规范改定)
+            // 开放注册时登录页才给「注册新账号」这一枚入口(登录页界面规格 改定)
             'can_register' => $this->registrar->isOpen(),
         ]);
     }

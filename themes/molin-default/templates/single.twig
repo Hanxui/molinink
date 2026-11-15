@@ -1,11 +1,7 @@
 {# 墨林 - Molinink · 作者 Kira · https://www.molinink.com #}
-{# 单篇:文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
-   post.content 是内核已处理的正文(可信富文本),允许 |raw,该位置由契约测试登记复核。
-   category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。
-   评论表单里的昵称/邮箱/网址三格回填内核 `commenter` 全局(来源是 HttpOnly 记忆 cookie,
-   见 core/Comment/CommenterCookie.php):三个键恒在、没填过就是空串,所以直接当 value 渲染,
-   不必做 defined 判断;只走服务端回填,不用 JS 二次覆盖,免得顶掉访客正在输入的内容。
-   这三个值都是用户输入,交给 Twig 自动转义,不加 raw 过滤器。蜜罐 website_hp 反垃圾,永不预填。 #}
+{# 单篇(文章详情界面规格):文章头 + 正文(居中内容栏)+ 评论区 + 上/下篇。页头/页脚通栏,三块内容栏居中。
+   post.content 是内核已处理的正文(可信富文本),按模板引擎规范第 3.5 节允许 |raw,该位置由契约测试登记复核。
+   category / byline / pager 由内核在 post 路由里补齐;没喂就整块不渲染(第三方主题与测试都不必提供)。 #}
 <!DOCTYPE html>
 <html lang="{{ html_lang() }}">
 <head>
@@ -48,7 +44,7 @@
     {% else %}
         <section class="body">{{ post.content|raw }}</section>
 
-        {# 文末标签:分类在眉标里,这里只列标签 —— 读完正文就有"更细的入口"。
+        {# 文末标签(文章详情界面规格):分类在眉标里,这里只列标签 —— 读完正文就有"更细的入口"。
            没打标签整块不渲染,版面与从前一样;标签由内核在 post 路由补齐,第三方主题不必提供 #}
         {% if tags is defined and tags %}
             <div class="tags">
@@ -57,7 +53,7 @@
             </div>
         {% endif %}
 
-        {# 评论区(既有规范/§3/§7;版式照设计稿)。content 在提交时已过白名单,允许 |raw #}
+        {# 评论区(评论系统设计/;版式照 文章详情-评论区-2026-09-30)。content 在提交时已过白名单,按模板引擎规范3.5 允许 |raw #}
     {% if comment_action is defined and comment_action %}
         <section class="comments" id="comments">
             <h2>{{ __('评论 %s', 'theme', comment_total) }}</h2>
@@ -125,15 +121,15 @@
                         {% else %}
                         <div class="f">
                             <label>{{ __('昵称', 'theme') }}<span class="req">*</span></label>
-                            <input type="text" name="author_name" value="{{ commenter.author|default('') }}">
+                            <input type="text" name="author_name">
                         </div>
                         <div class="f">
                             <label>{{ __('邮箱', 'theme') }}<span class="req">*</span></label>
-                            <input type="email" name="author_email" value="{{ commenter.mail|default('') }}">
+                            <input type="email" name="author_email">
                         </div>
                         <div class="f">
                             <label>{{ __('网址', 'theme') }}</label>
-                            <input type="url" name="author_url" placeholder="{{ __('选填', 'theme') }}" value="{{ commenter.url|default('') }}">
+                            <input type="url" name="author_url" placeholder="{{ __('选填', 'theme') }}">
                         </div>
                         {% endif %}
                         <div class="f full">

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 路由相关错误:名字重复、路径冲突、参数缺失、生成失败。
+ * 路由相关错误:名字重复、路径冲突、参数缺失、生成失败。见错误与日志设计第 1 节。
  */
 class RouteException extends MolinException
 {

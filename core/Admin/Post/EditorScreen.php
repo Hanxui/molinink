@@ -37,10 +37,10 @@ use Molin\User\UserRepository;
  */
 class EditorScreen extends ListScreen
 {
-    /** 特色图片选择器一页六张:桌面两行三列正好铺满对话框 */
+    /** 特色图片选择器一页六张:桌面两行三列正好铺满对话框(编辑页界面规格) */
     private const PICKER_PER_PAGE = 6;
 
-    /** 既有规范/ 控件词表(14 种);词表外的名字一律回落 text,不自造控件 */
+    /** 字段与控件设计 / 主题配置器设计:控件词表(14 种);词表外的名字一律回落 text,不自造控件 */
     private const CONTROLS = [
         'text', 'textarea', 'bool', 'select', 'radio', 'color', 'range',
         'number', 'image', 'file', 'url', 'code', 'group', 'repeater',
@@ -74,7 +74,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 编辑页「父页面」盒的候选(排除自己与后代,防成环)。
+     * 编辑页「父页面」盒的候选(页面列表界面规格:排除自己与后代,防成环)。
      * 回收站里的页同样不做候选 —— 挂过去就成了列表里找不回的子页。
      *
      * @return list<array{id:int, title:string}>
@@ -147,7 +147,7 @@ class EditorScreen extends ListScreen
 
         $canPublish = $this->can->can($user, $this->cap('publish'));
         // 分类盒里那颗「×」是删整个分类(全局动作),门控走 category.manage ——
-        // 与既有规范管理屏同口径:能改分类的人才看得见删的入口
+        // 与分类标签界面规格管理屏同口径:能改分类的人才看得见删的入口
         $canManageCategories = $this->can->can($user, 'category.manage');
         // 新建默认「发布」(有发布权的人本来就是来发文章的);没有发布权的落到草稿,免得白填一页再被打回
         $current = $post === null ? ($canPublish ? StatusMachine::PUBLISH : StatusMachine::DRAFT) : $post->status;
@@ -178,11 +178,11 @@ class EditorScreen extends ListScreen
         $parentId = $post === null ? 0 : ($this->parentIds([$post->id])[$post->id] ?? 0);
         $menuOrder = $post === null ? 0 : $this->menuOrderOf($post->id);
 
-        // 「页面模板」盒:当前页 meta 里的选择 + 主题声明的候选清单(非页面屏不取)
+        // 「页面模板」盒(独立页面界面规格):当前页 meta 里的选择 + 主题声明的候选清单(非页面屏不取)
         $pageTemplateCurrent = $isPage && $post !== null ? ($this->meta->get($post->id, 'page_template') ?? '') : '';
         $pageTemplates = $isPage ? $this->pageTemplateChoices($pageTemplateCurrent) : [];
 
-        // 「地址」那格下面那行完整地址(站点 URL + 固定链接的产物就是 Post::$url)。
+        // 「地址」那格下面那行完整地址(内容模型设计:站点 URL + 固定链接的产物就是 Post::$url)。
         // 前缀单给一份:前端改了 slug 能就地重算,不必再问一次服务端。新建还没有 slug,那格给空。
         $slugNote = '';
         $slugBase = '';
@@ -208,7 +208,7 @@ class EditorScreen extends ListScreen
             $fieldGroups = $this->attachFieldPickers($fieldGroups, $post->id);
         }
 
-        // 媒体选择器:特色图片 / 正文插图 / 图片字段三种用途共用同一层(既有规范盒)
+        // 媒体选择器:特色图片 / 正文插图 / 图片字段三种用途共用同一层(编辑页界面规格 第 4 盒)
         $picker = $isNew ? null : $this->picker($request, (int) $post->id, $this->thumbnailOf($post)['id']);
 
         $editorExt = $this->editorExtensions();
@@ -226,7 +226,7 @@ class EditorScreen extends ListScreen
             'parent_choices' => $hierarchical ? $this->parentChoicesFor($post?->id) : [],
             'page_templates' => $pageTemplates,
             'page_template_current' => $pageTemplateCurrent,
-            // supports 生效:不支持就不出对应控件,不假装
+            // supports 生效(内容模型设计):不支持就不出对应控件,不假装
             'show_title' => $this->hasSupport('title'),
             'show_editor' => $this->hasSupport('editor'),
             'show_thumbnail' => $this->hasSupport('thumbnail'),
@@ -242,7 +242,7 @@ class EditorScreen extends ListScreen
             'taxonomy_boxes' => $isCpt ? $this->taxonomyBoxes($post) : [],
             'field_groups' => $fieldGroups,
             'panel_count' => count($fieldGroups['panel']),
-            // 编辑器扩展(既有规范):按钮、资产、面板三段都来自插件,内核只负责摆到位
+            // 编辑器扩展(编辑器区块设计):按钮、资产、面板三段都来自插件,内核只负责摆到位
             'editor_buttons' => $editorExt['buttons'],
             'editor_assets' => $editorExt['assets'],
             'editor_panels' => $editorExt['panels'],
@@ -263,7 +263,7 @@ class EditorScreen extends ListScreen
             'statuses' => $statuses,
             'chosen' => $chosen,
             'categories' => $this->categoryChoices($post === null ? [] : $categories, $canManageCategories),
-            // 分类盒头那条「管理分类与标签」:去既有规范管理屏(增删改都在那边)
+            // 分类盒头那条「管理分类与标签」:去分类标签界面规格管理屏(增删改都在那边)
             'categories_url' => $this->url('categories'),
             'can_manage_categories' => $canManageCategories,
             // 分类盒每行那颗「×」的落点:管理屏那条删除端点,XHR 送(成不成回 JSON)
@@ -285,9 +285,9 @@ class EditorScreen extends ListScreen
             'fields_meta' => $post === null ? [] : $this->metaRows($post->id),
             'word_count' => self::wordCount($body),
             'saved_text' => $post === null ? __('尚未保存') : __('已自动保存') . ' ' . substr($post->updated_at, 11, 5),
-            // 自动保存那条带子中场才写文案:没存过就不该显示
+            // 自动保存那条带子中场才写文案:没存过就不该显示(编辑页界面规格)
             'autosave_text' => '',
-            // 时间那格可点可改(既有规范盒):控件值要 Y-m-d\TH:i,库里存的是 Y-m-d H:i:s
+            // 时间那格可点可改(编辑页界面规格 第 1 盒):控件值要 Y-m-d\TH:i,库里存的是 Y-m-d H:i:s
             'published_input' => $publishedInput,
             'slug_note' => $slugNote,
             'slug_base' => $slugBase,
@@ -297,6 +297,8 @@ class EditorScreen extends ListScreen
             'pick_url' => $isNew ? '' : $this->url('posts/' . $post->id . '/edit?pick=1'),
             // 正文「图片」钮的那条选择器地址(#13):同一个选择器,换一档用途
             'body_pick_url' => $isNew ? '' : $this->url('posts/' . $post->id . '/edit?pick=body'),
+            // 正文「视频」钮:同一层选择器,只列音视频那一栏
+            'video_pick_url' => $isNew ? '' : $this->url('posts/' . $post->id . '/edit?pick=av'),
             // 编辑器里的本地上传(#13)。新建那篇还没落库,存不下图,所以这条口子直接不给
             'img_upload_url' => $isNew ? '' : $this->url('posts/' . $post->id . '/image-upload'),
             'picker' => $picker,
@@ -336,9 +338,9 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 分类那一盒:候选项 + 已勾 + 计数(既有规范盒右边的灰数字)。
+     * 分类那一盒:候选项 + 已勾 + 计数(编辑页界面规格 第 2 盒右边的灰数字)。
      * can_delete 决定每行尾那颗「×」出不出:要 category.manage,且兜底项「未分类」一概不给 ——
-     * 与既有规范管理屏的删除口径逐条对齐(那边也是这两条)。
+     * 与分类标签界面规格管理屏的删除口径逐条对齐(那边也是这两条)。
      *
      * @param list<array<string, mixed>> $checked
      * @return list<array{term_taxonomy_id:int, name:string, slug:string, count:int, checked:bool, can_delete:bool}>
@@ -355,7 +357,7 @@ class EditorScreen extends ListScreen
             $this->terms->choices(TermAssigner::CATEGORY)
         );
 
-        // 设计稿那列顺序:勾着的排最前,其余按文章数从多到少(既有规范盒)
+        // 设计稿那列顺序:勾着的排最前,其余按文章数从多到少(编辑页界面规格第 2 盒)
         usort($rows, static function (array $a, array $b): int {
             if ($a['checked'] !== $b['checked']) {
                 return $a['checked'] ? -1 : 1;
@@ -414,7 +416,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 自定义字段盒:meta 里能直接给人看的标量项(既有规范盒)。
+     * 自定义字段盒:meta 里能直接给人看的标量项(编辑页界面规格 第 6 盒)。
      *
      * @return list<array{key:string, value:string}>
      */
@@ -449,7 +451,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * CPT 声明的分类法分配(既有规范taxonomies)。PostWriter 只认内置 category / post_tag,
+     * CPT 声明的分类法分配(内容模型设计 taxonomies)。PostWriter 只认内置 category / post_tag,
      * 所以按登记表逐条走 TermAssigner 的全量替换。
      */
     protected function assignTypeTaxonomies(int $postId, Request $request): void
@@ -468,7 +470,7 @@ class EditorScreen extends ListScreen
                 }
             }
 
-            // 全量替换语义:这次表单没给某分类法 = 清空它的归属
+            // 全量替换语义(内容模型设计):这次表单没给某分类法 = 清空它的归属
             $this->terms->assign($postId, $taxonomy, array_values(array_unique($ids)));
         }
     }
@@ -581,8 +583,8 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 编辑器自定义字段(既有规范):插件经 `admin/editor-fields/collect` 交出定义,
-     * 这里按 position(side / main / panel)与 priority 归一好交给模板,控件一律复用既有规范词表。
+     * 编辑器自定义字段(字段与控件设计):插件经 `admin/editor-fields/collect` 交出定义,
+     * 这里按 position(side / main / panel)与 priority 归一好交给模板,控件一律复用主题配置器设计 词表。
      * 未登记(或形状不合)的一律丢,一条坏数据不该把整页打崩。
      *
      * @return array{side:list<array<string,mixed>>, main:list<array<string,mixed>>, panel:list<array<string,mixed>>}
@@ -623,15 +625,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 一条字段定义归一成模板直接能用的形状(既有规范参数表)。
-     * control 必须落在词表内,否则回落 text(词表外不得装载);
-     * group / repeater 的嵌套定义递归归一,并把已有 JSON 值解析成可渲染的行。
-     *
-     * @param array<string, mixed> $spec
-     * @return array<string, mixed>
-     */
-    /**
-     * 编辑器扩展(既有规范):按钮与资产由 `admin/editor/collect` 交出,面板 HTML 由 `admin/editor/render` 现产出。
+     * 编辑器扩展(编辑器区块设计):按钮与资产由 `admin/editor/collect` 交出,面板 HTML 由 `admin/editor/render` 现产出。
      *
      * 插件是能跑 PHP 的可信代码,面板不再过滤;但按钮与资产要活着进页面,所以形状先过一道 ——
      * 坏条目丢掉而不是整页打崩(与 collectFields 同口径)。
@@ -699,7 +693,7 @@ class EditorScreen extends ListScreen
     {
         return $src !== ''
             && str_starts_with($src, '/')
-            && !str_starts_with($src, '//')
+            && !str_starts_with($src, '/')
             && !str_contains($src, '..')
             && preg_match('#^[a-z][a-z0-9+.-]*:#i', $src) !== 1;
     }
@@ -722,7 +716,14 @@ class EditorScreen extends ListScreen
         return $svg;
     }
 
-
+    /**
+     * 一条字段定义归一成模板直接能用的形状(字段与控件设计 参数表)。
+     * control 必须落在词表内,否则回落 text(字段与控件设计:词表外不得装载);
+     * group / repeater 的嵌套定义递归归一,并把已有 JSON 值解析成可渲染的行。
+     *
+     * @param array<string, mixed> $spec
+     * @return array<string, mixed>
+     */
     private function normalizeField(string $key, array $spec, string $value): array
     {
         $control = (string) ($spec['control'] ?? 'text');
@@ -820,7 +821,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * group / repeater 的嵌套字段定义(fields 递归适用本规范)。
+     * group / repeater 的嵌套字段定义(字段与控件设计:fields 递归适用本规范)。
      * 嵌套里再套 group / repeater 时,渲染层回落 JSON 文本域 —— 1.0 不做多层嵌套编辑器。
      *
      * @return list<array{key:string, id:string, label:string, control:string, args:array<string,string>, options:list<array{value:string,label:string}>}>
@@ -915,7 +916,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 图片字段的预览地址与文件名:值是媒体库附件 id。
+     * 图片字段的预览地址与文件名:值是媒体库附件 id(字段与控件设计)。
      *
      * @return array{0:string, 1:string}
      */
@@ -971,7 +972,7 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 「共 N 字 · 预计阅读约 M 分钟」。中文按字数估,300 字一分钟。
+     * 「共 N 字 · 预计阅读约 M 分钟」(编辑页界面规格)。中文按字数估,300 字一分钟。
      */
     private static function wordCount(string $html): string
     {
@@ -983,8 +984,8 @@ class EditorScreen extends ListScreen
     }
 
     /**
-     * 媒体选择器(既有规范盒点开的那层)。设计稿没有这一层,
-     * 模态件 + 既有规范网格那一套拼出来,图已补在设计稿
+     * 媒体选择器(编辑页界面规格第 4 盒点开的那层)。设计稿没有这一层,
+     * 按品牌视觉设计稿模态件 + 媒体库界面规格网格那一套拼出来,图已补在设计稿
      *
      * @return array<string, mixed>|null
      */
@@ -993,16 +994,17 @@ class EditorScreen extends ListScreen
         $pick = $request->input('pick');
         $metaKey = $request->input('key');
 
-        // `?pick=1` 挑特色图片(§4.7 第 4 盒),`?pick=body` 是往正文里插一张(§4.6 图片钮),
-        // `?pick=meta&key=<id>` 是给图片字段挑附件 id;别的值一律当没点开,不半开着
+        // `?pick=1` 挑特色图片(第 4 盒),`?pick=body` 是往正文里插一张(图片钮),
+        // `?pick=av` 是视频钮那一档(只列音视频),`?pick=meta&key=<id>` 是给图片字段挑附件 id(字段与控件设计);
+        // 别的值一律当没点开,不半开着
         if ($pick === 'meta') {
             if (preg_match('/\A[A-Za-z0-9_\-]+\z/', $metaKey) !== 1) {
                 return null;
             }
 
             $mode = 'meta';
-        } elseif (in_array($pick, ['1', 'body'], true)) {
-            $mode = $pick === 'body' ? 'body' : 'feat';
+        } elseif (in_array($pick, ['1', 'body', 'av'], true)) {
+            $mode = $pick === '1' ? 'feat' : $pick;
         } else {
             return null;
         }
@@ -1010,14 +1012,15 @@ class EditorScreen extends ListScreen
         // 翻页链接上的取值与认得的取值一致(meta 模式连 key 一起带上)
         $pickValue = match ($mode) {
             'body' => 'body',
+            'av' => 'av',
             'meta' => 'meta&key=' . rawurlencode($metaKey),
             default => '1',
         };
         $keyword = $request->input('q');
         $page = max(1, (int) $request->input('page', '1'));
-        // 特色图片只能是图:媒体库那六个栏里取「图片」这一栏(既有规范的分类口径)。
-        // 一页 6 张 = 对话框里桌面两行三列、移动两行两列(既有规范/ §11.3)
-        $list = $this->media->browse(['q' => $keyword, 'tab' => 'image'], $page, self::PICKER_PER_PAGE);
+        // 图片两档(特色图 / 正文插图)只看「图片」那一栏;视频钮看「音视频」那一栏(媒体库设计第 3 节的分栏)。
+        // 一页 6 张 = 对话框里桌面两行三列、移动两行两列(编辑页界面规格 /)
+        $list = $this->media->browse(['q' => $keyword, 'tab' => $mode === 'av' ? 'av' : 'image'], $page, self::PICKER_PER_PAGE);
         $total = (int) $list['total'];
         $pages = max(1, (int) ceil($total / self::PICKER_PER_PAGE));
         $links = [];
@@ -1043,7 +1046,10 @@ class EditorScreen extends ListScreen
                 'name' => (string) $item['file_name'],
                 // 正文插图交出去的是原图地址(#13):插进去的是文件本身,不是缩略图
                 'url' => $this->store->url((string) $item['file_path']),
-                'thumb' => $this->previewOf($item),
+                // 视频钮要按 mime 决定插 `video` 还是 `audio`
+                'mime' => (string) $item['mime_type'],
+                // 只有图片才配缩略图:音视频拿文件地址当图源 = 一块白框(媒体库设计)
+                'thumb' => str_starts_with((string) $item['mime_type'], 'image/') ? $this->previewOf($item) : '',
                 'dims' => $item['width'] === null ? '' : $item['width'] . '×' . $item['height'],
                 'size_text' => round((int) $item['file_size'] / 1024) . ' KB',
             ], $list['items']),

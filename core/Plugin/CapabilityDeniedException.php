@@ -13,7 +13,7 @@ namespace Molin\Plugin;
 use Molin\Exception\PluginException;
 
 /**
- * 插件调用了自己未声明的能力。
+ * 插件调用了自己未声明的能力(能力清单第 5 节)。
  */
 final class CapabilityDeniedException extends PluginException
 {

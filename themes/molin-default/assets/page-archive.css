@@ -1,10 +1,8 @@
 /* 墨林 - Molinink · 作者 Kira · https://www.molinink.com
-   归档页页面模板样式(既有规范;源件:设计稿、
+   归档页页面模板样式(归档页界面规格;源件:设计稿、
    设计稿)。
    年 → 月 → 文章三级折叠,默认全收起。页头/页脚/浮层与其它页共用一套壳。
-   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */
-
-/* 页头标题区:居中 720px 内容栏 */
+   配色变量取自 partials/theme-style.twig(主题设置),本文件不重复声明 :root。 */* 页头标题区:居中 720px 内容栏 */
 .head{margin:74px auto 0;max-width:720px;width:100%;}
 .eyebrow{font-family:var(--font-sans);font-size:13px;letter-spacing:.24em;color:var(--muted);}
 .head h1{margin-top:26px;font-size:72px;font-weight:400;line-height:1.24;letter-spacing:.01em;}
@@ -29,7 +27,7 @@
 .year-head:hover .y{color:var(--accent);}
 .year-head .meta{margin-left:auto;display:flex;align-items:baseline;gap:22px;}
 .year-head .months{font-family:var(--font-sans);font-size:11px;letter-spacing:.16em;color:var(--muted);}
-/* 速览展开即隐去,但保留占位,否则右侧组会左移 */
+/* 速览展开即隐去,但保留占位,否则右侧组会左移(归档页界面规格) */
 .year.open .year-head .months{opacity:0;}
 .year-head .count{font-family:var(--font-sans);font-size:12px;letter-spacing:.18em;color:var(--muted);}
 .year-body{display:none;padding-bottom:22px;}

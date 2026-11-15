@@ -66,7 +66,8 @@ final class FrontContext
          * 列表数据装配:整页处理器与片段端点(list.fragment)共用这一份 ——
          * 查询、组项、分页只此一处,不复制第二套。每页条数与「列表显示」口径都收进 ListSource。
          */
-        /** @var ?CacheInterface $cache 主色结果的跨请求存储;装配线没给就退回本请求内计算 */
+
+    /** @var ?CacheInterface $cache 主色结果的跨请求存储;装配线没给就退回本请求内计算 */
         $cache = $container->has(CacheInterface::class) ? $container->get(CacheInterface::class) : null;
 
         /*

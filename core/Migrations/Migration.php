@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Migrations;
 
 /**
- * 迁移契约:每个迁移都必须支持回滚。
+ * 迁移契约(升级机制设计第 6 节):每个迁移都必须支持回滚。
  */
 interface Migration
 {

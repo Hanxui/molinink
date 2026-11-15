@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 身份已确认但没有该能力 → 403。层级。
+ * 身份已确认但没有该能力 → 403。层级见错误与日志设计第 1 节。
  */
 final class ForbiddenException extends AuthException
 {

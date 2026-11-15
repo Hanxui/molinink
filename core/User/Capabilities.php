@@ -14,15 +14,15 @@ use Molin\Exception\ConfigException;
 use Molin\Plugin\Capability;
 
 /**
- * 能力名登记表(新能力名先注册再用)。
+ * 能力名登记表(用户权限设计第 2、4 节:新能力名先注册再用)。
  *
  * 注意这是**两套命名空间里的一套**:这里是"权限能力"(点分小写,如 post.edit.own),
- * 给 RBAC 用;既有规范那份是插件在 plugin.json 里的申报词表。
- * 两者格式同源(既有规范的域.动作),但用途与权威文档不同,别混用。
+ * 给 RBAC 用;能力清单那份是插件在 plugin.json 里的申报词表。
+ * 两者格式同源(用户权限设计第 2 节的域.动作),但用途与权威文档不同,别混用。
  */
 final class Capabilities
 {
-    /** 既有规范矩阵里出现的内置能力(`media.delete.others` 增于 2026-10-01,`cache.manage` 同批) */
+    /** 用户权限设计第 3 节矩阵里出现的内置能力(`media.delete.others` 增于 2026-10-01,`cache.manage` 同批) */
     private const BUILT_IN = [
         'read' => '阅读内容',
         'post.create' => '创建文章',
@@ -44,7 +44,7 @@ final class Capabilities
         'theme.switch' => '切换主题',
         'setting.manage' => '修改设置',
         'update.core' => '升级程序',
-        // 既有规范行本就登记了它,既有规范漏了一格 —— 两处不一致以既有规范为准(2026-10-01 作者定)
+        // 能力清单第 51 行本就登记了它,用户权限设计 漏了一格 —— 两处不一致以能力清单为准(2026-10-01 按现行设计)
         'cache.manage' => '操作缓存',
     ];
 
@@ -90,7 +90,7 @@ final class Capabilities
     }
 
     /**
-     * 内置 19 项(既有规范矩阵)。
+     * 内置 19 项(用户权限设计第 3 节矩阵)。
      *
      * @return list<string>
      */

@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 频率超限 → 429。归入 5xxx(系统 / 环境)。
+ * 频率超限 → 429。归入 5xxx(系统 / 环境),见错误与日志设计第 2 节。
  */
 final class RateLimitException extends MolinException implements HttpMappable
 {
@@ -33,7 +33,7 @@ final class RateLimitException extends MolinException implements HttpMappable
     }
 
     /**
-     * 既有规范要求 429 带 Retry-After。
+     * API设计第 8 节要求 429 带 Retry-After。
      */
     public function retryAfter(): int
     {

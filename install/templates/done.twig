@@ -44,7 +44,7 @@
             <div class="code-card">
                 <div class="lab">① 伪静态 · 必加（宝塔：网站 → 设置 → 伪静态）</div>
                 <div class="code" id="snip-rewrite">location / {
-    try_files $uri $uri/ /index.php$is_args$args;
+    try_files $uri $uri/index.php$is_args$args;
 }
 
 # 后台走程序路由：admin/ 目录里只有静态资源，没有 index 文件。

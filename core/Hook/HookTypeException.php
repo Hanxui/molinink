@@ -13,7 +13,7 @@ namespace Molin\Hook;
 use Molin\Exception\MolinException;
 
 /**
- * 钩子名不合规、或 filter 回调违反返回值约定时抛出。
+ * 钩子名不合规、或 filter 回调违反返回值约定时抛出。见钩子规范第 3.2、8 节。
  */
 final class HookTypeException extends MolinException
 {

@@ -11,10 +11,10 @@ declare(strict_types=1);
 namespace Molin\Install;
 
 /**
- * 环境检测。
+ * 环境检测(安装向导设计第 2 节)。
  *
  * 判据只用标准件(PHP 版本、扩展、目录可写、ini 阈值、伪静态探测),
- * 不认任何面板路径 —— 部署环境不写死宝塔(2026-09-30 作者定)。
+ * 不认任何面板路径 —— 部署环境不写死宝塔(2026-09-30 按现行设计)。
  */
 final class EnvironmentChecker
 {

@@ -13,17 +13,17 @@ namespace Molin\User;
 use Molin\Database\Database;
 
 /**
- * 会话存取(既有规范sessions 表、既有规范–2.6 节)。
+ * 会话存取(数据模型设计第 10 节 sessions 表、用户权限设计第 8 节、安全基线第 2.3–2.6 节)。
  *
  * 两条过期一起把关:空闲超时(滑动续期)与绝对上限 —— 只有一条的话,
  * "一直刷新就连不上有效期"或者"三天没动却被踢"总会摊上一个。
  */
 final class SessionStore
 {
-    /** 常规有效期 14 天 */
+    /** 常规有效期 14 天(用户权限设计第 8 节) */
     public const IDLE_TTL = 1_209_600;
 
-    /** 绝对上限 30 天(既有规范"记住我 30 天",这里当作任何会话的最长寿命) */
+    /** 绝对上限 30 天(用户权限设计第 8 节"记住我 30 天",这里当作任何会话的最长寿命) */
     public const ABSOLUTE_TTL = 2_592_000;
 
     public function __construct(
@@ -114,7 +114,7 @@ final class SessionStore
     }
 
     /**
-     * 服务端销毁。
+     * 服务端销毁(安全基线第 2.6 节)。
      */
     public function destroy(string $id): void
     {
@@ -122,7 +122,7 @@ final class SessionStore
     }
 
     /**
-     * 改密后踢掉这个用户的所有会话。
+     * 改密后踢掉这个用户的所有会话(用户权限设计第 8 节)。
      */
     public function destroyAllForUser(int $userId): void
     {

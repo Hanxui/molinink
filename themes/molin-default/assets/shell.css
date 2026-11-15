@@ -17,7 +17,7 @@ nav a:hover{color:var(--accent);}
 .menu-btn{display:none;}
 hr.rule{border:0;border-top:1px solid var(--rule);margin-top:26px;}
 
-/* 页脚钉底(#56):短页时 footer 吃剩余高度沉到视口底;长页时上一块垫 104px */
+/* 页脚钉底:短页时 footer 吃剩余高度沉到视口底;长页时上一块垫 104px */
 .page > :nth-last-child(2){margin-bottom:104px;}
 footer{margin-top:auto;padding-top:28px;border-top:1px solid var(--rule);
   display:flex;align-items:baseline;justify-content:space-between;

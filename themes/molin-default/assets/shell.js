@@ -1,5 +1,4 @@
-/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */
-/* 移动端页头:两条杠 ↔ 液态模糊浮层导航。浮层只是呈现容器,导航数据不变。
+/* 墨林 - Molinink · 作者 Kira · https://www.molinink.com */* 移动端页头:两条杠 ↔ 液态模糊浮层导航(主题目录约定)。浮层只是呈现容器,导航数据不变。
    开着时锁背景滚动、Esc 可关、焦点移进移出并按 Tab 在浮层内循环(键盘与读屏用户可达)。 */
 (function () {
     'use strict';
@@ -105,7 +104,7 @@
     });
 })();
 
-/* 正文图片灯箱(#56):点图从原位放大到视口中央,关闭原路缩回(「从哪来回哪去」)。
+/* 正文图片灯箱:点图从原位放大到视口中央,关闭原路缩回(「从哪来回哪去」)。
    图片文件不动,只是呈现;正文里带链接的图不抢跳转。 */
 (function () {
     'use strict';
@@ -216,7 +215,7 @@
 
             lbImg.style.transform = t;
             lbImg.style.visibility = 'visible';
-            void lb.offsetWidth; // 先落首帧再开过渡,否则会从终态直接跳
+            void lb.offsetWidth; / 先落首帧再开过渡,否则会从终态直接跳
             lb.classList.add('open');
 
             var a = lbImg.animate([{ transform: t }, { transform: 'none' }],

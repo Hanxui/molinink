@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Content;
 
 /**
- * slug 生成。
+ * slug 生成(内容模型设计第 5 节)。
  *
  * 只做纯字符串这一段:清洗、兜底、加后缀。"同 type 内查重"要连库,归 PostWriter。
  * 中文不转拼音也不剔除 —— 转成 ASCII 会把标题压成一串横线,反而更好看的 URL 丢了。

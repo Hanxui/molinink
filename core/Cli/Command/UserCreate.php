@@ -21,7 +21,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * 建用户(既有规范的 user:create)。口令优先环境变量,别留在 shell 历史里。
+ * 建用户(CLI设计第 1 节的 user:create)。口令优先环境变量,别留在 shell 历史里(CLI设计第 7 节)。
  */
 final class UserCreate extends BaseCommand
 {

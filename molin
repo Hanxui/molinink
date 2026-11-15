@@ -10,8 +10,8 @@
 declare(strict_types=1);
 
 /*
- * molin 命令行入口(《58-CLI工具》)。与 index.php 共用 Bootstrap 的装配路径,
- * 区别只在:这里不注册路由、不分发请求。退出码见《58》第 4 节。
+ * molin 命令行入口(CLI 设计)。与 index.php 共用 Bootstrap 的装配路径,
+ * 区别只在:这里不注册路由、不分发请求。退出码见CLI 设计第 4 节。
  *
  * 未装站点时容器是空的,只能跑不依赖数据库的命令(core:version、key:generate、install)。
  */
@@ -23,7 +23,7 @@ use Molin\Container\Container;
 
 define('MOLIN_ROOT', __DIR__);
 
-// 契约版本与产品版本各自演进(《00》第 1 节、《56》第 1 节)
+// 契约版本与产品版本各自演进(总览文档与版本号策略各第 1 节)
 define('MOLIN_CONTRACT', '1.0');
 
 /** @var ClassLoader $autoloader */

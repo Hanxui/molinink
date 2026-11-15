@@ -153,8 +153,8 @@ final class Settings
         $code = "<?php\n\n"
             . "/**\n * 墨林 - Molinink\n * @author Kira\n * @link   https://www.molinink.com\n */\n\n"
             . 'declare(strict_types=1);' . "\n\n"
-            . '// 由后台「SMTP 发信」设置页写入(' . gmdate('Y-m-d H:i:s') . " UTC);手改同样有效,\n"
-            . "// 格式见插件目录 config.example.php。改完不用重启,下一次请求就会生效。\n"
+            . '/ 由后台「SMTP 发信」设置页写入(' . gmdate('Y-m-d H:i:s') . " UTC);手改同样有效,\n"
+            . "/ 格式见插件目录 config.example.php。改完不用重启,下一次请求就会生效。\n"
             . 'return ' . var_export($clean, true) . ";\n";
 
         $tmp = $path . '.tmp-' . bin2hex(random_bytes(4));
@@ -189,7 +189,7 @@ final class Settings
             : rawurlencode($this->username) . ':' . rawurlencode($this->password) . '@';
 
         $transport = (new EsmtpTransportFactory())->create(
-            Dsn::fromString($scheme . '://' . $auth . $this->host . ':' . $this->port)
+            Dsn::fromString($scheme . ':/' . $auth . $this->host . ':' . $this->port)
         );
 
         if ($transport instanceof EsmtpTransport) {

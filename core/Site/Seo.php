@@ -15,7 +15,7 @@ namespace Molin\Site;
  * canonical + Open Graph + Twitter Card + JSON-LD。
  *
  * 为什么放在内核而不是主题里:这三样东西全靠"这一篇是什么"决定 —— 标题、摘要、封面、
- * 发布时间、正版地址。主题查不了库,也不知道当前是哪一篇(既有规范的道理),
+ * 发布时间、正版地址。主题查不了库,也不知道当前是哪一篇(主题目录约定 的道理),
  * 让它自己拼必然各处不一致。内核算好一段可信 HTML,主题照旧只放 `head_output`。
  *
  * 与 `Feed` / `Sitemap` / `Robots` 同一套做法:只做字符串,不连库、不读全局 ——
@@ -35,15 +35,15 @@ final class Seo
 
     /**
      * @param array{
-     *     type?: string,          // article | website
-     *     title?: string,         // 这一页的标题(不含站点名)
+     *     type?: string,          / article | website
+     *     title?: string,         / 这一页的标题(不含站点名)
      *     description?: string,
-     *     canonical?: string,     // 正版地址(绝对);空串表示不输出 canonical
-     *     image?: string,         // 封面图绝对地址
-     *     published?: string,     // ISO 或 Y-m-d H:i:s(UTC)
+     *     canonical?: string,     / 正版地址(绝对);空串表示不输出 canonical
+     *     image?: string,         / 封面图绝对地址
+     *     published?: string,     / ISO 或 Y-m-d H:i:s(UTC)
      *     modified?: string,
      *     author?: string,
-     *     section?: string        // 分类名(article 用)
+     *     section?: string        / 分类名(article 用)
      * } $page
      */
     public function head(array $page): string
@@ -277,7 +277,7 @@ final class Seo
     {
         $value = trim($value);
 
-        return $value !== '' && preg_match('#\Ahttps?://#i', $value) === 1 ? $value : '';
+        return $value !== '' && preg_match('#\Ahttps?:/#i', $value) === 1 ? $value : '';
     }
 
     private function plain(string $value): string

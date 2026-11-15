@@ -14,7 +14,7 @@ use Molin\Exception\MolinException;
 use Psr\Container\ContainerExceptionInterface;
 
 /**
- * 容器解析失败。基类归属。
+ * 容器解析失败。基类归属见错误与日志设计第 1 节。
  */
 class ContainerException extends MolinException implements ContainerExceptionInterface
 {

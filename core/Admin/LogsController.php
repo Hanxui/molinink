@@ -19,15 +19,15 @@ use Molin\Router\Router;
 use Molin\User\User;
 
 /**
- * 日志查看器。只读屏:六个通道页签、四件筛选、分页。
+ * 日志查看器(日志界面规格)。只读屏:六个通道页签、四件筛选、分页。
  *
- * 数据源是内核正在写的日志文件(见 LogReader)——既有规范没有 logs 表。
+ * 数据源是内核正在写的日志文件(见 LogReader)——数据模型设计没有 logs 表。
  * 筛选与分页全部服务端做(URL 带参,页签/分页/翻页链接都由这里算好,模板不拼 URL);
- * 本页永不出现"清空 / 删除日志"控件。
+ * 本页永不出现"清空 / 删除日志"控件(日志界面规格)。
  */
 final class LogsController
 {
-    /** 每页条数(20) */
+    /** 每页条数(后台信息架构:20) */
     private const PER_PAGE = LogReader::PER_PAGE;
 
     public function __construct(
@@ -127,9 +127,9 @@ final class LogsController
     }
 
     /**
-     * 分页数字:前 3 页 ∪ 当前页 ±1,空档给省略号(既有规范折叠规则未定,
+     * 分页数字:前 3 页 ∪ 当前页 ±1,空档给省略号(日志界面规格 折叠规则未定,
      * 先照设计稿页 1 的形状「1 2 3 …」;首尾两端不硬塞尾页)。
-     * 条目统一形状(n/url/current/gap 四键齐全:既有规范strict_variables 缺键会报错)。
+     * 条目统一形状(n/url/current/gap 四键齐全:模板引擎规范strict_variables 缺键会报错)。
      *
      * @param array<string, string> $state
      * @return list<array{n: int, url: string, current: bool, gap: bool}>
@@ -175,7 +175,7 @@ final class LogsController
         $out = ['' => __('全部级别')];
 
         foreach (LogReader::levels() as $level) {
-            $out[$level] = $level; // 级别名原样不翻译
+            $out[$level] = $level; // 级别名原样不翻译(日志界面规格)
         }
 
         return $out;

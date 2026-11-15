@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Molin\Exception;
 
 /**
- * 配置/环境错误。段位 5xxx(系统 / 环境)。
+ * 配置/环境错误。段位 5xxx(系统 / 环境),见错误与日志设计第 2 节。
  */
 class ConfigException extends MolinException implements HttpMappable
 {

@@ -20,7 +20,7 @@ use Molin\User\Authorizer;
 use Molin\User\User;
 
 /**
- * 评论提交流(既有规范的十步 + §5 的最低限度反垃圾)。
+ * 评论提交流(评论系统设计 的十步 + 的最低限度反垃圾)。
  *
  * 边界口诀:内核保证"能用" —— 频率、蜜罐、黑名单、首评必审;智能判定全交插件,
  * 插件挂在 comment/submit/before 这个 filter 上,扔 ValidationException 就能拒掉一条。
@@ -30,7 +30,7 @@ final class Submitter
     /** 蜜罐字段:页面上不可见,被填了就是机器人 */
     public const HONEYPOT = 'website_hp';
 
-    /** 同 IP 同文章的最小间隔 */
+    /** 同 IP 同文章的最小间隔(评论系统设计) */
     public const FLOOD_SECONDS = 30;
 
     /** 同 IP 每小时上限 */
@@ -73,7 +73,7 @@ final class Submitter
             'type' => 'comment',
         ];
 
-        // 既有规范②:非空与长度。白名单过滤后的纯文本才算数
+        // 评论系统设计 ②:非空与长度。白名单过滤后的纯文本才算数
         $plain = trim(preg_replace('/\s+/u', ' ', strip_tags($data['content'])) ?? '');
 
         if ($plain === '') {
@@ -92,7 +92,7 @@ final class Submitter
             $this->frequency($data['post_id'], $request->ip());
         }
 
-        // 既有规范⑥:filter,插件可改内容或抛异常拒绝
+        // 评论系统设计 ⑥:filter,插件可改内容或抛异常拒绝
         $filtered = apply_filters('comment/submit/before', $data, $request->ip());
 
         if (is_array($filtered)) {
@@ -106,7 +106,7 @@ final class Submitter
         $id = $this->comments->insert($data + ['created_at' => gmdate('Y-m-d H:i:s')]);
         $this->comments->recomputeCount((int) $data['post_id']);
 
-        // 既有规范⑨:入库后(通知、索引交插件)
+        // 评论系统设计 ⑨:入库后(通知、索引交插件)
         do_action('comment/submit/after', $id, (int) $data['post_id']);
 
         return ['status' => $status, 'id' => $id];
@@ -123,7 +123,7 @@ final class Submitter
             throw new ValidationException('找不到这篇文章', ['post_id' => ['文章不存在或未发布']]);
         }
 
-        // 单篇的 comment_status 是站长逐篇定的,关闭就是不收
+        // 内容模型设计:单篇的 comment_status 是站长逐篇定的,关闭就是不收
         if ($post->comment_status !== 'open') {
             throw new ValidationException('这篇文章已关闭评论', ['post_id' => ['评论已关闭']]);
         }
@@ -218,7 +218,7 @@ final class Submitter
     }
 
     /**
-     * 全局开关与自动关闭。两者口径不同:全局关了只挡游客(后台原话"关闭后只有注册用户能留言"),
+     * 全局开关与自动关闭(评论系统设计)。两者口径不同:全局关了只挡游客(后台原话"关闭后只有注册用户能留言"),
      * 自动关闭对所有人(含登录读者)生效,只豁免能审的人 —— 与"能审的人不受栏"同口径。
      */
     private function gateOpen(Post $post, ?User $user): void
@@ -246,7 +246,7 @@ final class Submitter
     }
 
     /**
-     * 状态怎么定(既有规范§6):能审评论的登录身份直发;默认状态打底,
+     * 状态怎么定(评论系统):能审评论的登录身份直发;默认状态打底,
      * "可疑"一律压回待审;邮箱过审过一次就免审。
      *
      * @param array<string, mixed> $data
@@ -288,7 +288,7 @@ final class Submitter
                 || time() - max(0, (int) $request->input('form_ts')) < self::TOO_FAST_SECONDS;
         }
 
-        // 黑名单关键词命中 → 待审(既有规范的 comment_moderation_keys)
+        // 黑名单关键词命中 → 待审(评论系统设计 的 comment_moderation_keys)
         $keys = (string) $this->options->get('comment_moderation_keys', '');
 
         foreach (array_filter(array_map('trim', explode(',', $keys)), static fn (string $k): bool => $k !== '') as $key) {
@@ -313,7 +313,7 @@ final class Submitter
         $url = trim($given);
 
         // 网址选填,但给了就必须是 http(s),别的一律当没填 —— 别让它变成跳板
-        if ($url === '' || preg_match('#\Ahttps?://[^\s]+\z#i', $url) !== 1) {
+        if ($url === '' || preg_match('#\Ahttps?:/[^\s]+\z#i', $url) !== 1) {
             return '';
         }
 

@@ -15,15 +15,16 @@ use Molin\Support\Files;
 use RuntimeException;
 
 /**
- * 备份创建与备份列表(既有规范的最小可用版)。
+ * 备份创建与备份列表(备份导入导出设计–、 的最小可用版)。
  *
- * 打包用 PharData(纯 PHP,不碰 exec —— 既有规范禁 shell 拼用户输入):
+ * 打包用 PharData(纯 PHP,不碰 exec —— 安全基线禁 shell 拼用户输入):
  * 库逐表导出为 SQL,上传目录与 config.php 进包,manifest 带版本与校验和。
  * 加密可以选(第六步,密码由用户设);远端上传在 Remote 类里,创建后由调用方决定推不推。
  */
 final class Backup
 {
     /** 备份文件名规则,删除与读取都先过这道正则,不给路径穿越留门。pre = 恢复前的自动留底 */
+
     /**
      * 文件名形态:backup-molin-<日期>-<时刻>-<8 位随机>-<full|pre>.tar.gz
      *
@@ -34,7 +35,7 @@ final class Backup
     public const FILENAME = '#\Abackup-molin-\d{8}-\d{6}-(?:[0-9a-f]{8}-)?(full|pre)\.tar\.gz\z#';
 
     /**
-     * 本地留存份数上限,超过就删最旧的(2026-10-13 作者定:备份只留最近 5 份)。
+     * 本地留存份数上限,超过就删最旧的(2026-10-13 按现行设计:备份只留最近 5 份)。
      * 口径是"留最近 5 份",不区分来源 —— 升级前留底(pre)、恢复前留底(pre)、手动备份(full)一起算。
      */
     public const KEEP = 5;
@@ -58,7 +59,7 @@ final class Backup
     /**
      * 创建一份全量备份,返回文件信息。
      *
-     * @param string|null $password 给了密码就整包加密(AES-256-GCM,既有规范⑥)
+     * @param string|null $password 给了密码就整包加密(AES-256-GCM,备份导入导出设计 ⑥)
      * @param Progress|null $progress 传了就往它报进度;调用方负责 begin() / finish(),这里只 advance()
      * @return array{name:string, size:int, tables:int, encrypted:bool}
      */
@@ -175,7 +176,7 @@ final class Backup
             throw new RuntimeException('备份包压缩失败');
         }
 
-        // 留最近 KEEP 份(2026-10-13 作者定):升级前留底、恢复前留底、手动备份一起算。
+        // 留最近 KEEP 份(2026-10-13 按现行设计):升级前留底、恢复前留底、手动备份一起算。
         // 放在这里而不是某个定时任务里 —— 每建一份就收敛一次,备份目录不会无限涨。
         $this->prune();
 
@@ -266,9 +267,9 @@ final class Backup
                 'name' => $name,
                 'size' => $size,
                 'created_at' => (int) filemtime($path),
-                // 文件名里就带着它是全量还是恢复前的自留底(既有规范「来源」列)
+                // 文件名里就带着它是全量还是恢复前的自留底(备份恢复界面规格「来源」列)
                 'source' => $m[1] === 'pre' ? '恢复前' : '手动',
-                // 「已加密」标签只看文件头,不解包
+                // 「已加密」标签只看文件头,不解包(备份恢复界面规格)
                 'encrypted' => Cipher::isEncryptedFile($path),
             ];
         }
@@ -303,7 +304,7 @@ final class Backup
     }
 
     /**
-     * 只留最近 KEEP 份,更早的删掉(2026-10-13 作者定)。list() 已按时间从新到旧排好,过 KEEP 的全删。
+     * 只留最近 KEEP 份,更早的删掉(2026-10-13 按现行设计)。list() 已按时间从新到旧排好,过 KEEP 的全删。
      *
      * @return list<string> 这次删掉的文件名
      */

@@ -60,7 +60,7 @@ return [
     'login'          => ['methods' => ['GET', 'POST'], 'paths' => ['/login']],
     'logout'         => ['methods' => ['GET', 'POST'], 'paths' => ['/logout']],
     'register'       => ['methods' => ['GET', 'POST'], 'paths' => ['/register']],
-    // 2026-10-01 作者点头补表(既有规范同步登记):找回密码与设新密码两屏,设计稿在既有规范
+    // 2026-10-01 补表登记:找回密码与设新密码两屏,设计稿见对应规范
     'lostpassword'   => ['methods' => ['GET', 'POST'], 'paths' => ['/lostpassword']],
     'resetpassword'  => ['methods' => ['GET', 'POST'], 'paths' => ['/resetpassword']],
     // 契约路径只有这一条;`/admin`、`/admin/` 两个别名在 index.php 里挂同一处理器,

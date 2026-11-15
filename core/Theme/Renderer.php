@@ -195,11 +195,9 @@ final class Renderer
         $this->twig->addFunction(new TwigFunction('can', static fn (string $capability, ?object $target = null): bool => current_user_can($capability, $target)));
 
         // 图片输出:把组装层给的缩略图数据落成 <img>,带 srcset 与懒加载。
-        //
         // source 收两种:① 图片数据数组(列表页由 index.php 的 $thumbsFor 组装);
         // ② 附件 id(主题设置的 image 字段,经组装层注入的 mediaLookup 现取,取不到就是空)。
         // 没有图(附件不存在 / 盘上没文件 / 字段没配)返回空串,模板据此落回无图版式。
-        //
         // 属性走白名单:图片上说得通的命名属性才放行,事件处理器之类一律忽略(值仍逐个转义)。
         $mediaLookup = $this->mediaLookup;
         $this->twig->addFunction(new TwigFunction('image', static function (mixed $source, string $size = 'medium', array $attrs = []) use ($mediaLookup): Markup {
@@ -817,7 +815,7 @@ final class Renderer
             // 未评论过的访客三个键都在、值全空,模板不必做 defined 猜谜。
             'commenter' => CommenterCookie::current(),
             // 头像模板拆好的前缀/后缀(2026-10-31 增):前端要按邮箱自己拼头像时用,
-            // 站点头像源不是 custom 时两个值都是空串,主题据此退回自己的默认图。
+            // 头像源不是 custom 时两个值都是空串,主题据此退回自己的默认图。
             'avatar_template' => Avatar::instance()->templateParts(),
             // 既有规范的全局变量:表单要带防跨站令牌,主题不该自己想办法弄
             'csrf_token' => Auth::csrfToken(),
